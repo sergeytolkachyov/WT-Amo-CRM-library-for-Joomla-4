@@ -1,4 +1,6 @@
 # WT Amo CRM library for Joomla 4
+[More info on developer site](https://web-tolk.ru/dev/biblioteki/wt-amo-crm-library.html)
+
 A small PHP library for Joomla 4 and Amo CRM. For developers.
 As part of the package
 - amoCRM connection library
