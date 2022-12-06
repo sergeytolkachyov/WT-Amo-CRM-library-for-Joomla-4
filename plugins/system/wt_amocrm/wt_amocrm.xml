@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<extension type="plugin" method="upgrade" group="system">
+    <name>System - WT Amo CRM Library</name>
+    <author>Sergey Tolkachyov</author>
+    <authorEmail>info@web-tolk.ru</authorEmail>
+    <authorUrl>https://web-tolk.ru/</authorUrl>
+	<creationDate>05/12/2022</creationDate>
+    <copyright>Sergey Tolkachyov</copyright>
+    <license>GNU General Public License v3.0</license>
+    <version>0.0.1</version>
+    <description>Amo CRM library settings</description>
+    <namespace path="src">Joomla\Plugin\System\Wt_amocrm</namespace>
+	<files>
+        <folder plugin="wt_amocrm">src</folder>
+    </files>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields" type="plugininfo" name="plugininfo"/>
+                <field addfieldprefix="Webtolk\Amocrm\Fields" type="accountinfo" name="accountinfo"/>
+                <field type="text" name="amocrm_domain" label="Amo CRM domain" hint="mydomain.amocrm.com, without https etc."/>
+                <field type="text" name="amocrm_client_id" label="Client ID (integration ID)"/>
+                <field type="password" name="amocrm_client_secret" label="Client secret"/>
+                <field type="text" name="amocrm_code" label="Auth code"/>
+                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
+                       type="redirecturl"
+                       label="Redirect URL"
+                       name="amocrm_redirect_uri"/>
+            </fieldset>
+        </fields>
+    </config>
+</extension>
