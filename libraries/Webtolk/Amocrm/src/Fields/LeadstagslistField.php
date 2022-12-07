@@ -25,9 +25,12 @@ class LeadstagslistField extends ListField
 
 	protected function getOptions()
 	{
-
+		$requset_options = [];
+		if(isset($this->element['limit']) && !empty($this->element['limit'])){
+			$requset_options['limit'] = (int)$this->element['limit'];
+		}
 		$amocrm = new Amocrm();
-		$result_amo_crm = $amocrm->getTags('leads');
+		$result_amo_crm = $amocrm->getTags('leads',$requset_options);
 		$options = array();
 		if(empty($result_amo_crm)){
 			return $options[] = HTMLHelper::_('select.option', 0, 'there is no tags in Amo CRM');
