@@ -39,9 +39,11 @@ List of Amo CRM sales funnels.
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="leadspipelineslist" name="pipeline_id"/>
 ```
 #### Leadstagslist - Leads tags list
-List of tags for deals
+List of tags for deals. 
+Params:
+- limit - tags count in list. Max 250
 ```
-<field addfieldprefix="Webtolk\Amocrm\Fields" type="leadstagslist" name="lead_tag_id"/>
+<field addfieldprefix="Webtolk\Amocrm\Fields" type="leadstagslist" limit="100" name="lead_tag_id"/>
 ```
 ##List of library methods
 - getAccountInfo
