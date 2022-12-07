@@ -45,7 +45,7 @@ Params:
 ```
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="leadstagslist" limit="100" name="lead_tag_id"/>
 ```
-##List of library methods
+## List of library methods
 - getAccountInfo
 - getLeadById
 - createLeads
