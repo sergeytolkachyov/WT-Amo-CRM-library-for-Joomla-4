@@ -2,10 +2,10 @@
 <extension type="library" method="upgrade">
 	<name>WebTolk AmoCRM library</name>
 	<libraryname>Webtolk/Amocrm</libraryname>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<description>AmoCRM connection library</description>
-	<creationDate>05/12/2022</creationDate>
-	<copyright>2022 Sergey Tolkachyov</copyright>
+	<creationDate>15/01/2023</creationDate>
+	<copyright>2022-2023 Sergey Tolkachyov</copyright>
 	<license>GNU/GPL 3.0</license>
 	<author>Sergey Tolkachyov</author>
 	<authorEmail>info@web-tolk.ru</authorEmail>

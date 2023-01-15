@@ -18,7 +18,7 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
 use Webtolk\Amocrm\Amocrm;
-
+use Webtolk\Amocrm\Chat;
 
 class AccountinfoField extends NoteField
 {
@@ -30,6 +30,12 @@ class AccountinfoField extends NoteField
 
 		$amocrm = new Amocrm();
 		$result_amo_crm = $amocrm->getAccountInfo();
+		if(isset($result_amo_crm->error_code) && !empty($result_amo_crm->error_code)){
+			return '<div class="alert alert-danger row">
+						<div class="col-2 h1">'.$result_amo_crm->error_code.'</div>
+						<div class="col-10">'.$result_amo_crm->error_message.'</div>
+					</div>';
+		}
 
 		if(!empty($result_amo_crm)){
 

@@ -6,7 +6,7 @@
  * @subpackage  Amo CRMrocket
  * @author      Sergey Tolkachyov
  * @copyright   Copyright (C) Sergey Tolkachyov, 2022. All rights reserved.
- * @version     1.3.3
+ * @version     1.0.1
  * @license     GNU General Public License version 3 or later. Only for *.php files!
  */
 
@@ -52,6 +52,16 @@ class Amocrm
 			$plugin        = PluginHelper::getPlugin('system', 'wt_amocrm');
 			$params        = json_decode($plugin->params);
 			$amocrm_domain = (!empty($params->amocrm_domain) ? 'https://' . $params->amocrm_domain : '');
+			if(empty($amocrm_domain)){
+				self::saveToLog(' Plugin System - WT Amo CRM: there is no credentials data', 'ERROR');
+				$error_array = array(
+					'error_code'    => 500,
+					'error_message' => __FUNCTION__.' function: Plugin System - WT Amo CRM. There is no credentials data'
+				);
+
+				return (object) $error_array;
+			}
+
 			$url           = $amocrm_domain . $url;
 			self::loadTokenData();
 			if (!empty(self::$token))
@@ -97,7 +107,7 @@ class Amocrm
 			self::saveToLog(' Plugin System - WT Amo CRM disabled', 'WARNING');
 			$error_array = array(
 				'error_code'    => 500,
-				'error_message' => 'Plugin System - WT Amo CRM disabled'
+				 'error_message' => __FUNCTION__.' function: Plugin System - WT Amo CRM disabled'
 			);
 
 			return (object) $error_array;
@@ -113,7 +123,8 @@ class Amocrm
 	public static function loadTokenData()
 	{
 
-		if(!empty(self::$token) && !empty(self::$token_type) && !empty(self::$expires_in)){
+		if (!empty(self::$token) && !empty(self::$token_type) && !empty(self::$expires_in))
+		{
 			return true;
 		}
 
@@ -150,7 +161,8 @@ class Amocrm
 			}
 			else
 			{
-				if($token_loaded = self::loadTokenData() == true){
+				if ($token_loaded = self::loadTokenData() == true)
+				{
 					return true;
 				}
 			}
@@ -174,9 +186,11 @@ class Amocrm
 			self::setTokenType((string) $token_data->token_type);
 
 			unset($token_data);
+
 			return;
 		}
 		unset($token_data);
+
 		return;
 	}
 
@@ -209,7 +223,7 @@ class Amocrm
 			$amocrm_client_id     = (!empty($params->amocrm_client_id) ? $params->amocrm_client_id : '');
 			$amocrm_client_secret = (!empty($params->amocrm_client_secret) ? $params->amocrm_client_secret : '');
 			$amocrm_code          = (!empty($params->amocrm_code) ? $params->amocrm_code : '');
-			$amocrm_redirect_uri  = Uri::root().'index.php?option=com_ajax&plugin=wt_amocrm&group=system&format=raw';
+			$amocrm_redirect_uri  = Uri::root() . 'index.php?option=com_ajax&plugin=wt_amocrm&group=system&format=raw';
 
 
 			if (empty($amocrm_client_secret) || empty($amocrm_client_secret))
@@ -217,7 +231,7 @@ class Amocrm
 				self::saveToLog('Client_id or client_secret haven\'t been set. Please, check the plugin System - WT Amo CRM settings', 'ERROR');
 				$error_array = array(
 					'error_code'    => 500,
-					'error_message' => 'Client_id or client_secret haven\'t been set. Please, check the plugin System - WT Amo CRM settings.'
+					 'error_message' => __FUNCTION__.' function: Client_id or client_secret haven\'t been set. Please, check the plugin System - WT Amo CRM settings.'
 				);
 
 				return (object) $error_array;
@@ -266,7 +280,7 @@ class Amocrm
 						self::saveToLog('Amo CRM response doesn\'t contain token.', 'ERROR');
 						$error_array = array(
 							'error_code'    => 500,
-							'error_message' => 'Amo CRM response doesn\'t contain token.'
+							 'error_message' => __FUNCTION__.' function: Amo CRM response doesn\'t contain token.'
 						);
 
 						return (object) $error_array;
@@ -334,7 +348,7 @@ class Amocrm
 					self::saveToLog($response->code . ' - Error while trying to authorize to Amo CRM. Amo CRM API response: ' . htmlspecialchars($error_message), 'ERROR');
 					$error_array = array(
 						'error_code'    => $response->code,
-						'error_message' => 'Error while trying to authorize to Amo CRM. Amo CRM API response: ' . $error_message
+						 'error_message' => __FUNCTION__.' function: Error while trying to authorize to Amo CRM. Amo CRM API response: ' . $error_message
 					);
 
 					return (object) $error_array;
@@ -345,7 +359,7 @@ class Amocrm
 					self::saveToLog($response->code . ' - Error while trying to authorize to Amo CRM.Amo CRM API response: ' . $response->body, 'ERROR');
 					$error_array = array(
 						'error_code'    => $response->code,
-						'error_message' => 'Error while trying to authorize to Amo CRM. Amo CRM API response: ' . $response->body
+						 'error_message' => __FUNCTION__.' function: Error while trying to authorize to Amo CRM. Amo CRM API response: ' . $response->body
 					);
 
 					return (object) $error_array;
@@ -363,7 +377,7 @@ class Amocrm
 			self::saveToLog('Plugin System - WT Amo CRM disabled', 'WARNING');
 			$error_array = array(
 				'error_code'    => 500,
-				'error_message' => 'Plugin System - WT Amo CRM disabled'
+				 'error_message' => __FUNCTION__.' function: Plugin System - WT Amo CRM disabled'
 			);
 
 			return (object) $error_array;
@@ -450,6 +464,7 @@ class Amocrm
 		$tokenData['token_end_time'] = $date;
 		$cache                       = Cache::getInstance('', $options);
 		$cache->store(json_encode($tokenData), 'wt_amo_crm');
+
 		return true;
 
 	}
@@ -471,6 +486,7 @@ class Amocrm
 		$lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
 		$lib_params->set('refresh_token', $refresh_token);
 		LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params);
+
 	}
 
 	/**
@@ -532,7 +548,7 @@ class Amocrm
 	public function getAccountInfo()
 	{
 
-		$response = self::getResponse('/api/v4/account', '', 'GET');
+		$response = self::getResponse('/api/v4/account', null, 'GET');
 		if ($response->code == 200)
 		{
 			return json_decode($response->body);
@@ -554,7 +570,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -565,7 +581,7 @@ class Amocrm
 			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -586,11 +602,11 @@ class Amocrm
 		{
 			return $error_array = array(
 				'error_code'    => 500,
-				'error_message' => 'There is no lead id specified'
+				 'error_message' => __FUNCTION__.' function: There is no lead id specified'
 			);
 		}
 
-		$response = self::getResponse('/api/v4/leads/' . $id, '', 'GET');
+		$response = self::getResponse('/api/v4/leads/' . $id, null, 'GET');
 		if ($response->code == 200)
 		{
 			return json_decode($response->body);
@@ -612,7 +628,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -623,7 +639,7 @@ class Amocrm
 			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -635,46 +651,46 @@ class Amocrm
 	 * Позволяет пакетно добавлять лиды в Амо. Структура массива:
 	 *
 	 * [
-			{
-				"name": "Сделка для примера 1",
-				"created_by": 0,
-				"price": 20000,
-				"custom_fields_values": [
-					{
-						"field_id": 294471,
-						"values": [
-								{
-									"value": "Наш первый клиент"
-								}
-							]
-					}
-				]
-			},
-			{
-				"name": "Сделка для примера 2",
-				"price": 10000,
-				"_embedded": {
-					"tags": [
-								{
-									"id": 2719
-								}
-						]
-					}
-				}
-		]
+	 *  {
+	 *      "name": "Сделка для примера 1",
+	 *      "created_by": 0,
+	 *      "price": 20000,
+	 *      "custom_fields_values": [
+	 *      {
+	 *      "field_id": 294471,
+	 *      "values": [
+	 *      {
+	 *      "value": "Наш первый клиент"
+	 *      }
+	 *      ]
+	 *      }
+	 *      ]
+	 *      },
+	 *      {
+	 *      "name": "Сделка для примера 2",
+	 *      "price": 10000,
+	 *      "_embedded": {
+	 *      "tags": [
+	 *      {
+	 *      "id": 2719
+	 *      }
+	 *      ]
+	 *      }
+	 *  }
+	 * ]
 	 *
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/leads-api
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/leads-api
 	 * @since 1.0.0
 	 */
 
-	public function createLeads(array $data = []) : object
+	public function createLeads(array $data = []): object
 	{
 		if (count($data) == 0)
 		{
 			return (object) $error_array = array(
 				'error_code'    => 500,
-				'error_message' => 'There is no data for creating lead in Amo CRM'
+				 'error_message' => __FUNCTION__.' function: There is no data for creating lead in Amo CRM'
 			);
 		}
 		$response = self::getResponse('/api/v4/leads', json_encode($data), 'POST', 'application/json');
@@ -700,7 +716,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -711,7 +727,7 @@ class Amocrm
 			self::saveToLog('Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -722,11 +738,11 @@ class Amocrm
 	 * Комплексное добавление сделок с контактом и компанией.
 	 * Метод позволяет добавлять сделки c контактом и компанией в аккаунт пакетно. Добавялемые данные могут быть проверены в контроле дублей.
 	 * ## Ограничения
-	 * - 	Метод доступен в соответствии с правами пользователя.
-	 * -	Для одной сделки можно указать не более 1 связанного контакта и 1 связанной компании.
-	 * -	Для добавялемых сущностей (сделка, контакт, компания), можно передать не более 40 значений дополнительных полей.
-	 * -	Добавляемые данные участвуют в контроле дублей, если он включен для интеграции, которая добавляет данные.
-	 * -	Метод не производит дедубликацию переданных данных, а только ищет дубли среди уже добавленных данных.
+	 * -    Метод доступен в соответствии с правами пользователя.
+	 * -    Для одной сделки можно указать не более 1 связанного контакта и 1 связанной компании.
+	 * -    Для добавялемых сущностей (сделка, контакт, компания), можно передать не более 40 значений дополнительных полей.
+	 * -    Добавляемые данные участвуют в контроле дублей, если он включен для интеграции, которая добавляет данные.
+	 * -    Метод не производит дедубликацию переданных данных, а только ищет дубли среди уже добавленных данных.
 	 * -    За один запрос можно передать не более 50 сделок.
 	 * - При создании нового контакта и компании, они будут связаны между собой.
 	 * ## Структура массива:
@@ -776,7 +792,7 @@ class Amocrm
 	 *  }
 	 *
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/leads-api
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/leads-api
 	 * @since 1.0.0
 	 */
 
@@ -787,7 +803,7 @@ class Amocrm
 		{
 			return (object) $error_array = array(
 				'error_code'    => 500,
-				'error_message' => 'There is no data for creating lead in Amo CRM'
+				 'error_message' => __FUNCTION__.' function: There is no data for creating lead in Amo CRM'
 			);
 		}
 		$response = self::getResponse('/api/v4/leads/complex', json_encode($data), 'POST', 'application/json');
@@ -814,7 +830,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -825,7 +841,7 @@ class Amocrm
 			self::saveToLog('Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to create lead in Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -835,10 +851,10 @@ class Amocrm
 	/**
 	 * Список тегов для сущности
 	 * ## Общая информация
-	 * - 	Справочник тегов разделен по сущностям, то есть тег с одним названием будет иметь различные ID в разных типах сущностей
-	 * -	Цвет тегов доступен только для тегов сделок
-	 * -	Цвет тегов доступен только только с обновления Весна 2022
-	 * -	Функционал тегов доступен для следующих сущностей: сделки, контакты, компании и покупатели
+	 * -    Справочник тегов разделен по сущностям, то есть тег с одним названием будет иметь различные ID в разных типах сущностей
+	 * -    Цвет тегов доступен только для тегов сделок
+	 * -    Цвет тегов доступен только только с обновления Весна 2022
+	 * -    Функционал тегов доступен для следующих сущностей: сделки, контакты, компании и покупатели
 	 * ## Метод
 	 * GET /api/v4/{entity_type:leads|contacts|companies|customers}/tags
 	 * ## Параметры
@@ -847,23 +863,24 @@ class Amocrm
 	 * - filter object Фильтр
 	 * - filter[name] string Фильтр по точному названию тега. Можно передать только одно название
 	 * - filter[id] int|array Фильтр по ID тега. Можно передать как один ID, так и массив из нескольких ID
-	 * - query string Позволяет осуществить полнотекстовый поиск поиск по названию тега
+	 * - query string Позволяет осуществить полнотекстовый поиск по названию тега
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/tags-api
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/tags-api
 	 * @since 1.0.0
 	 */
 
 	public function getTags(string $entity_type = 'leads', array $data = [])
 	{
-		$allowed_entites = ['leads','contacts','companies','customers'];
-		if(!in_array($entity_type,$allowed_entites)){
+		$allowed_entites = ['leads', 'contacts', 'companies', 'customers'];
+		if (!in_array($entity_type, $allowed_entites))
+		{
 			return (object) $error_array = array(
 				'error_code'    => 500,
-				'error_message' => 'Specified entity type '.$entity_type.' is not allowed for getting tag in Amo CRM. Choose allowed type from '.implode(', ',$allowed_entites)
+				 'error_message' => __FUNCTION__.' function: Specified entity type ' . $entity_type . ' is not allowed for getting tag in Amo CRM. Choose allowed type from ' . implode(', ', $allowed_entites)
 			);
 		}
 
-		$response = self::getResponse('/api/v4/'.$entity_type.'/tags', json_encode($data), 'GET', 'application/json');
+		$response = self::getResponse('/api/v4/' . $entity_type . '/tags', $data, 'GET', 'application/json');
 		if ($response->code == 200)
 		{
 			return (object) json_decode($response->body);
@@ -887,7 +904,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get tag(s) from Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to get tag(s) from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -898,7 +915,7 @@ class Amocrm
 			self::saveToLog('Error while trying to get tag(s) from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get tag(s) from Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get tag(s) from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -909,13 +926,13 @@ class Amocrm
 	/**
 	 * Получение списка воронок продаж для сделок
 	 * ## Общая информация
-	 * - 	В каждой воронке есть 3 системных статуса: Неразобранное, Успешно реализовано (ID = 142), Закрыто и не реализовано (ID = 143)
-	 * -	В аккаунте может быть не более 50 воронок.
-	 * -	В одной воронке может быть не более 100 статусов, включая системные.
+	 * -    В каждой воронке есть 3 системных статуса: Неразобранное, Успешно реализовано (ID = 142), Закрыто и не реализовано (ID = 143)
+	 * -    В аккаунте может быть не более 50 воронок.
+	 * -    В одной воронке может быть не более 100 статусов, включая системные.
 	 * ## Метод
 	 * GET  /api/v4/leads/pipelines
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines
 	 * @since 1.0.0
 	 */
 
@@ -946,7 +963,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get leads piplines list from Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to get leads piplines list from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -957,7 +974,7 @@ class Amocrm
 			self::saveToLog('Error while trying to get leads piplines list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get leads piplines list from Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get leads piplines list from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -968,12 +985,12 @@ class Amocrm
 	/**
 	 * Получение списка полей для **сделок**
 	 * ## Ограничения
-	 * - 	Метод возвращает до 50 полей за один запрос.
-	 * -	Метод доступен всем пользователям аккаунта.
+	 * -    Метод возвращает до 50 полей за один запрос.
+	 * -    Метод доступен всем пользователям аккаунта.
 	 * ## Метод
 	 * GET /api/v4/leads/custom_fields
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
 	 * @since 1.0.0
 	 */
 
@@ -1004,7 +1021,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get leads custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
+				'error_message' => __FUNCTION__.' function: Error while trying to get leads custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1015,7 +1032,7 @@ class Amocrm
 			self::saveToLog('Error while trying to get leads custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get leads custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get leads custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1026,12 +1043,12 @@ class Amocrm
 	/**
 	 * Получение списка полей для **контактов**
 	 * ## Ограничения
-	 * - 	Метод возвращает до 50 полей за один запрос.
-	 * -	Метод доступен всем пользователям аккаунта.
+	 * -    Метод возвращает до 50 полей за один запрос.
+	 * -    Метод доступен всем пользователям аккаунта.
 	 * ## Метод
 	 * GET /api/v4/contacts/custom_fields
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
 	 * @since 1.0.0
 	 */
 
@@ -1062,7 +1079,7 @@ class Amocrm
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get contacts custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to get contacts custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1073,7 +1090,7 @@ class Amocrm
 			self::saveToLog('Error while trying to get contacts custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get contacts custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get contacts custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1083,12 +1100,12 @@ class Amocrm
 	/**
 	 * Получение списка полей для **контактов**
 	 * ## Ограничения
-	 * - 	Метод возвращает до 50 полей за один запрос.
-	 * -	Метод доступен всем пользователям аккаунта.
+	 * -    Метод возвращает до 50 полей за один запрос.
+	 * -    Метод доступен всем пользователям аккаунта.
 	 * ## Метод
 	 * GET /api/v4/companies/custom_fields
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
 	 * @since 1.0.0
 	 */
 
@@ -1115,11 +1132,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog('Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1127,10 +1144,10 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog('Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get companies custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1140,12 +1157,12 @@ class Amocrm
 	/**
 	 * Получение списка полей для **контактов**
 	 * ## Ограничения
-	 * - 	Метод возвращает до 50 полей за один запрос.
-	 * -	Метод доступен всем пользователям аккаунта.
+	 * -    Метод возвращает до 50 полей за один запрос.
+	 * -    Метод доступен всем пользователям аккаунта.
 	 * ## Метод
 	 * GET /api/v4/companies/custom_fields
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
 	 * @since 1.0.0
 	 */
 
@@ -1172,11 +1189,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog('Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1184,10 +1201,10 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog('Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1208,18 +1225,18 @@ class Amocrm
 	 * - order object Сортировка результатов списка.
 	 * -- Доступные поля для сортировки: updated_at, id.
 	 * -- Доступные значения для сортировки: asc, desc.
-	*  -- Пример: /api/v4/contacts?order[updated_at]=asc
+	 *  -- Пример: /api/v4/contacts?order[updated_at]=asc
 	 * @return object
-	 * @see https://www.amocrm.ru/developers/content/crm_platform/contacts-api
-	 * @link https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
-	 * @link https://www.amocrm.ru/developers/content/crm_platform/filters-api
+	 * @see   https://www.amocrm.ru/developers/content/crm_platform/contacts-api
+	 * @link  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
+	 * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
 	 * @since 1.0.0
 	 */
 
-	public function getContacts(array $data = []) : object
+	public function getContacts(array $data = []): object
 	{
 
-		$response = self::getResponse('/api/v4/customers/custom_fields', json_encode($data), 'GET', 'application/json');
+		$response = self::getResponse('/api/v4/contacts', $data, 'GET', 'application/json');
 		if ($response->code == 200)
 		{
 			return (object) json_decode($response->body);
@@ -1239,11 +1256,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog('Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1251,10 +1268,10 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog('Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get customers custom fields list from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1268,7 +1285,7 @@ class Amocrm
 	 * ## Ограничения
 	 * Метод доступен только с правами администратора аккаунта.
 	 *
-	 * @param   int  $user_id Amo CRM user id
+	 * @param   int  $user_id  Amo CRM user id
 	 *
 	 * @return object
 	 * @link  https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
@@ -1278,13 +1295,14 @@ class Amocrm
 	public function getUserById(int $user_id): object
 	{
 
-		if(empty($user_id)){
+		if (empty($user_id))
+		{
 			return (object) $error_array = array(
 				'error_code'    => 500,
-				'error_message' => 'There is nu Amo CRM user ID specified. Request abadoned.'
+				'error_message' =>  __FUNCTION__.' function: There is nu Amo CRM user ID specified. Request abadoned.'
 			);
 		}
-		$response = self::getResponse('/api/v4/users/'.$user_id, null, 'GET');
+		$response = self::getResponse('/api/v4/users/' . $user_id, null, 'GET');
 		if ($response->code == 200)
 		{
 			return (object) json_decode($response->body);
@@ -1302,11 +1320,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1314,10 +1332,213 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' => 'Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+			);
+
+			return (object) $error_array;
+		}
+	}
+
+
+	/**
+	 * Список примечаний по конкретной сущности, по ID сущности
+	 * ## Метод
+	 * GET /api/v4/{entity_type}/{entity_id}/notes
+	 * ## Описание
+	 * Метод позволяет получить примечания по ID родительской сущности.
+	 * ## Ограничения
+	 * Метод доступен всем пользователям аккаунта. Возвращаемые данные зависят от прав на сущность.
+	 *
+	 * @param   string  $entity_type                            Amo CRM user id
+	 * @param   int     $entity_id                              Amo CRM user id
+	 * @param   array   $params                                 Amo CRM user id
+	 *                                                          - page int Страница выборки
+	 *                                                          - limit int Количество возвращаемых сущностей за один запрос (Максимум – 250)
+	 *                                                          - filter array Фильтр
+	 *                                                          - filter[id] int|array Фильтр по ID примечаний. Можно передать как один ID, так и массив из нескольких ID
+	 *                                                          - filter[note_type] string|array Фильтр по типу примечания.
+	 *                                                          - filter[updated_at] int|object Фильтр по дате последнего изменения примечания.
+	 *                                                          Можно передать timestamp, в таком случае будут возвращены примечания, которые были изменены после переданного значения.
+	 *                                                          Также можно передать массив вида filter[updated_at][from]=… и filter[updated_at][to]=…,
+	 *                                                          для фильтрации по значениям ОТ и ДО.
+	 *                                                          - filter[order] array Сортировка результатов списка.
+	 *                                                          Доступные поля для сортировки: updated_at, id.
+	 *                                                          Доступные значения для сортировки: asc, desc.
+	 *                                                          Пример: /api/v4/leads/notes?order[updated_at]=asc
+	 *
+	 * @return object
+	 * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
+	 * @since 1.1.0
+	 */
+
+	public function getNotes(string $entity_type, int $entity_id, array $params = [])
+	{
+
+		if (empty($entity_type) || empty($entity_id))
+		{
+			return (object) $error_array = array(
+				'error_code'    => 500,
+				'error_message' =>  __FUNCTION__.' function: There is no entity_type or entity_id specified. Request abadoned.'
+			);
+		}
+		$response = self::getResponse('/api/v4/' . $entity_type . '/' . $entity_id . '/notes', $params, 'GET');
+		if ($response->code == 200)
+		{
+			return (object) json_decode($response->body);
+		}
+		elseif ($response->code >= 400 && $response->code < 500)
+		{
+
+			// API работает. Ошибка отдается в json
+			$response_body = json_decode($response->body);
+			if ($response_body->title || $response_body->detail || $response_body->{'validation-errors'})
+			{
+				$error_message = self::errorHandler($response_body);
+			}
+			else
+			{
+				$error_message = 'no error description';
+			}
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+
+			$error_array = array(
+				'error_code'    => $response->code,
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+			);
+
+			return (object) $error_array;
+		}
+		elseif ($response->code >= 500)
+		{
+			// API не работает, сервер лёг. В $response->body отдаётся HTML
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			$error_array = array(
+				'error_code'    => $response->code,
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+			);
+
+			return (object) $error_array;
+		}
+	}
+
+
+	/**
+	 * Добавление примечаний
+	 * ## Метод
+	 * POST /api/v4/{entity_type}/notes
+	 * POST /api/v4/{entity_type}/{entity_id}/notes
+	 * ## Описание
+	 * Метод позволяет добавлять примечания в аккаунт пакетно.
+	 * ## Ограничения
+	 * Метод доступен всем пользователям аккаунта. Успешность выполнения действия зависит от прав на сущность.
+	 *
+	 * @param   string  $entity_type                            Amo CRM entity type: lead|contact etc
+	 * @param   int     $entity_id                              ID сущности, в которую добавляется примечание. Обязателен при использовании метода создания примечания в сущности,
+	 *                                                          если создание идет через метод /api/v4/{entity_type}/{entity_id}/notes, то данный параметр передавать не нужно
+	 * @param   string  $notes                                  Массив с примечаниями. Пример
+	 *                                                          [
+	 *                                                              {
+	 *                                                                  "entity_id": 167353,
+	 *                                                                  "note_type": "call_in",
+	 *                                                                  "params": {
+	 *                                                                      "uniq": "8f52d38a-5fb3-406d-93a3-a4832dc28f8b",
+	 *                                                                      "duration": 60,
+	 *                                                                      "source": "onlinePBX",
+	 *                                                                      "link": "https://example.com",
+	 *                                                                      "phone": "+79999999999"
+	 *                                                                  }
+	 *                                                              },
+	 *                                                              {
+	 *                                                                  "entity_id": 167353,
+	 *                                                                  "note_type": "call_out",
+	 *                                                                  "params": {
+	 *                                                                      "uniq": "8f52d38a-5fb3-406d-93a3-a4832dc28f8b",
+	 *                                                                      "duration": 60,
+	 *                                                                      "source": "onlinePBX",
+	 *                                                                      "link": "https://example.com",
+	 *                                                                      "phone": "+79999999999"
+	 *                                                                  }
+	 *                                                              },
+	 *                                                              {
+	 *                                                                  "entity_id": 167353,
+	 *                                                                  "note_type": "geolocation",
+	 *                                                                  "params": {
+	 *                                                                      "text": "Примечание с геолокацией",
+	 *                                                                      "address": "ул. Пушкина, дом Колотушкина, квартира Вольнова",
+	 *                                                                      "longitude": "53.714816",
+	 *                                                                      "latitude": "91.423146"
+	 *                                                                  }
+	 *                                                              }
+	 *                                                          ]
+	 *
+	 * @return object
+	 * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
+	 * @since 1.1.0
+	 */
+
+	public function addNotes(string $entity_type = '', int $entity_id = 0, array $notes = [])
+	{
+
+		if (empty($entity_type))
+		{
+			return (object) $error_array = array(
+				'error_code'    => 500,
+				'error_message' => __FUNCTION__.' function: There is no entity_type or entity_id specified. Request abadoned.'
+			);
+		}
+		if (!empty($entity_id))
+		{
+			$request_url = '/api/v4/' . $entity_type . '/' . $entity_id . '/notes';
+		}
+		else
+		{
+			$request_url = '/api/v4/' . $entity_type . '/notes';
+		}
+		if (count($notes) == 0)
+		{
+			return (object) $error_array = array(
+				'error_code'    => 500,
+				'error_message' =>  __FUNCTION__.' function: Notes array is empty. Request abadoned.'
+			);
+		}
+
+		$response = self::getResponse($request_url, json_encode($notes), 'POST', 'application/json');
+		if ($response->code == 200)
+		{
+			return (object) json_decode($response->body);
+		}
+		elseif ($response->code >= 400 && $response->code < 500)
+		{
+
+			// API работает. Ошибка отдается в json
+			$response_body = json_decode($response->body);
+			if ($response_body->title || $response_body->detail || $response_body->{'validation-errors'})
+			{
+				$error_message = self::errorHandler($response_body);
+			}
+			else
+			{
+				$error_message = 'no error description';
+			}
+			self::saveToLog( __FUNCTION__.' function: Error while trying to add notes to '.$entity_type.' in Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+
+			$error_array = array(
+				'error_code'    => $response->code,
+				'error_message' =>  __FUNCTION__.' function: Error while trying to add notes to '.$entity_type.' in Amo CRM. Amo CRM API response: ' . $error_message
+			);
+
+			return (object) $error_array;
+		}
+		elseif ($response->code >= 500)
+		{
+			// API не работает, сервер лёг. В $response->body отдаётся HTML
+			self::saveToLog( __FUNCTION__.' function:  while trying to add notes to '.$entity_type.' in  Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			$error_array = array(
+				'error_code'    => $response->code,
+				'error_message' =>  __FUNCTION__.' function:  while trying to add notes to '.$entity_type.' in Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1326,6 +1547,7 @@ class Amocrm
 
 	/**
 	 * ОБработка ошибок из API Amo CRM, вывод ошибок.
+	 *
 	 * @param $response_body
 	 *
 	 * @return string
@@ -1344,6 +1566,7 @@ class Amocrm
 			}
 			$error_message .= '<b>' . $k . '</b>: ' . $v . PHP_EOL;
 		}
+
 		return $error_message;
 	}
 

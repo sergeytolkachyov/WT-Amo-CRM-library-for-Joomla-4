@@ -19,15 +19,7 @@ class Wt_amocrm extends CMSPlugin
 
 	public function onAfterInitialise()
 	{
-		/**
-		 * Fix library autoloading
-		 * @see https://github.com/joomla/joomla-cms/pull/39348
-		 * @see https://github.com/joomla/joomla-cms/issues/39347
-		 */
-		if(version_compare(JVERSION, '4.2.5', 'le')){
-			JLoader::registerNamespace('Webtolk\Amocrm', JPATH_LIBRARIES.'/Webtolk/Amocrm/src');
-		}
-
+		\JLoader::registerNamespace('Webtolk\Amocrm', JPATH_LIBRARIES.'/Webtolk/Amocrm/src');
 	}
 
 }

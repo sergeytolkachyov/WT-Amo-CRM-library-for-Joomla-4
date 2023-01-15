@@ -25,8 +25,12 @@ class ContactstagslistField extends ListField
 
 	protected function getOptions()
 	{
+		$requset_options = [];
+		if(isset($this->element['limit']) && !empty($this->element['limit'])){
+			$requset_options['limit'] = (((int) $this->element['limit'] > 250) ? 250 : $this->element['limit'] ); // 250 items max
+		}
 		$amocrm = new Amocrm();
-		$result_amo_crm = $amocrm->getTags('contacts');
+		$result_amo_crm = $amocrm->getTags('contacts',$requset_options);
 		$options = array();
 		if(empty($result_amo_crm)){
 			return $options[] = HTMLHelper::_('select.option', 'there is no tags in Amo CRM');

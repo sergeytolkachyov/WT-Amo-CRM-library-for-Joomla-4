@@ -31,17 +31,7 @@ class PlugininfoField extends NoteField
 	 */
 	protected function getInput()
 	{
-		return ' ';
-	}
-
-	/**
-	 * @return  string  The field label markup.
-	 *
-	 * @since   1.7.0
-	 */
-	protected function getLabel()
-	{
-
+			
 		$data    = $this->form->getData();
 		$element = $data->get('element');
 		$folder  = $data->get('folder');
@@ -75,10 +65,20 @@ class PlugininfoField extends NoteField
 			</div>
 			<div class="flex-grow-1 ms-3">
 				<span class="badge bg-success text-white">v.' . $wt_plugin_info->version . '</span>
-				' . Text::_("PLG_" . strtoupper($element) . "_DESC") . '
+				' . $wt_plugin_info->description . '
 			</div>
 		</div>';
+	}
 
+	/**
+	 * @return  string  The field label markup.
+	 *
+	 * @since   1.7.0
+	 */
+	protected function getLabel()
+	{
+
+		return '';
 
 	}
 

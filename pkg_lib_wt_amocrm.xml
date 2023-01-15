@@ -2,14 +2,19 @@
 <extension type="package" method="upgrade">
 	<name>WT Amo CRM library package</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>05/12/2022</creationDate>
-	<packagename>pkg_lib_wt_amocrm</packagename>
-	<version>1.0.0</version>
+	<creationDate>15/01/2023</creationDate>
+	<packagename>lib_wt_amocrm</packagename>
+	<version>1.1.0</version>
 	<url>https://web-tolk.ru/</url>
 	<packager>Sergey Tolkachyov</packager>
 	<packagerurl>https://web-tolk.ru/dev/joomshopping/wt-sm-otpravka-pochta-ru.html</packagerurl>
 	<description>Amo CRM library with plugin for library settings. For Joomla 4 and higher.</description>
 	<license>GNU GPL 3.0</license>
+	<scriptfile>script.php</scriptfile>
+	<languages>
+		<language tag="ru-RU">language/ru-RU/pkg_lib_wt_amocrm.sys.ini</language>
+		<language tag="en-GB">language/ru-RU/pkg_lib_wt_amocrm.sys.ini</language>
+	</languages>
 	<files>
 	   <file type="library" id="pkg_lib_wt_amocrm">lib_webtolk_amocrm.zip</file>
 	   <file type="plugin" id="pkg_lib_wt_amocrm" group="system">wt_amocrm.zip</file>

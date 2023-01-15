@@ -25,9 +25,10 @@ class LeadstagslistField extends ListField
 
 	protected function getOptions()
 	{
+
 		$requset_options = [];
 		if(isset($this->element['limit']) && !empty($this->element['limit'])){
-			$requset_options['limit'] = (int)$this->element['limit'];
+			$requset_options['limit'] = (((int) $this->element['limit'] > 250) ? 250 : $this->element['limit'] ); // 250 items max
 		}
 		$amocrm = new Amocrm();
 		$result_amo_crm = $amocrm->getTags('leads',$requset_options);
