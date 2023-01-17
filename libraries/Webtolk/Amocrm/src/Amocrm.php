@@ -3,11 +3,11 @@
 /**
  * Library to connect to Amo CRM service.
  * @package     Webtolk
- * @subpackage  Amo CRMrocket
+ * @subpackage  AmoCRM
  * @author      Sergey Tolkachyov
- * @copyright   Copyright (C) Sergey Tolkachyov, 2022. All rights reserved.
- * @version     1.0.1
- * @license     GNU General Public License version 3 or later. Only for *.php files!
+ * @copyright   Copyright (C) Sergey Tolkachyov, 2022-2023. All rights reserved.
+ * @version     1.1.1
+ * @license     GNU General Public License version 3 or later.
  */
 
 namespace Webtolk\Amocrm;
@@ -566,11 +566,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog('Error while trying to get Account info from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to get Account info from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -578,10 +578,10 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog('Error while trying to get get Account info Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get Account info Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -624,11 +624,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog('Error while trying to get lead data by id from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+				 'error_message' => __FUNCTION__.' function: Error while trying to get lead data by id from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -636,10 +636,10 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog('Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog('Error while trying to get lead data by id from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				 'error_message' => __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+				 'error_message' => __FUNCTION__.' function: Error while trying to get lead data by id from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1320,11 +1320,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get user data by id from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get user data by id Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1332,10 +1332,10 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get user data by id Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get user data by id Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;
@@ -1402,11 +1402,11 @@ class Amocrm
 			{
 				$error_message = 'no error description';
 			}
-			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get notes data from Amo CRM. Amo CRM API response: ' . $error_message, 'ERROR');
 
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $error_message
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get notes data from Amo CRM. Amo CRM API response: ' . $error_message
 			);
 
 			return (object) $error_array;
@@ -1414,10 +1414,10 @@ class Amocrm
 		elseif ($response->code >= 500)
 		{
 			// API не работает, сервер лёг. В $response->body отдаётся HTML
-			self::saveToLog( __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
+			self::saveToLog( __FUNCTION__.' function: Error while trying to get notes data from Amo CRM. Amo CRM API response: ' . $response->body, 'ERROR');
 			$error_array = array(
 				'error_code'    => $response->code,
-				'error_message' =>  __FUNCTION__.' function: Error while trying to get Delivery Time via Amo CRM. Amo CRM API response: ' . $response->body
+				'error_message' =>  __FUNCTION__.' function: Error while trying to get notes data from Amo CRM. Amo CRM API response: ' . $response->body
 			);
 
 			return (object) $error_array;

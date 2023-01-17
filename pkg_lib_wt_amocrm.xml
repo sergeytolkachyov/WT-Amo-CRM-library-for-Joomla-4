@@ -2,9 +2,9 @@
 <extension type="package" method="upgrade">
 	<name>WT Amo CRM library package</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>15/01/2023</creationDate>
+	<creationDate>17/01/2023</creationDate>
 	<packagename>lib_wt_amocrm</packagename>
-	<version>1.1.0</version>
+	<version>1.1.1</version>
 	<url>https://web-tolk.ru/</url>
 	<packager>Sergey Tolkachyov</packager>
 	<packagerurl>https://web-tolk.ru/dev/joomshopping/wt-sm-otpravka-pochta-ru.html</packagerurl>
