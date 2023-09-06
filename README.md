@@ -45,12 +45,15 @@ Params:
 ```
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="leadstagslist" limit="100" name="lead_tag_id"/>
 ```
+## How to install
+- [Installing the library in Joomla 4](https://web-tolk.ru/en/dev/joomla-libraries/wt-amo-crm-library/documentation)
+- [How to connect the AmoCRM library to your Joomla extension](https://web-tolk.ru/en/dev/joomla-libraries/wt-amo-crm-library/documentation/kak-podklyuchit-biblioteku-amocrm-v-svojo-rasshirenie-dlya-joomla)
 ## List of library methods
-- getAccountInfo
-- getLeadById
-- createLeads
-- createLeadsComplex
-- getTags
+- [getAccountInfo](https://web-tolk.ru/en/dev/joomla-libraries/wt-amo-crm-library/documentation/method-getaccountinfo)
+- [getLeadById](https://web-tolk.ru/en/dev/joomla-libraries/wt-amo-crm-library/documentation/metod-getleadbyid)
+- [createLeads](https://web-tolk.ru/en/dev/joomla-libraries/wt-amo-crm-library/documentation/method-createleads)
+- [createLeadsComplex](https://web-tolk.ru/en/dev/joomla-libraries/wt-amo-crm-library/documentation/method-createleadscomplex)
+- [getTags](https://web-tolk.ru/en/dev/joomla-libraries/wt-amo-crm-library/documentation/method-gettags)
 - getLeadsPiplines
 - getLeadsCustomFields
 - getContactsCustomFields
