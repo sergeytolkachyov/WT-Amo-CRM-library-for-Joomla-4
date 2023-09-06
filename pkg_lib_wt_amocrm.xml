@@ -22,4 +22,5 @@
 	<updateservers>
 			<server type="extension" name="Web-Tolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate.html?element=pkg_lib_wt_amocrm</server>
 	</updateservers>
+	<changelogurl>https://web-tolk.ru/jchangelog?element=pkg_lib_wt_amocrm</changelogurl>
 </extension>
