@@ -18,27 +18,27 @@ Outputs html with data about the Amo CRM account. Example of using Joomla 4 modu
 ```
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="accountinfo" name="accountinfo"/>
 ```
-#### Companiestagslist - Companies tags list 
+#### Companiestagslist -Companies tags list
 A list of tags for companies in Amo CRM. An example of using Joomla 4 modules and plugins in XML manifests.
 ```
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="companiestagslist" name="company_tag_id"/>
 ```
-#### Contactstagslist - Contacts tags list
+#### Contactstagslist -Contacts tags list
 A list of tags for contacts in Amo CRM. An example of using Joomla 4 modules and plugins in XML manifests.
 ```
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="contactstagslist" name="contact_tag_id"/>
 ```
-#### Leadcustomfieldslist - Lead custom fields list
+#### Leadcustomfieldslist -Lead custom fields list
 A list of custom Amo CRM fields for transactions.
 ```
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="leadcustomfieldslist" name="lead_custom_field_id"/>
 ```
-#### Leadspipelineslist - Leads pipelines list
+#### Leadspipelineslist -Leads pipelines list
 List of Amo CRM sales funnels.
 ```
 <field addfieldprefix="Webtolk\Amocrm\Fields" type="leadspipelineslist" name="pipeline_id"/>
 ```
-#### Leadstagslist - Leads tags list
+#### Leadstagslist -Leads tags list
 List of tags for deals. 
 Params:
 - limit - tags count in list. Max 250

@@ -1,170 +1,227 @@
 <?php
-// No direct access to this file
-defined('_JEXEC') or die('Restricted access');
-use Joomla\CMS\Factory;
-use Joomla\CMS\Installer\Installer;
-use Joomla\CMS\Installer\InstallerHelper;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\CMS\Version;
-use Joomla\CMS\Helper\LibraryHelper;
-use Joomla\CMS\Cache\Cache;
-
 /**
- * Script file of HelloWorld component.
- *
- * The name of this class is dependent on the component being installed.
- * The class name should have the component's name, directly followed by
- * the text InstallerScript (ex:. com_helloWorldInstallerScript).
- *
- * This class will be called by Joomla!'s installer, if specified in your component's
- * manifest file, and is used for custom automation actions in its installation process.
- *
- * In order to use this automation script, you should reference it in your component's
- * manifest file as follows:
- * <scriptfile>script.php</scriptfile>
- *
- * @package     Joomla.Administrator
- * @subpackage  com_helloworld
- *
- * @copyright   Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ * @package       WT Amocrm Library
+ * @version       1.1.2
+ * @Author        Sergey Tolkachyov, https://web-tolk.ru
+ * @сopyright (c) 2022 - September 2023 Sergey Tolkachyov. All rights reserved.
+ * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since         1.0.0
  */
-class pkg_lib_wt_amocrmInstallerScript
-{
-    /**
-     * This method is called after a component is installed.
-     *
-     * @param  \stdClass $installer - Parent object calling this method.
-     *
-     * @return void
-     */
-    public function install($installer)
-    {
-	
+\defined('_JEXEC') or die;
 
-    }
+use Joomla\CMS\Application\AdministratorApplication;
+use Joomla\CMS\Cache\Cache;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Helper\LibraryHelper;
+use Joomla\CMS\Installer\InstallerAdapter;
+use Joomla\CMS\Installer\InstallerScriptInterface;
+use Joomla\CMS\Language\Text;
+use Joomla\Database\DatabaseDriver;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
 
-    /**
-     * This method is called after a component is uninstalled.
-     *
-     * @param  \stdClass $installer - Parent object calling this method.
-     *
-     * @return void
-     */
-    public function uninstall($installer) 
-    {
+return new class () implements ServiceProviderInterface {
+	public function register(Container $container)
+	{
+		$container->set(InstallerScriptInterface::class, new class ($container->get(AdministratorApplication::class)) implements InstallerScriptInterface {
 
-		
-    }
+			/**
+			 * The application object
+			 *
+			 * @var  AdministratorApplication
+			 *
+			 * @since  1.0.0
+			 */
+			protected AdministratorApplication $app;
 
-    /**
-     * This method is called after a component is updated.
-     *
-     * @param  \stdClass $installer - Parent object calling object.
-     *
-     * @return void
-     */
-    public function update($installer) 
-    {
-		
-		
-    }
+			/**
+			 * The Database object.
+			 *
+			 * @var   DatabaseDriver
+			 *
+			 * @since  1.0.0
+			 */
+			protected DatabaseDriver $db;
 
-    /**
-     * Runs just before any installation action is performed on the component.
-     * Verifications and pre-requisites should run in this function.
-     *
-     * @param  string    $type   - Type of PreFlight action. Possible values are:
-     *                           - * install
-     *                           - * update
-     *                           - * discover_install
-     * @param  \stdClass $installer - Parent object calling object.
-     *
-     * @return void
-     */
-    public function preflight($type, $installer) 
-    {
-		/**
-		 *  в версии 1.0.0 не правильно наименовал element библиотеки, 
-		 *  из-за чего получалось задваивание 'pkg_pkg_'. Удаляем запись в базе.
-		 *  
-		 */
-		$db = Factory::getContainer()->get('DatabaseDriver');
-		$query = $db->getQuery(true);
-			$query->select($db->quoteName(array('extension_id', 'enabled')))
-						->from($db->quoteName('#__extensions'))
-						->where($db->quoteName('element') . ' = ' . $db->quote('pkg_pkg_lib_wt_amocrm'));
-		$result = $db->setQuery($query)->loadObject();
-		
-		if(isset($result->extension_id) && !empty($result->extension_id))
-		{
-			$query->clear();
-			$query->delete($db->quoteName('#__extensions'))
-                        ->where($db->quoteName('extension_id') . ' = '.$db->quote($result->extension_id));
-			$db->setQuery($query)->execute();
-		}
-		
-		/**
-		 *  
-		 *  Joomla при обновлении расширений типа library по факту удаляет их (вместе с данными в базе), 
-		 *  а потом устанавливает заново. 
-		 *  Дабы избежать потерь данных библиотеки из базы пишем этот костыль. 
-		 *  
-		 *  @see https://github.com/joomla/joomla-cms/issues/39360
-		 *  
-		 */
-		
-		if($type == 'update'){
-			$lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
-			$jconfig = Factory::getConfig();
-			$options = array(
-				'defaultgroup' => 'wt_amo_crm_temp',
-				'caching'      => true,
-				'cachebase'    => $jconfig->get('cache_path'),
-				'storage'      => $jconfig->get('cache_handler'),
-			);
-			$cache   = Cache::getInstance('', $options);
-			$cache->store($lib_params, 'wt_amo_crm_temp');
+			/**
+			 * Minimum Joomla version required to install the extension.
+			 *
+			 * @var  string
+			 *
+			 * @since  1.0.0
+			 */
+			protected string $minimumJoomla = '4.0';
 
-		}
+			/**
+			 * Minimum PHP version required to install the extension.
+			 *
+			 * @var  string
+			 *
+			 * @since  1.0.0
+			 */
+			protected string $minimumPhp = '7.4';
 
-    }
-	
+			/**
+			 * Constructor.
+			 *
+			 * @param   AdministratorApplication  $app  The application object.
+			 *
+			 * @since 1.0.0
+			 */
+			public function __construct(AdministratorApplication $app)
+			{
+				$this->app = $app;
+				$this->db  = Factory::getContainer()->get('DatabaseDriver');
+			}
+
+			/**
+			 * This method is called after a component is installed.
+			 *
+			 * @param   \stdClass  $installer  - Parent object calling this method.
+			 *
+			 * @return void
+			 */
+			public function install(InstallerAdapter $adapter): bool
+			{
+
+				return true;
+
+			}
+
+			/**
+			 * Function called after the extension is uninstalled.
+			 *
+			 * @param   InstallerAdapter  $adapter  The adapter calling this method
+			 *
+			 * @return  boolean  True on success
+			 *
+			 * @since   1.0.0
+			 */
+			public function uninstall(InstallerAdapter $adapter): bool
+			{
+
+				return true;
+			}
+
+			/**
+			 * Function called after the extension is updated.
+			 *
+			 * @param   InstallerAdapter  $adapter  The adapter calling this method
+			 *
+			 * @return  boolean  True on success
+			 *
+			 * @since   1.0.0
+			 */
+			public function update(InstallerAdapter $adapter): bool
+			{
+
+				return true;
+
+			}
+
+			/**
+			 * Function called before extension installation/update/removal procedure commences.
+			 *
+			 * @param   string            $type     The type of change (install or discover_install, update, uninstall)
+			 * @param   InstallerAdapter  $adapter  The adapter calling this method
+			 *
+			 * @return  boolean  True on success
+			 *
+			 * @since   1.0.0
+			 */
+			public function preflight(string $type, InstallerAdapter $adapter): bool
+			{
+				if ($type == 'uninstall')
+				{
+					return true;
+				}
+
+				/**
+				 *
+				 *  Joomla при обновлении расширений типа library по факту удаляет их (вместе с данными в базе),
+				 *  а потом устанавливает заново.
+				 *  Дабы избежать потерь данных библиотеки из базы пишем этот костыль.
+				 *
+				 * @see https://github.com/joomla/joomla-cms/issues/39360
+				 *
+				 */
+
+				if ($type == 'update')
+				{
+					$lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
+					$jconfig    = $this->app->getConfig();
+					$options    = array(
+						'defaultgroup' => 'wt_amo_crm_temp',
+						'caching'      => true,
+						'cachebase'    => $jconfig->get('cache_path'),
+						'storage'      => $jconfig->get('cache_handler'),
+					);
+					$cache      = Cache::getInstance('', $options);
+					$cache->store($lib_params, 'wt_amo_crm_temp');
+
+				}
+
+				return true;
+
+			}
 
 
-    /**
-     * Runs right after any installation action is performed on the component.
-     *
-     * @param  string    $type   - Type of PostFlight action. Possible values are:
-     *                           - * install
-     *                           - * update
-     *                           - * discover_install
-     * @param  \stdClass $installer - Parent object calling object.
-     *
-     * @return void
-     */
-    function postflight($type, $installer)
-    {
-	    $smile = '';
-	    if($type != 'uninstall')
-	    {
-		    $smiles    = ['&#9786;', '&#128512;', '&#128521;', '&#128525;', '&#128526;', '&#128522;', '&#128591;'];
-		    $smile_key = array_rand($smiles, 1);
-		    $smile     = $smiles[$smile_key];
-	    }
+			/**
+			 * Function called after extension installation/update/removal procedure commences.
+			 *
+			 * @param   string            $type     The type of change (install or discover_install, update, uninstall)
+			 * @param   InstallerAdapter  $adapter  The adapter calling this method
+			 *
+			 * @return  boolean  True on success
+			 *
+			 * @since   1.0.0
+			 */
+			public function postflight(string $type, InstallerAdapter $adapter): bool
+			{
 
-	    $element = strtoupper($installer->getElement());
-		echo "
+				/**
+				 *
+				 *  Joomla при обновлении расширений типа library по факту удаляет их (вместе с данными в базе),
+				 *  а потом устанавливает заново.
+				 *  Дабы избежать потерь данных библиотеки из базы пишем этот костыль.
+				 *   Здесь сохраняем заново данные библиотеки в базу данных.
+				 * @see https://github.com/joomla/joomla-cms/issues/39360
+				 *
+				 */
+				if ($type == 'update')
+				{
+					$jconfig    = $this->app->getConfig();
+					$options    = array(
+						'defaultgroup' => 'wt_amo_crm_temp',
+						'caching'      => true,
+						'cachebase'    => $jconfig->get('cache_path'),
+						'storage'      => $jconfig->get('cache_handler'),
+					);
+					$cache      = Cache::getInstance('', $options);
+					$lib_params = $cache->get('wt_amo_crm_temp');
+					LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params);
+					$cache->clean('wt_amo_crm_temp');
+				}
+
+				$smile = '';
+				if ($type != 'uninstall')
+				{
+					$smiles    = ['&#9786;', '&#128512;', '&#128521;', '&#128525;', '&#128526;', '&#128522;', '&#128591;'];
+					$smile_key = array_rand($smiles, 1);
+					$smile     = $smiles[$smile_key];
+				}
+
+				$element = strtoupper($adapter->getElement());
+				echo "
 		<div class='row bg-white m-3 p-3 shadow-sm border'>
 		<div class='col-12 col-lg-8'>
-		<h2>".$smile." ".Text::_($element."_AFTER_".strtoupper($type))." <br/>".Text::_($element)."</h2>
-		".Text::_($element."_DESC");
-		
-		
-			echo Text::_($element."_WHATS_NEW");
+		<h2>" . $smile . " " . Text::_($element . "_AFTER_" . strtoupper($type)) . " <br/>" . Text::_($element) . "</h2>
+		" . Text::_($element . "_DESC");
 
-		echo "</div>
+
+				echo Text::_($element . "_WHATS_NEW");
+
+				echo "</div>
 		<div class='col-12 col-lg-4 d-flex flex-column justify-content-start'>
 		<img width='200px' src='https://web-tolk.ru/web_tolk_logo_wide.png'>
 		<p>Joomla Extensions</p>
@@ -174,33 +231,35 @@ class pkg_lib_wt_amocrmInstallerScript
 		</p>
 		<p><a class='btn btn-info' href='https://t.me/joomlaru' target='_blank'>Joomla Russian Community in Telegram</a></p>
 		
-		".Text::_($element."_MAYBE_INTERESTING")."
+		" . Text::_($element . "_MAYBE_INTERESTING") . "
 		</div>
 
+		";
 
-		";		
-	
-		/**
-		 *  
-		 *  Joomla при обновлении расширений типа library по факту удаляет их (вместе с данными в базе), 
-		 *  а потом устанавливает заново. 
-		 *  Дабы избежать потерь данных библиотеки из базы пишем этот костыль. 
-		 *   Здесь сохраняем заново данные библиотеки в базу данных.
-		 *  @see https://github.com/joomla/joomla-cms/issues/39360
-		 *  
-		 */
-	
-			$jconfig = Factory::getConfig();
-			$options = array(
-				'defaultgroup' => 'wt_amo_crm_temp',
-				'caching'      => true,
-				'cachebase'    => $jconfig->get('cache_path'),
-				'storage'      => $jconfig->get('cache_handler'),
-			);
-			$cache   = Cache::getInstance('', $options);
-			$lib_params = $cache->get('wt_amo_crm_temp');
-			LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params);
-			$cache->clean('wt_amo_crm_temp');
-	
-    }
-}
+
+				return true;
+			}
+
+			/**
+			 * Enable plugin after installation.
+			 *
+			 * @param   InstallerAdapter  $adapter  Parent object calling object.
+			 *
+			 * @since  1.0.0
+			 */
+			protected function enablePlugin(InstallerAdapter $adapter)
+			{
+				// Prepare plugin object
+				$plugin          = new \stdClass();
+				$plugin->type    = 'plugin';
+				$plugin->element = $adapter->getElement();
+				$plugin->folder  = (string) $adapter->getParent()->manifest->attributes()['group'];
+				$plugin->enabled = 1;
+
+				// Update record
+				$this->db->updateObject('#__extensions', $plugin, ['type', 'element', 'folder']);
+			}
+
+		});
+	}
+};
