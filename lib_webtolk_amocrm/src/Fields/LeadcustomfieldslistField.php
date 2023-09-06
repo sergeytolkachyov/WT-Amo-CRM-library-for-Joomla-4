@@ -7,6 +7,7 @@
  * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since         1.0.0
  */
+
 namespace Webtolk\Amocrm\Fields;
 defined('_JEXEC') or die;
 
@@ -25,17 +26,18 @@ class LeadcustomfieldslistField extends ListField
 	protected function getOptions()
 	{
 
-		$amocrm = new Amocrm();
+		$amocrm         = new Amocrm();
 		$result_amo_crm = $amocrm->getLeadsCustomFields();
-		$options = array();
-		if(empty($result_amo_crm)){
+		$options        = array();
+		if (empty($result_amo_crm))
+		{
 			return $options[] = HTMLHelper::_('select.option', 0, 'there is no custom_fields in Amo CRM');
 		}
 		if (isset($result_amo_crm->_embedded) && isset($result_amo_crm->_embedded->custom_fields))
 		{
 			foreach ($result_amo_crm->_embedded->custom_fields as $lead_custom_field)
 			{
-				$options[] = HTMLHelper::_('select.option', $lead_custom_field->id, $lead_custom_field->name.' (type: '.$lead_custom_field->type.')');
+				$options[] = HTMLHelper::_('select.option', $lead_custom_field->id, $lead_custom_field->name . ' (type: ' . $lead_custom_field->type . ')');
 			}
 
 			return $options;

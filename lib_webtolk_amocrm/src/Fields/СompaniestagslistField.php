@@ -26,16 +26,25 @@ class СompaniestagslistField extends ListField
 	protected function getOptions()
 	{
 
-		$result_amo_crm = Amocrm::getTags('companies');
-		$options = array();
-		if(empty($result_amo_crm)){
+		$requset_options = [];
+		if (isset($this->element['limit']) && !empty($this->element['limit']))
+		{
+			$requset_options['limit'] = (((int) $this->element['limit'] > 250) ? 250 : $this->element['limit']); // 250 items max
+		}
+
+		$amocrm         = new Amocrm();
+		$result_amo_crm = $amocrm->getTags('companies', $requset_options);
+
+		$options        = array();
+		if (empty($result_amo_crm))
+		{
 			return $options[] = HTMLHelper::_('select.option', 'there is no tags in Amo CRM');
 		}
 		if (isset($result_amo_crm->_embedded) && isset($result_amo_crm->_embedded->tags))
 		{
 			foreach ($result_amo_crm->_embedded->tags as $company_tag)
 			{
-				$options[] = HTMLHelper::_('select.option', $company_tag->id, $company_tag->name);
+				$options[] = HTMLHelper::_('select.option', $company_tag->id, $company_tag->name . ' (id: ' . $company_tag->id . ')');
 			}
 
 			return $options;

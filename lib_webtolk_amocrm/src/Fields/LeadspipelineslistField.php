@@ -25,20 +25,20 @@ class LeadspipelineslistField extends ListField
 
 	protected function getOptions()
 	{
-		$amocrm = new Amocrm();
+		$amocrm         = new Amocrm();
 		$result_amo_crm = $amocrm->getLeadsPiplines();
 
 		$options = array();
-		if(empty($result_amo_crm)){
+		if (empty($result_amo_crm))
+		{
 			return $options[] = HTMLHelper::_('select.option', 0, 'there is no tags in Amo CRM');
 		}
 		if (isset($result_amo_crm->_embedded) && isset($result_amo_crm->_embedded->pipelines))
 		{
 			foreach ($result_amo_crm->_embedded->pipelines as $pipeline)
 			{
-				$options[] = HTMLHelper::_('select.option', $pipeline->id, $pipeline->name);
+				$options[] = HTMLHelper::_('select.option', $pipeline->id, $pipeline->name . ' (id: ' . $pipeline->id . ')');
 			}
-
 
 
 		}
@@ -47,6 +47,7 @@ class LeadspipelineslistField extends ListField
 			Factory::getApplication()->enqueueMessage($result_amo_crm->error . " " . $result_amo_crm->error_description, 'error');
 
 		}
+
 		return $options;
 	}
 }
