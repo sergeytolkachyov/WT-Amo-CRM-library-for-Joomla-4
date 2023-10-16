@@ -29,8 +29,9 @@
                        name="amocrm_redirect_uri"/>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="clearrefreshtokenbtn"
-                       label="Clear refresh token"
-                       description="Clear refresh token from Joomla database"
+                       label="Clear refresh token from library settings"
+                       description="Clear refresh token from Joomla database. You should use this button only when your refresh token has been expired and you need to remove it from library settings."
+                       class="d-flex"
                        name="clear_refresh_token_btn"/>
             </fieldset>
         </fields>

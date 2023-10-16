@@ -69,15 +69,16 @@ class ClearrefreshtokenbtnField extends FormField
 		);
 		$lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
 		$refresh_token_date = $lib_params->get('refresh_token_date','');
-		$html = [];
-		if(!empty($refresh_token_date)){
+		$html = ['<div class="d-flex align-items-center">'];
+
+		if(property_exists($refresh_token_date,'date') && !empty($refresh_token_date->date)){
 			$html[] = '<span class="badge bg-success">Refresh token date:</span> <span class="badge bg-info text-white">'.$refresh_token_date->date.'</span><br/>';
 		}
 
-		$html[] = '<button type="button" class="btn btn-small button-apply btn-warning" id="clear_refresh_token_btn">Clear</button>
-			<span id="clear_refresh_token_response_container" class="text-success"></span>
+		$html[] = '<button type="button" class="btn btn-sm button-apply btn-warning ms-2" id="clear_refresh_token_btn">Clear</button>
+			<span id="clear_refresh_token_response_container" class="text-success ms-2"></span>
 			';
-
+		$html[] = '</div>';
 
 
 		return implode('',$html);
