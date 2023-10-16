@@ -1,7 +1,7 @@
 <?php
 /**
  * @package       WT Amocrm Library
- * @version       1.1.2
+ * @version       __DEPLOY_VERSION__
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
  * @сopyright (c) 2022 - September 2023 Sergey Tolkachyov. All rights reserved.
  * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -11,13 +11,13 @@
 namespace Joomla\Plugin\System\Wt_amocrm\Fields;
 defined('_JEXEC') or die;
 
-use Joomla\CMS\Form\Field\NoteField;
+use Joomla\CMS\Form\FormField;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
 
 
-class RedirecturlField extends NoteField
+class RedirecturlField extends FormField
 {
 
 	protected $type = 'Redirecturl';
@@ -126,10 +126,7 @@ class RedirecturlField extends NoteField
 	 */
 	protected function getLabel()
 	{
-		if (empty($this->element['label'])) {
-			return '';
-		}
-		return $this->element['label'];
+		return $this->element['label'] ? (string) $this->element['label'] : (string) $this->element['name'];
 	}
 
 	/**
