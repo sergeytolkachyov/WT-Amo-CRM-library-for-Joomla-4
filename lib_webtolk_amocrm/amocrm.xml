@@ -2,9 +2,9 @@
 <extension type="library" method="upgrade">
 	<name>WebTolk AmoCRM library</name>
 	<libraryname>Webtolk/Amocrm</libraryname>
-	<version>1.1.3-dev</version>
+	<version>1.2.0</version>
 	<description>AmoCRM connection library</description>
-	<creationDate>September 2023</creationDate>
+	<creationDate>October 2023</creationDate>
 	<copyright>2022-2023 Sergey Tolkachyov</copyright>
 	<license>GNU/GPL 3.0</license>
 	<author>Sergey Tolkachyov</author>
