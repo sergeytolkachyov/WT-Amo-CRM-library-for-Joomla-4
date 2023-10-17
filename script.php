@@ -212,30 +212,28 @@ return new class () implements ServiceProviderInterface {
 				}
 
 				$element = strtoupper($adapter->getElement());
-				echo "
-		<div class='row bg-white m-3 p-3 shadow-sm border'>
-		<div class='col-12 col-lg-8'>
-		<h2>" . $smile . " " . Text::_($element . "_AFTER_" . strtoupper($type)) . " <br/>" . Text::_($element) . "</h2>
-		" . Text::_($element . "_DESC");
+				$type = strtoupper($type);
+				$html = '
+				<div class="row bg-white m-0">
+				<div class="col-12 col-md-8 p-0 pe-2">
+				<h2>'.$smile.' '.Text::_($element.'_AFTER_'.$type).' <br/>'.Text::_($element).'</h2>
+				'.Text::_($element.'_DESC');
 
+				$html .= Text::_($element.'_WHATS_NEW');
 
-				echo Text::_($element . "_WHATS_NEW");
+				$html .= '</div>
+				<div class="col-12 col-md-4 p-0 d-flex flex-column justify-content-start">
+				<img width="180" src="https://web-tolk.ru/web_tolk_logo_wide.png">
+				<p>Joomla Extensions</p>
+				<p class="btn-group">
+					<a class="btn btn-sm btn-outline-primary" href="https://web-tolk.ru" target="_blank"> https://web-tolk.ru</a>
+					<a class="btn btn-sm btn-outline-primary" href="mailto:info@web-tolk.ru"><i class="icon-envelope"></i> info@web-tolk.ru</a>
+				</p>
+				'.Text::_($element."_MAYBE_INTERESTING").'
+				</div>
 
-				echo "</div>
-		<div class='col-12 col-lg-4 d-flex flex-column justify-content-start'>
-		<img width='200px' src='https://web-tolk.ru/web_tolk_logo_wide.png'>
-		<p>Joomla Extensions</p>
-		<p class='btn-group'>
-			<a class='btn btn-sm btn-outline-primary' href='https://web-tolk.ru' target='_blank'>https://web-tolk.ru</a>
-			<a class='btn btn-sm btn-outline-primary' href='mailto:info@web-tolk.ru'><i class='icon-envelope'></i> info@web-tolk.ru</a>
-		</p>
-		<p><a class='btn btn-info' href='https://t.me/joomlaru' target='_blank'>Joomla Russian Community in Telegram</a></p>
-		
-		" . Text::_($element . "_MAYBE_INTERESTING") . "
-		</div>
-
-		";
-
+				';
+				$this->app->enqueueMessage($html, 'info');
 
 				return true;
 			}
