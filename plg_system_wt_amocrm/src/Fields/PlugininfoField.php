@@ -65,7 +65,7 @@ class PlugininfoField extends NoteField
 			</div>
 			<div class="flex-grow-1 ms-3">
 				<span class="badge bg-success text-white">v.' . $wt_plugin_info->version . '</span>
-				' . $wt_plugin_info->description . '
+				' . Text::_("PLG_".strtoupper($element)."_DESC") . '
 			</div>
 		</div>';
 	}

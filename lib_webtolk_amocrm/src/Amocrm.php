@@ -44,7 +44,7 @@ class Amocrm
 	protected static $token;
 
 
-	private static function getResponse($url, $data = null, $request_method, $content_type = null)
+	private static function getResponse($url, $data = null, $request_method = 'POST', $content_type = null)
 	{
 		if (PluginHelper::isEnabled('system', 'wt_amocrm'))
 		{
@@ -53,7 +53,10 @@ class Amocrm
 			$amocrm_domain = (!empty($params->amocrm_domain) ? 'https://' . $params->amocrm_domain : '');
 			if(empty($amocrm_domain)){
 				self::saveToLog(' Plugin System - WT Amo CRM: there is no credentials data', 'ERROR');
+				//@todo Переписать этот массив и работу с ним в файлах полей так, чтобы был универсальный объект по одной структуре
 				$error_array = array(
+					'code'    => 500,
+					'body'    => 'There is no Amo CRM domain specified',
 					'error_code'    => 500,
 					'error_message' => __FUNCTION__.' function: Plugin System - WT Amo CRM. There is no credentials data'
 				);

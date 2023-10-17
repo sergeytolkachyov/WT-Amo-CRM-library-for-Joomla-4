@@ -17,21 +17,37 @@
     <config>
         <fields name="params">
             <fieldset name="basic">
-                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields" type="plugininfo" name="plugininfo"/>
-                <field addfieldprefix="Webtolk\Amocrm\Fields" type="accountinfo" name="accountinfo"/>
-                <field type="text" name="amocrm_domain" label="Amo CRM domain" hint="mydomain.amocrm.com, without https etc."/>
-                <field type="text" name="amocrm_client_id" label="Client ID (integration ID)"/>
-                <field type="password" name="amocrm_client_secret" label="Client secret"/>
-                <field type="text" name="amocrm_code" label="Auth code"/>
+                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
+                       type="plugininfo"
+                       name="plugininfo"/>
+                <field addfieldprefix="Webtolk\Amocrm\Fields"
+                       type="accountinfo"
+                       name="accountinfo"/>
+                <field type="text"
+                       name="amocrm_domain"
+                       label="Amo CRM domain"
+                       description="PLG_WT_AMOCRM_AMOCRM_DOMAIN_DESC"
+                       hint="PLG_WT_AMOCRM_AMOCRM_DOMAIN_HINT"/>
+                <field type="text"
+                       name="amocrm_client_id"
+                       label="PLG_WT_AMOCRM_AMOCRM_CLIENT_ID"
+                       description="PLG_WT_AMOCRM_AMOCRM_CLIENT_ID_DESC"/>
+                <field type="password"
+                       name="amocrm_client_secret"
+                       label="PLG_WT_AMOCRM_AMOCRM_CLIENT_SECRET"
+                       description="PLG_WT_AMOCRM_AMOCRM_CLIENT_SECRET_DESC"/>
+                <field type="text"
+                       name="amocrm_code"
+                       label="PLG_WT_AMOCRM_AMOCRM_CODE"
+                       description="PLG_WT_AMOCRM_AMOCRM_CODE_DESC"/>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="redirecturl"
-                       label="Redirect URL"
+                       label="PLG_WT_AMOCRM_AMOCRM_REDIRECT_URI"
+                       description="PLG_WT_AMOCRM_AMOCRM_REDIRECT_URI_DESC"
                        name="amocrm_redirect_uri"/>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="clearrefreshtokenbtn"
-                       label="Clear refresh token from library settings"
-                       description="Clear refresh token from Joomla database. You should use this button only when your refresh token has been expired and you need to remove it from library settings."
-                       class="d-flex"
+                       label="PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN"
                        name="clear_refresh_token_btn"/>
             </fieldset>
         </fields>

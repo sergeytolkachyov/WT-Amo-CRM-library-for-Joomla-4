@@ -126,7 +126,7 @@ class RedirecturlField extends FormField
 	 */
 	protected function getLabel()
 	{
-		return $this->element['label'] ? (string) $this->element['label'] : (string) $this->element['name'];
+		return Text::_(($this->element['label'] ? (string) $this->element['label'] : (string) $this->element['name']));
 	}
 
 	/**

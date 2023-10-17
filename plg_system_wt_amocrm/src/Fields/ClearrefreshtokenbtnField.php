@@ -72,13 +72,13 @@ class ClearrefreshtokenbtnField extends FormField
 		$html = ['<div class="d-flex align-items-center">'];
 
 		if(property_exists($refresh_token_date,'date') && !empty($refresh_token_date->date)){
-			$html[] = '<span class="badge bg-success">Refresh token date:</span> <span class="badge bg-info text-white">'.$refresh_token_date->date.'</span><br/>';
+			$html[] = '<span class="badge bg-success">'.Text::_('PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_DATE').':</span> <span class="badge bg-info text-white">'.$refresh_token_date->date.'</span><br/>';
 		}
 
-		$html[] = '<button type="button" class="btn btn-sm button-apply btn-warning ms-2" id="clear_refresh_token_btn">Clear</button>
+		$html[] = '<button type="button" class="btn btn-sm button-apply btn-warning ms-2" id="clear_refresh_token_btn">'.Text::_('PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN_LABEL').'</button>
 			<span id="clear_refresh_token_response_container" class="text-success ms-2"></span>
 			';
-		$html[] = '</div>';
+		$html[] = '</div><div class="text-muted fs-6">'.Text::_('PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN_DESC').'</div>';
 
 
 		return implode('',$html);
@@ -91,7 +91,7 @@ class ClearrefreshtokenbtnField extends FormField
 	 */
 	protected function getLabel()
 	{
-		return $this->element['label'] ? (string) $this->element['label'] : (string) $this->element['name'];
+		return Text::_(($this->element['label'] ? (string) $this->element['label'] : (string) $this->element['name']));
 	}
 
 	/**
