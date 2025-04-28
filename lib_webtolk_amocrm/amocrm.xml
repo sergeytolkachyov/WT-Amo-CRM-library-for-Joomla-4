@@ -17,6 +17,7 @@
 	</languages>
 	<files>
 		<folder>src</folder>
+		<folder>language</folder>
 		<filename>amocrm.xml</filename>
 	</files>
 </extension>

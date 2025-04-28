@@ -20,7 +20,7 @@
 	   <folder type="plugin" id="Webtolk/Amocrm" group="system">plg_system_wt_amocrm</folder>
 	</files>
 	<updateservers>
-			<server type="extension" name="Web-Tolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate.html?element=pkg_lib_wt_amocrm</server>
+			<server type="extension" name="WebTolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate?element=pkg_lib_wt_amocrm</server>
 	</updateservers>
 	<changelogurl>https://web-tolk.ru/jchangelog?element=pkg_lib_wt_amocrm</changelogurl>
 </extension>

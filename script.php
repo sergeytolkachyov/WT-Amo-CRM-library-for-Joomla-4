@@ -51,7 +51,7 @@ return new class () implements ServiceProviderInterface {
 			 *
 			 * @since  1.0.0
 			 */
-			protected string $minimumJoomla = '4.0';
+			protected string $minimumJoomla = '4.2.7';
 
 			/**
 			 * Minimum PHP version required to install the extension.

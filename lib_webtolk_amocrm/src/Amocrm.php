@@ -252,7 +252,9 @@ class Amocrm
             'storage'      => $jconfig->get('cache_handler'),
         ];
 
-        $cache      = Factory::getContainer()->get(CacheControllerFactoryInterface::class)->createCacheController(
+        $cache      = Factory::getContainer()
+            ->get(CacheControllerFactoryInterface::class)
+            ->createCacheController(
             '',
             $options
         );
