@@ -1,9 +1,9 @@
 <?php
 /**
  * @package       WT Amocrm Library
- * @version       1.2.1
+ * @version       1.3.0-alpha1
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @сopyright (c) 2022 - October 2023 Sergey Tolkachyov. All rights reserved.
+ * @сopyright (c) 2022 - April 2025 Sergey Tolkachyov. All rights reserved.
  * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since         1.0.0
  */
@@ -11,6 +11,7 @@
 
 use Joomla\CMS\Application\AdministratorApplication;
 use Joomla\CMS\Cache\Cache;
+use Joomla\CMS\Cache\CacheControllerFactoryInterface;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Helper\LibraryHelper;
 use Joomla\CMS\Installer\InstallerAdapter;
@@ -150,13 +151,16 @@ return new class () implements ServiceProviderInterface {
 				{
 					$lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
 					$jconfig    = $this->app->getConfig();
-					$options    = array(
+					$options    = [
 						'defaultgroup' => 'wt_amo_crm_temp',
 						'caching'      => true,
 						'cachebase'    => $jconfig->get('cache_path'),
 						'storage'      => $jconfig->get('cache_handler'),
-					);
-					$cache      = Cache::getInstance('', $options);
+					];
+
+                    $cache      = Factory::getContainer()
+                                        ->get(CacheControllerFactoryInterface::class)
+                                        ->createCacheController('', $options);
 					$cache->store($lib_params, 'wt_amo_crm_temp');
 
 				}
@@ -191,13 +195,15 @@ return new class () implements ServiceProviderInterface {
 				if ($type == 'update')
 				{
 					$jconfig    = $this->app->getConfig();
-					$options    = array(
+					$options    = [
 						'defaultgroup' => 'wt_amo_crm_temp',
 						'caching'      => true,
 						'cachebase'    => $jconfig->get('cache_path'),
 						'storage'      => $jconfig->get('cache_handler'),
-					);
-					$cache      = Cache::getInstance('', $options);
+					];
+                    $cache      = Factory::getContainer()
+                                    ->get(CacheControllerFactoryInterface::class)
+                                    ->createCacheController('', $options);
 					$lib_params = $cache->get('wt_amo_crm_temp');
 					LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params);
 					$cache->clean('wt_amo_crm_temp');
