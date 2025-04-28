@@ -9,16 +9,17 @@
  */
 
 namespace Joomla\Plugin\System\Wt_amocrm\Extension;
-// No direct access
-defined('_JEXEC') or die;
 
-use Joomla\CMS\Factory;
 use Joomla\CMS\Helper\LibraryHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Session\Session;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
+use function defined;
+
+// No direct access
+defined('_JEXEC') or die;
 
 class Wt_amocrm extends CMSPlugin implements SubscriberInterface
 {
@@ -39,12 +40,24 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface
 		];
 	}
 
+	/**
+	 * Will be removed. Minimum Joomla version has been rised to 4.2.7
+	 *
+	 * @deprecated 1.3.0
+	 * @since 1.0.0
+	 */
 	public function onAfterInitialise() : void
 	{
 		\JLoader::registerNamespace('Webtolk\Amocrm', JPATH_LIBRARIES.'/Webtolk/Amocrm/src');
 	}
 
 
+	/**
+	 * @param $event
+	 *
+	 *
+	 * @since version
+	 */
 	public function onAjaxWt_amocrm($event) : void
 	{
 
@@ -53,7 +66,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface
 			die();
 		}
 
-		$action = Factory::getApplication()->getInput()->getCmd('action');
+		$action = $this->getApplication()->getInput()->getCmd('action');
 
 		$action_result_message = '';
 		/**

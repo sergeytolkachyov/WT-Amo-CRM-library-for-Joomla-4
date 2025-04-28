@@ -34,7 +34,9 @@ return new class implements ServiceProviderInterface {
 			function (Container $container) {
 				$subject = $container->get(DispatcherInterface::class);
 				$config  = (array) PluginHelper::getPlugin('system', 'wt_amocrm');
-				return new Wt_amocrm($subject, $config);
+				$plugin = new Wt_amocrm($subject, $config);
+				$plugin->setApplication(\Joomla\CMS\Factory::getApplication());
+				return $plugin;
 			}
 		);
 	}
