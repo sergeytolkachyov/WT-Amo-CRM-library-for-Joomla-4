@@ -16,8 +16,8 @@
 		<language tag="en-GB">language/ru-RU/pkg_lib_wt_amocrm.sys.ini</language>
 	</languages>
 	<files>
-	   <folder type="library" id="pkglibwtamocrm">lib_webtolk_amocrm</folder>
-	   <folder type="plugin" id="Webtolk/Amocrm" group="system">plg_system_wt_amocrm</folder>
+	   <folder type="library" id="Webtolk/Amocrm">lib_webtolk_amocrm</folder>
+	   <folder type="plugin" id="wt_amocrm" group="system">plg_system_wt_amocrm</folder>
 	</files>
 	<updateservers>
 			<server type="extension" name="WebTolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate?element=pkg_lib_wt_amocrm</server>

@@ -116,6 +116,7 @@ return new class () implements ServiceProviderInterface {
                  */
                 public function update(InstallerAdapter $adapter): bool
                 {
+                    $this->saveLibraryParams();
                     return true;
                 }
 
@@ -177,30 +178,6 @@ return new class () implements ServiceProviderInterface {
                  */
                 public function postflight(string $type, InstallerAdapter $adapter): bool
                 {
-                    /**
-                     *
-                     *  Joomla при обновлении расширений типа library по факту удаляет их (вместе с данными в базе),
-                     *  а потом устанавливает заново.
-                     *  Дабы избежать потерь данных библиотеки из базы пишем этот костыль.
-                     *   Здесь сохраняем заново данные библиотеки в базу данных.
-                     * @see https://github.com/joomla/joomla-cms/issues/39360
-                     *
-                     */
-                    if ($type == 'update') {
-                        $jconfig    = $this->app->getConfig();
-                        $options    = [
-                            'defaultgroup' => 'wt_amo_crm_temp',
-                            'caching'      => true,
-                            'cachebase'    => $jconfig->get('cache_path'),
-                            'storage'      => $jconfig->get('cache_handler'),
-                        ];
-                        $cache      = Factory::getContainer()
-                            ->get(CacheControllerFactoryInterface::class)
-                            ->createCacheController('', $options);
-                        $lib_params = $cache->get('wt_amo_crm_temp');
-                        LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params);
-                        $cache->clean('wt_amo_crm_temp');
-                    }
 
                     $smile = '';
                     if ($type != 'uninstall') {
@@ -252,6 +229,37 @@ return new class () implements ServiceProviderInterface {
                     return true;
                 }
 
+                /**
+                 *
+                 *
+                 * @since 1.3.0
+                 */
+                protected function saveLibraryParams()
+                {
+                    /**
+                     *
+                     *  Joomla при обновлении расширений типа library по факту удаляет их (вместе с данными в базе),
+                     *  а потом устанавливает заново.
+                     *  Дабы избежать потерь данных библиотеки из базы пишем этот костыль.
+                     *   Здесь сохраняем заново данные библиотеки в базу данных.
+                     * @see https://github.com/joomla/joomla-cms/issues/39360
+                     *
+                     */
+                        $jconfig    = $this->app->getConfig();
+                        $options    = [
+                            'defaultgroup' => 'wt_amo_crm_temp',
+                            'caching'      => true,
+                            'cachebase'    => $jconfig->get('cache_path'),
+                            'storage'      => $jconfig->get('cache_handler'),
+                        ];
+                        $cache      = Factory::getContainer()
+                            ->get(CacheControllerFactoryInterface::class)
+                            ->createCacheController('', $options);
+                        $lib_params = $cache->get('wt_amo_crm_temp');
+                        LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params);
+                        $cache->clean('wt_amo_crm_temp');
+
+                }
                 /**
                  * Enable plugin after installation.
                  *
