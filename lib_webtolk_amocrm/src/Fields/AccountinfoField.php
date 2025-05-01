@@ -1,9 +1,9 @@
 <?php
 /**
  * @package       WT Amocrm Library
- * @version       1.3.0-alpha1
+ * @version       1.3.0-alpha2
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @сopyright (c) 2022 - April 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
  * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since         1.0.0
  */
@@ -25,6 +25,13 @@ class AccountinfoField extends NoteField
 	{
 
 		$amocrm         = new Amocrm();
+        $user_data = [
+            'name' => 'Название контакта',
+            'first_name' => 'Иван',
+            'last_name' => 'Петров',
+        ];
+//        $amocrm_users = $amocrm->addContacts([$user_data]);
+//        dump($amocrm_users, $amocrm_users->_embedded->contacts[0]->id);
 		$result_amo_crm = $amocrm->getAccountInfo();
 		if (isset($result_amo_crm->error_code) && !empty($result_amo_crm->error_code))
 		{

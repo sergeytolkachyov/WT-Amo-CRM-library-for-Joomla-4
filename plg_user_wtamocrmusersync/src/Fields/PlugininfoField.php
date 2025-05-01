@@ -8,13 +8,15 @@
  * @since         1.0.0
  */
 
-namespace Joomla\Plugin\System\Wt_amocrm\Fields;
-defined('_JEXEC') or die;
+namespace Joomla\Plugin\User\Wtamocrmusersync\Fields;
 
 use Joomla\CMS\Form\Field\NoteField;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 
+use function defined;
+
+defined('_JEXEC') or die;
 
 class PlugininfoField extends NoteField
 {

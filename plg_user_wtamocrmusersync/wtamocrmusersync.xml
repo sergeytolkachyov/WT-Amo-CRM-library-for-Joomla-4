@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<extension type="plugin" method="upgrade" group="user">
+    <name>User - WT AmoCRM User sync</name>
+    <author>Sergey Tolkachyov</author>
+    <authorEmail>info@web-tolk.ru</authorEmail>
+    <authorUrl>https://web-tolk.ru/</authorUrl>
+	<creationDate>May 2025</creationDate>
+    <copyright>2025 Sergey Tolkachyov</copyright>
+    <license>GNU General Public License v3.0</license>
+    <version>1.3.0-alpha2</version>
+    <description>PLG_WTAMOCRMUSERSYNC_DESC</description>
+    <namespace path="src">Joomla\Plugin\User\Wtamocrmusersync</namespace>
+    <scriptfile>script.php</scriptfile>
+	<files>
+        <folder plugin="wtamocrmusersync">src</folder>
+        <folder>services</folder>
+    </files>
+    <languages>
+        <language tag="ru-RU">language/ru-RU/plg_user_wtamocrmusersync.ini</language>
+        <language tag="ru-RU">language/ru-RU/plg_user_wtamocrmusersync.sys.ini</language>
+        <language tag="en-GB">language/en-GB/plg_user_wtamocrmusersync.ini</language>
+        <language tag="en-GB">language/en-GB/plg_user_wtamocrmusersync.sys.ini</language>
+    </languages>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field addfieldprefix="Joomla\Plugin\User\Wtamocrmusersync\Fields"
+                       type="plugininfo"
+                       name="plugininfo"/>
+            </fieldset>
+        </fields>
+    </config>
+</extension>

@@ -11,13 +11,16 @@
 defined('_JEXEC') || die;
 
 use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Database\DatabaseInterface;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
-use Joomla\Plugin\System\Wt_amocrm\Extension\Wt_amocrm;
+use Joomla\Plugin\User\Wtamocrmusersync\Extension\Wtamocrmusersync;
 
-return new class implements ServiceProviderInterface {
+return new class () implements ServiceProviderInterface {
+
 	/**
 	 * Registers the service provider with a DI container.
 	 *
@@ -33,9 +36,10 @@ return new class implements ServiceProviderInterface {
 			PluginInterface::class,
 			function (Container $container) {
 				$subject = $container->get(DispatcherInterface::class);
-				$config  = (array) PluginHelper::getPlugin('system', 'wt_amocrm');
-				$plugin = new Wt_amocrm($subject, $config);
-				$plugin->setApplication(\Joomla\CMS\Factory::getApplication());
+				$config  = (array) PluginHelper::getPlugin('user', 'wtamocrmusersync');
+				$plugin = new Wtamocrmusersync($subject, $config);
+				$plugin->setApplication(Factory::getApplication());
+				$plugin->setDatabase(Factory::getContainer()->get(DatabaseInterface::class));
 				return $plugin;
 			}
 		);

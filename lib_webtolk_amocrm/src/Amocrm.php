@@ -2,9 +2,9 @@
 
 /**
  * @package           WT Amocrm Library
- * @version           1.3.0-alpha1
+ * @version           1.3.0-alpha2
  * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright     (c) 2022 - April 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
  * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since             1.0.0
  */
@@ -31,6 +31,11 @@ defined('_JEXEC') or die;
 
 class Amocrm
 {
+    /**
+     * @var int
+     * @since 1.3.0
+     */
+    public static int $api_version = 4;
     /**
      * @var $token_type string Token type. Default 'Bearer'
      * @since 1.0.0
@@ -91,104 +96,9 @@ class Amocrm
 
     public function getAccountInfo(): object
     {
-        $endpoint = '/api/v4/account';
+        $endpoint = '/account';
 
         return $this->getResponse($endpoint, null, 'GET');
-    }
-
-    /**
-     * @param   Response  $response
-     * @param   string    $endpoint
-     *
-     * @return object
-     *
-     * @since      1.0.0
-     * @link       https://web-tolk.ru
-     */
-    private function responseHandler(Response $response, string $endpoint = ''): object
-    {
-
-        $body = json_decode($response->getBody());
-        if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 500) {
-            // API работает. Ошибка отдается в json
-            if (property_exists($body, 'title') ||
-                property_exists($body, 'detail') ||
-                property_exists($body, 'validation-errors')) {
-                $error_message = $this->errorHandler($body);
-            } else {
-                $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_NO_ERROR_DESC');
-            }
-
-            $this->saveToLog($error_message, 'ERROR');
-
-            return (object)[
-                'error_code'    => $response->code,
-                'error_message' => Text::sprintf(
-                    'LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_400',
-                    $endpoint,
-                    $error_message
-                )
-            ];
-        } elseif ($response->getStatusCode() >= 500) {
-            $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_500', print_r($body, true));
-            $this->saveToLog($error_message, 'ERROR');
-
-            return (object)[
-                'error_code'    => $response->code,
-                'error_message' => $error_message
-            ];
-        }
-
-        return (object)$body;
-    }
-
-    /**
-     * ОБработка ошибок из API Amo CRM, вывод ошибок.
-     *
-     * @param $response_body
-     *
-     * @return string
-     *
-     * @since 1.0.0
-     */
-    private function errorHandler($response_body): string
-    {
-        $error_message = '';
-        foreach ($response_body as $k => $v) {
-            if (is_array($v) || is_object($v)) {
-                $error_message .= $this->errorHandler($v);
-                continue;
-            }
-            $error_message .= '<b>' . $k . '</b>: ' . $v . PHP_EOL;
-        }
-
-        return $error_message;
-    }
-
-    /**
-     * Function for to log library errors in lib_webtolk_amo_crm.log.php in
-     * Joomla log path. Default Log category lib_webtolk_amo_crm
-     *
-     * @param   string  $data      error message
-     * @param   string  $priority  Joomla Log priority
-     *
-     * @return void
-     * @since 1.3.2
-     */
-    public function saveToLog(string $data, string $priority = 'NOTICE'): void
-    {
-        Log::addLogger(
-            [
-                // Sets file name
-                'text_file' => 'lib_webtolk_amo_crm.log.php',
-            ],
-            // Sets all but DEBUG log level messages to be sent to the file
-            Log::ALL & ~Log::DEBUG,
-            ['lib_webtolk_amo_crm']
-        );
-        Factory::getApplication()->enqueueMessage($data, $priority);
-        $priority = 'Log::' . $priority;
-        Log::add($data, $priority, 'lib_webtolk_amo_crm');
     }
 
     /**
@@ -228,7 +138,7 @@ class Amocrm
 
         $url = new Uri();
         $url->setHost($this->amocrm_domain)->setScheme('https');
-        $url->setPath($endpoint);
+        $url->setPath('/api/v'.self::$api_version . $endpoint);
 
         $headers = [
             'Authorization' => $this->token_type . ' ' . $this->token,
@@ -273,7 +183,12 @@ class Amocrm
         }
 
         $plugin_params = $this->getPluginParams();
-        if (empty($plugin_params->get('amocrm_client_id', '')) || empty($plugin_params->get('amocrm_client_secret', ''))) {
+        if (empty($plugin_params->get('amocrm_client_id', '')) || empty(
+            $plugin_params->get(
+                'amocrm_client_secret',
+                ''
+            )
+            )) {
             $this->saveToLog('There is no credentials found. Check theirs in plugin System - WT AmoCRM', 'WARNING');
 
             return false;
@@ -305,13 +220,39 @@ class Amocrm
     }
 
     /**
+     * Function for to log library errors in lib_webtolk_amo_crm.log.php in
+     * Joomla log path. Default Log category lib_webtolk_amo_crm
+     *
+     * @param   string  $data      error message
+     * @param   string  $priority  Joomla Log priority
+     *
+     * @return void
+     * @since 1.3.2
+     */
+    public function saveToLog(string $data, string $priority = 'NOTICE'): void
+    {
+        Log::addLogger(
+            [
+                // Sets file name
+                'text_file' => 'lib_webtolk_amo_crm.log.php',
+            ],
+            // Sets all but DEBUG log level messages to be sent to the file
+            Log::ALL & ~Log::DEBUG,
+            ['lib_webtolk_amo_crm']
+        );
+        Factory::getApplication()->enqueueMessage($data, $priority);
+        $priority = 'Log::' . $priority;
+        Log::add($data, $priority, 'lib_webtolk_amo_crm');
+    }
+
+    /**
      * Грузим $token_data из кэша. Если просрочен - вызываем авторизацию заново.
      * @return bool
      *
      * @throws AmocrmClientException
      * @since 1.0.0
      */
-    private function loadTokenData() : bool
+    private function loadTokenData(): bool
     {
         if (!empty($this->token) && !empty($this->token_type) && !empty($this->expires_in)) {
             return true;
@@ -402,16 +343,16 @@ class Amocrm
      */
     public function authorize()
     {
-
         $plugin_params = $this->getPluginParams();
 
-        $amocrm_code = $plugin_params->get('amocrm_code','');
+        $amocrm_code = $plugin_params->get('amocrm_code', '');
         if (empty($amocrm_code)) {
             $error_message = Text::_('LIB_WTAMOCRM_ERROR_AUTHORIZE_EMPTY_CLIENT_OR_SECRET');
             $this->saveToLog(
                 $error_message,
                 'ERROR'
             );
+
             return (object)[
                 'error_code'    => 500,
                 'error_message' => $error_message
@@ -445,13 +386,11 @@ class Amocrm
         $authUrl->setPath('/oauth2/access_token');
 
         try {
-
-                $response      = $http->post(
-                    $authUrl,
-                    json_encode($authorize_data),
-                    $headers
-                );
-
+            $response = $http->post(
+                $authUrl,
+                json_encode($authorize_data),
+                $headers
+            );
 
 
             $response_body = json_decode($response->body);
@@ -619,7 +558,6 @@ class Amocrm
      */
     public function storeTokenData(array $tokenData): bool
     {
-
         // 60 seconds token lifetime by default - 1 minute
         if ($tokenData['expires_in']) {
             $lifetime = (int)$tokenData['expires_in'] / 60;
@@ -659,6 +597,210 @@ class Amocrm
     }
 
     /**
+     * ОБработка ошибок из API Amo CRM, вывод ошибок.
+     *
+     * @param $response_body
+     *
+     * @return string
+     *
+     * @since 1.0.0
+     */
+    private function errorHandler($response_body): string
+    {
+        $error_message = '';
+        foreach ($response_body as $k => $v) {
+            if (is_array($v) || is_object($v)) {
+                $error_message .= $this->errorHandler($v);
+                continue;
+            }
+            $error_message .= '<b>' . $k . '</b>: ' . $v . PHP_EOL;
+        }
+
+        return $error_message;
+    }
+
+    /**
+     * @param   Response  $response
+     * @param   string    $endpoint
+     *
+     * @return object
+     *
+     * @since      1.0.0
+     * @link       https://web-tolk.ru
+     */
+    private function responseHandler(Response $response, string $endpoint = ''): object
+    {
+        $body = json_decode($response->getBody());
+        switch ($response->getStatusCode()) {
+            case ($response->getStatusCode() >= 400 && $response->getStatusCode() < 500) :
+                if (property_exists($body, 'title') ||
+                    property_exists($body, 'detail') ||
+                    property_exists($body, 'validation-errors')) {
+                    $error_message = $this->errorHandler($body);
+                } else {
+                    $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_NO_ERROR_DESC');
+                }
+
+                $this->saveToLog($error_message, 'ERROR');
+
+                return (object)[
+                    'error_code'    => $response->code,
+                    'error_message' => Text::sprintf(
+                        'LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_400',
+                        $endpoint,
+                        $error_message
+                    )
+                ];
+                break;
+            case ($response->getStatusCode() >= 500):
+                $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_500', print_r($body, true));
+                $this->saveToLog($error_message, 'ERROR');
+
+                return (object)[
+                    'error_code'    => $response->code,
+                    'error_message' => $error_message
+                ];
+                break;
+            case 200:
+            default:
+                return (object)$body;
+                break;
+        }
+
+//        if ($response->getStatusCode() >= 400 && $response->getStatusCode() < 500) {
+//            // API работает. Ошибка отдается в json
+//
+//        } elseif ($response->getStatusCode() >= 500) {
+//
+//        }
+
+
+    }
+
+    /**
+     * Check have we AmoCRM user id for this joomla user id?
+     *
+     * @param   int  $joomla_user_id
+     *
+     * @return mixed (bool) false or (int) AmoCRM user id
+     *
+     * @since 1.0.0
+     */
+    public function checkIsAmoCRMUser(int $joomla_user_id): mixed
+    {
+        $db    = Factory::getContainer()->get('DatabaseDriver');
+        $query = $db->getQuery(true)
+            ->select($db->quoteName('amocrm_user_id'))
+            ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
+            ->where($db->quoteName('joomla_user_id') . ' = ' . $db->quote($joomla_user_id));
+        $db->setQuery($query);
+        //Get single result
+        $amocrm_user_id = $db->loadResult();
+        if (!empty($amocrm_user_id)) {
+            return (int)$amocrm_user_id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check have we joomla user id for this AmoCRM user id?
+     *
+     * @param   int  $amocrm_user_id
+     *
+     * @return mixed (bool) false or (int) joomla user id
+     *
+     * @since 1.0.0
+     */
+    public function checkIsJoomlaUser(int $amocrm_user_id): mixed
+    {
+        $db    = Factory::getContainer()->get('DatabaseDriver');
+        $query = $db->getQuery(true)
+            ->select($db->quoteName('joomla_user_id'))
+            ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
+            ->where($db->quoteName('AmoCRM_user_id') . ' = ' . $db->quote($amocrm_user_id));
+        $db->setQuery($query);
+        //Get single result
+        $joomla_user_id = $db->loadResult();
+        if (!empty($joomla_user_id)) {
+            return (int)$joomla_user_id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Add new joomla user id to AmoCRM user id mapping
+     *
+     * @param   int  $amocrm_user_id
+     *
+     * @return bool True or false
+     *
+     * @since 1.0.0
+     */
+    public function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_user_id): bool
+    {
+        $db    = Factory::getContainer()->get('DatabaseDriver');
+        $query = $db->getQuery(true)
+            ->insert($db->quoteName('#__lib_wt_amocrm_users_sync'))
+            ->columns([$db->quoteName('joomla_user_id'), $db->quoteName('amocrm_user_id')])
+            ->values(implode(',', [$db->quote($joomla_user_id), $db->quote($amocrm_user_id)]));
+        $db->setQuery($query);
+
+        return (bool)$db->execute();
+    }
+
+    /**
+     * Delete Joomla & AmoCRM user ids mapping. Batch method.
+     *
+     * <b>Specify Joomla users ids OR AmoCRM users ids</b>
+     * <ul>
+     * <li>If Joomla user id specified - delete by Joomla user id.</li>
+     * <li>If AmoCRM user id specified - delete by AmoCRM user id.</li>
+     * <li>If both user ids specified - Reuqest will not be executed</li>
+     * </ul>
+     *
+     * @param   array  $joomla_user_ids  Plain array of Joomla users ids like [1, 2, 3, 4...]
+     * @param   array  $amocrm_user_ids  Plain array of AmoCRM users ids like [1, 2, 3, 4...]
+     *
+     * @return bool True or false
+     *
+     * @since 1.0.0
+     */
+    public function removeJoomlaAmoCRMUserSync(array $joomla_user_ids = [], array $amocrm_user_ids = []): bool
+    {
+        if (count($joomla_user_ids) > 0 && count($amocrm_user_ids) > 0) {
+            $this->saveToLog(
+                __FUNCTION__ . ': there are both Joomla user ids and AmoCRM user ids specified. Please, specify only one of them for correct deleting users ids mapping from database.',
+                'error'
+            );
+
+            return false;
+        }
+
+        $db    = Factory::getContainer()->get('DatabaseDriver');
+        $query = $db->getQuery(true);
+        $query->delete($db->quoteName('#__lib_wt_amocrm_users_sync'));
+
+        // delete by Joomla user id
+        if (count($joomla_user_ids) > 0 && count($amocrm_user_ids) < 1) {
+            $conditions = [
+                $db->quoteName('joomla_user_id') . ' IN (' . implode(',', $joomla_user_ids) . ')'
+            ];
+        } elseif (count($amocrm_user_ids) > 0 && count($joomla_user_ids) < 1)    // delete by AmoCRM user id
+        {
+            $conditions = [
+                $db->quoteName('AmoCRM_user_id') . ' IN (' . implode(',', $amocrm_user_ids) . ')'
+            ];
+        }
+
+        $query->where($conditions);
+        $db->setQuery($query);
+
+        return (bool)$db->execute();
+    }
+
+    /**
      * Get lead form Amo CRM by id
      *
      * @param   int  $id
@@ -670,7 +812,7 @@ class Amocrm
 
     public function getLeadById(int $id): object
     {
-        $endpoint = '/api/v4/leads/' . $id;
+        $endpoint = '/leads/' . $id;
 
         return $this->getResponse($endpoint, null, 'GET');
     }
@@ -724,7 +866,7 @@ class Amocrm
             ];
         }
 
-        $endpoint = '/api/v4/leads';
+        $endpoint = '/leads';
 
         return $this->getResponse($endpoint, $data, 'POST', 'application/json');
     }
@@ -802,7 +944,7 @@ class Amocrm
             ];
         }
 
-        $endpoint = '/api/v4/leads/complex';
+        $endpoint = '/leads/complex';
 
         return $this->getResponse($endpoint, $data, 'POST', 'application/json');
     }
@@ -849,7 +991,7 @@ class Amocrm
             ];
         }
 
-        $endpoint = '/api/v4/' . $entity_type . '/tags';
+        $endpoint = '/' . $entity_type . '/tags';
 
         return $this->getResponse($endpoint, $data, 'GET', 'application/json');
     }
@@ -869,7 +1011,7 @@ class Amocrm
 
     public function getLeadsPiplines(): object
     {
-        $endpoint = '/api/v4/leads/pipelines';
+        $endpoint = '/leads/pipelines';
 
         return $this->getResponse($endpoint, null, 'GET', 'application/json');
     }
@@ -929,7 +1071,7 @@ class Amocrm
             ];
         }
 
-        $endpoint = '/api/v4/' . $entity_type . '/custom_fields';
+        $endpoint = '/' . $entity_type . '/custom_fields';
 
         return $this->getResponse($endpoint, $data, 'GET', 'application/json');
     }
@@ -1020,9 +1162,42 @@ class Amocrm
 
     public function getContacts(array $data = []): object
     {
-        $endpoint = '/api/v4/contacts';
+        $endpoint = '/contacts';
 
         return $this->getResponse($endpoint, $data, 'GET', 'application/json');
+    }
+
+    /**
+     * Метод позволяет добавлять **контакты** в аккаунт AmoCRM пакетно.
+     * ## Метод
+     * POST /api/v4/contacts
+     * ## Параметры
+     * Обязательные поля отсутствуют
+     * - name string Название контакта
+     * - first_name string Имя контакта
+     * - last_name string Фамилия контакта
+     * - responsible_user_id int ID пользователя AmoCRM, ответственного за контакт
+     * - created_by int ID пользователя, создавший контакт
+     * - updated_by int ID пользователя, изменивший контакт
+     * - created_at int Дата создания контакта, передается в Unix Timestamp
+     * - updated_at int Дата изменения контакта, передается в Unix Timestamp
+     * - custom_fields_values array Массив, содержащий информацию по значениям дополнительных полей, заданных для данного контакта
+     * - tags_to_add array Массив тегов для добавления.
+     * - _embedded object Данные вложенных сущностей
+     *
+     * @param   array  $data  Array of arrays. Users data.
+     *
+     * @return object
+     * @see   https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
+     * @link  https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
+     * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
+     * @since 1.0.0
+     */
+    public function addContacts(array $data = []): object
+    {
+        $endpoint = '/contacts';
+
+        return $this->getResponse($endpoint, $data, 'POST', 'application/json');
     }
 
     /**
@@ -1048,7 +1223,7 @@ class Amocrm
             ];
         }
 
-        $endpoint = '/api/v4/users/' . $user_id;
+        $endpoint = '/users/' . $user_id;
 
         return $this->getResponse($endpoint, null, 'GET', 'application/json');
     }
@@ -1093,7 +1268,7 @@ class Amocrm
             ];
         }
 
-        $endpoint = '/api/v4/' . $entity_type . '/' . $entity_id . '/notes';
+        $endpoint = '/' . $entity_type . '/' . $entity_id . '/notes';
 
         return $this->getResponse($endpoint, $params, 'GET', 'application/json');
     }
@@ -1161,9 +1336,9 @@ class Amocrm
             ];
         }
         if (!empty($entity_id)) {
-            $endpoint = '/api/v4/' . $entity_type . '/' . $entity_id . '/notes';
+            $endpoint = '/' . $entity_type . '/' . $entity_id . '/notes';
         } else {
-            $endpoint = '/api/v4/' . $entity_type . '/notes';
+            $endpoint = '/' . $entity_type . '/notes';
         }
         if (empty($notes)) {
             return (object)[
