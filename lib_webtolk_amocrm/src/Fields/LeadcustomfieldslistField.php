@@ -28,8 +28,8 @@ class LeadcustomfieldslistField extends ListField
 	{
 
 		$amocrm         = new Amocrm();
-		$result_amo_crm = $amocrm->getLeadsCustomFields();
-		$options        = array();
+		$result_amo_crm = $amocrm->customfields()->getLeadsCustomFields();
+		$options        = [];
 		if (empty($result_amo_crm))
 		{
 			return $options[] = HTMLHelper::_('select.option', 0, 'there is no custom_fields in Amo CRM');

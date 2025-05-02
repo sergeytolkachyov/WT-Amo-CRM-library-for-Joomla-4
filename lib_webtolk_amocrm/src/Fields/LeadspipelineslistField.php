@@ -26,7 +26,7 @@ class LeadspipelineslistField extends ListField
     protected function getOptions()
     {
         $amocrm = new Amocrm();
-        $result_amo_crm = $amocrm->getLeadsPiplines();
+        $result_amo_crm = $amocrm->leads()->getLeadsPiplines();
 
         $options = [];
         if (empty($result_amo_crm)) {

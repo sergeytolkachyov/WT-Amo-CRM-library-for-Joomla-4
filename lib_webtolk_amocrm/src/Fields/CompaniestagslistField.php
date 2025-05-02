@@ -31,9 +31,9 @@ class CompaniestagslistField extends ListField
             $requset_options['limit'] = (((int)$this->element['limit'] > 250) ? 250 : $this->element['limit']); // 250 items max
         }
         $amocrm = new Amocrm();
-        $result_amo_crm = $amocrm->getTags('companies', $requset_options);
+        $result_amo_crm = $amocrm->tags()->getTags('companies', $requset_options);
 
-        $options = array();
+        $options = [];
         if (empty($result_amo_crm)) {
             return $options[] = HTMLHelper::_('select.option', 'there is no tags in Amo CRM');
         }

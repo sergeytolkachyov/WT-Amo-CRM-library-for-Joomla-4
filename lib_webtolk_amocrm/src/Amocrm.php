@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @package           WT Amocrm Library
  * @version           1.3.0-alpha2
@@ -22,35 +21,52 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\Http\Response;
 use Joomla\Registry\Registry;
 use Joomla\CMS\Date\Date;
-use Joomla\CMS\Log\Log;
-use Webtolk\Amocrm\AmocrmClientException;
+
+use Webtolk\Amocrm\Interface\EntityInterface;
+
+use Webtolk\Amocrm\Trait\LogTrait;
 
 use function defined;
 
 defined('_JEXEC') or die;
 
+/**
+ * @method \Webtolk\Amocrm\Entities\Account account()
+ * @method \Webtolk\Amocrm\Entities\Contacts contacts()
+ * @method \Webtolk\Amocrm\Entities\Customfields customfields()
+ * @method \Webtolk\Amocrm\Entities\Leads leads()
+ * @method \Webtolk\Amocrm\Entities\Tags tags()
+ * @method \Webtolk\Amocrm\Entities\Notes notes()
+ *
+ */
 class Amocrm
 {
-    /**
+    use LogTrait;
+   /**
      * @var int
      * @since 1.3.0
+     * @deprecated 1.3.0
      */
     public static int $api_version = 4;
     /**
      * @var $token_type string Token type. Default 'Bearer'
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     public string $token_type = 'Bearer';
     /**
      * @var $expires_in int Token expires time
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     public int $expires_in = 0;
 
     /**
      * @var $token string
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
+
     protected string $token = '';
 
     /**
@@ -58,25 +74,35 @@ class Amocrm
      *
      * @var array
      * @since 1.3.0
-     */
+     * @deprecated 1.3.0
+    */
     private array $plugin_params = [];
     /**
      * @var string
      * @since 1.3.0
+     * @deprecated 1.3.0
      */
     private string $client_id = '';
 
     /**
      * @var string
      * @since 1.3.0
+     * @deprecated 1.3.0
      */
     private string $client_secret = '';
 
     /**
      * @var string
      * @since 1.3.0
+     * @deprecated 1.3.0
      */
     private string $amocrm_domain = '';
+
+    /**
+     * @var array<string, EntityInterface>
+     * @since 1.3.0
+     */
+    private array $instances = [];
 
     public function __construct()
     {
@@ -84,6 +110,17 @@ class Amocrm
         $extension = 'lib_webtolk_amocrm';
         $base_dir  = JPATH_SITE;
         $lang->load($extension, $base_dir);
+
+        $this->request = new AmocrmRequest();
+    }
+
+    /**
+     * @return AmocrmRequest
+     * @since 1.3.0
+     */
+    public function getRequest(): AmocrmRequest
+    {
+        return $this->request;
     }
 
     /**
@@ -92,6 +129,7 @@ class Amocrm
      * @return object
      *
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getAccountInfo(): object
@@ -110,6 +148,7 @@ class Amocrm
      * @return object
      *
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     private function getResponse(
         string $endpoint,
@@ -171,6 +210,7 @@ class Amocrm
      * @return bool
      *
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     public function canDoRequest(): bool
     {
@@ -204,6 +244,7 @@ class Amocrm
      * Get plugin System - WT AmoCRM params
      *
      * @since 1.3.0
+     * @deprecated 1.3.0
      */
     private function getPluginParams(): Registry
     {
@@ -220,37 +261,12 @@ class Amocrm
     }
 
     /**
-     * Function for to log library errors in lib_webtolk_amo_crm.log.php in
-     * Joomla log path. Default Log category lib_webtolk_amo_crm
-     *
-     * @param   string  $data      error message
-     * @param   string  $priority  Joomla Log priority
-     *
-     * @return void
-     * @since 1.3.2
-     */
-    public function saveToLog(string $data, string $priority = 'NOTICE'): void
-    {
-        Log::addLogger(
-            [
-                // Sets file name
-                'text_file' => 'lib_webtolk_amo_crm.log.php',
-            ],
-            // Sets all but DEBUG log level messages to be sent to the file
-            Log::ALL & ~Log::DEBUG,
-            ['lib_webtolk_amo_crm']
-        );
-        Factory::getApplication()->enqueueMessage($data, $priority);
-        $priority = 'Log::' . $priority;
-        Log::add($data, $priority, 'lib_webtolk_amo_crm');
-    }
-
-    /**
      * Грузим $token_data из кэша. Если просрочен - вызываем авторизацию заново.
      * @return bool
      *
-     * @throws AmocrmClientException
+     * @throws AmocrmException
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     private function loadTokenData(): bool
     {
@@ -306,6 +322,7 @@ class Amocrm
      * @return OutputController
      *
      * @since 1.3.0
+     * @deprecated 1.3.0
      */
     public function getCache(array $cache_options = []): OutputController
     {
@@ -338,8 +355,9 @@ class Amocrm
      * вам нужно повторить процедуру получения access_token.
      * В ином случае API будет отвечать с HTTP кодом 401 (unauthorized).
      * @return mixed
-     * @throws AmocrmClientException
+     * @throws AmocrmException
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     public function authorize()
     {
@@ -480,8 +498,8 @@ class Amocrm
 
                 return (object)$error_array;
             }
-        } catch (AmocrmClientException $e) {
-            throw new AmocrmClientException('Error while trying to authorize to Amo CRM', 500, $e);
+        } catch (AmocrmException $e) {
+            throw new AmocrmException('Error while trying to authorize to Amo CRM', 500, $e);
         }
     }
 
@@ -491,6 +509,7 @@ class Amocrm
      * @return string|bool $refresh_token on success or false if not
      *
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     public function getRefreshToken()
     {
@@ -513,6 +532,7 @@ class Amocrm
      *
      * @since 1.0.0
      * @retun void
+     * @deprecated 1.3.0
      */
     public function setToken(string $token): void
     {
@@ -527,6 +547,7 @@ class Amocrm
      *
      * @since 1.0.0
      * @retun void
+     * @deprecated 1.3.0
      */
     public function setTokenType(string $token_type): void
     {
@@ -541,6 +562,7 @@ class Amocrm
      *
      * @since 1.0.0
      * @retun void
+     * @deprecated 1.3.0
      */
     public function setTokenExpiresIn(int $token_expires_in): void
     {
@@ -555,6 +577,7 @@ class Amocrm
      *
      * @since 1.0.0
      * @retun bool true
+     * @deprecated 1.3.0
      */
     public function storeTokenData(array $tokenData): bool
     {
@@ -584,6 +607,7 @@ class Amocrm
      * @return void
      *
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     public function storeRefreshToken(string $refresh_token): void
     {
@@ -604,6 +628,7 @@ class Amocrm
      * @return string
      *
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     private function errorHandler($response_body): string
     {
@@ -626,7 +651,7 @@ class Amocrm
      * @return object
      *
      * @since      1.0.0
-     * @link       https://web-tolk.ru
+     * @deprecated 1.3.0
      */
     private function responseHandler(Response $response, string $endpoint = ''): object
     {
@@ -677,128 +702,7 @@ class Amocrm
 
     }
 
-    /**
-     * Check have we AmoCRM user id for this joomla user id?
-     *
-     * @param   int  $joomla_user_id
-     *
-     * @return mixed (bool) false or (int) AmoCRM user id
-     *
-     * @since 1.0.0
-     */
-    public function checkIsAmoCRMUser(int $joomla_user_id): mixed
-    {
-        $db    = Factory::getContainer()->get('DatabaseDriver');
-        $query = $db->getQuery(true)
-            ->select($db->quoteName('amocrm_user_id'))
-            ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
-            ->where($db->quoteName('joomla_user_id') . ' = ' . $db->quote($joomla_user_id));
-        $db->setQuery($query);
-        //Get single result
-        $amocrm_user_id = $db->loadResult();
-        if (!empty($amocrm_user_id)) {
-            return (int)$amocrm_user_id;
-        }
 
-        return false;
-    }
-
-    /**
-     * Check have we joomla user id for this AmoCRM user id?
-     *
-     * @param   int  $amocrm_user_id
-     *
-     * @return mixed (bool) false or (int) joomla user id
-     *
-     * @since 1.0.0
-     */
-    public function checkIsJoomlaUser(int $amocrm_user_id): mixed
-    {
-        $db    = Factory::getContainer()->get('DatabaseDriver');
-        $query = $db->getQuery(true)
-            ->select($db->quoteName('joomla_user_id'))
-            ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
-            ->where($db->quoteName('AmoCRM_user_id') . ' = ' . $db->quote($amocrm_user_id));
-        $db->setQuery($query);
-        //Get single result
-        $joomla_user_id = $db->loadResult();
-        if (!empty($joomla_user_id)) {
-            return (int)$joomla_user_id;
-        }
-
-        return false;
-    }
-
-    /**
-     * Add new joomla user id to AmoCRM user id mapping
-     *
-     * @param   int  $amocrm_user_id
-     *
-     * @return bool True or false
-     *
-     * @since 1.0.0
-     */
-    public function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_user_id): bool
-    {
-        $db    = Factory::getContainer()->get('DatabaseDriver');
-        $query = $db->getQuery(true)
-            ->insert($db->quoteName('#__lib_wt_amocrm_users_sync'))
-            ->columns([$db->quoteName('joomla_user_id'), $db->quoteName('amocrm_user_id')])
-            ->values(implode(',', [$db->quote($joomla_user_id), $db->quote($amocrm_user_id)]));
-        $db->setQuery($query);
-
-        return (bool)$db->execute();
-    }
-
-    /**
-     * Delete Joomla & AmoCRM user ids mapping. Batch method.
-     *
-     * <b>Specify Joomla users ids OR AmoCRM users ids</b>
-     * <ul>
-     * <li>If Joomla user id specified - delete by Joomla user id.</li>
-     * <li>If AmoCRM user id specified - delete by AmoCRM user id.</li>
-     * <li>If both user ids specified - Reuqest will not be executed</li>
-     * </ul>
-     *
-     * @param   array  $joomla_user_ids  Plain array of Joomla users ids like [1, 2, 3, 4...]
-     * @param   array  $amocrm_user_ids  Plain array of AmoCRM users ids like [1, 2, 3, 4...]
-     *
-     * @return bool True or false
-     *
-     * @since 1.0.0
-     */
-    public function removeJoomlaAmoCRMUserSync(array $joomla_user_ids = [], array $amocrm_user_ids = []): bool
-    {
-        if (count($joomla_user_ids) > 0 && count($amocrm_user_ids) > 0) {
-            $this->saveToLog(
-                __FUNCTION__ . ': there are both Joomla user ids and AmoCRM user ids specified. Please, specify only one of them for correct deleting users ids mapping from database.',
-                'error'
-            );
-
-            return false;
-        }
-
-        $db    = Factory::getContainer()->get('DatabaseDriver');
-        $query = $db->getQuery(true);
-        $query->delete($db->quoteName('#__lib_wt_amocrm_users_sync'));
-
-        // delete by Joomla user id
-        if (count($joomla_user_ids) > 0 && count($amocrm_user_ids) < 1) {
-            $conditions = [
-                $db->quoteName('joomla_user_id') . ' IN (' . implode(',', $joomla_user_ids) . ')'
-            ];
-        } elseif (count($amocrm_user_ids) > 0 && count($joomla_user_ids) < 1)    // delete by AmoCRM user id
-        {
-            $conditions = [
-                $db->quoteName('AmoCRM_user_id') . ' IN (' . implode(',', $amocrm_user_ids) . ')'
-            ];
-        }
-
-        $query->where($conditions);
-        $db->setQuery($query);
-
-        return (bool)$db->execute();
-    }
 
     /**
      * Get lead form Amo CRM by id
@@ -808,13 +712,12 @@ class Amocrm
      * @return object
      *
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getLeadById(int $id): object
     {
-        $endpoint = '/leads/' . $id;
-
-        return $this->getResponse($endpoint, null, 'GET');
+        return $this->leads()->getLeadById($id);
     }
 
     /**
@@ -855,20 +758,12 @@ class Amocrm
      * @return object
      * @see   https://www.amocrm.ru/developers/content/crm_platform/leads-api
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function createLeads(array $data): object
     {
-        if (empty($data)) {
-            return (object)[
-                'error_code'    => 500,
-                'error_message' => Text::_('LIB_WTAMOCRM_ERROR_CREATELEADS_EMPTY_DATA')
-            ];
-        }
-
-        $endpoint = '/leads';
-
-        return $this->getResponse($endpoint, $data, 'POST', 'application/json');
+        return $this->leads()->createLeads($data);
     }
 
     /**
@@ -933,29 +828,21 @@ class Amocrm
      * @return object
      * @see    https://www.amocrm.ru/developers/content/crm_platform/leads-api
      * @since  1.0.0
-     */
+     * @deprecated 1.3.0
+ */
 
     public function createLeadsComplex(array $data = []): object
     {
-        if (empty($data)) {
-            return (object)[
-                'error_code'    => 500,
-                'error_message' => Text::_('LIB_WTAMOCRM_ERROR_CREATELEADSCOMPLEX_EMPTY_DATA')
-            ];
-        }
-
-        $endpoint = '/leads/complex';
-
-        return $this->getResponse($endpoint, $data, 'POST', 'application/json');
+        return $this->leads()->createLeadsComplex($data);
     }
 
     /**
      * Список тегов для сущности
      * ## Общая информация
-     * -    Справочник тегов разделен по сущностям, то есть тег с одним названием будет иметь различные ID в разных типах сущностей
-     * -    Цвет тегов доступен только для тегов сделок
-     * -    Цвет тегов доступен только только с обновления Весна 2022
-     * -    Функционал тегов доступен для следующих сущностей: сделки, контакты, компании и покупатели
+     * - Справочник тегов разделен по сущностям, то есть тег с одним названием будет иметь различные ID в разных типах сущностей
+     * - Цвет тегов доступен только для тегов сделок
+     * - Цвет тегов доступен только с обновления Весна 2022
+     * - Функционал тегов доступен для следующих сущностей: сделки, контакты, компании и покупатели
      * ## Метод
      * GET /api/v4/{entity_type:leads|contacts|companies|customers}/tags
      * ## Параметры
@@ -972,48 +859,33 @@ class Amocrm
      * @return object
      * @see   https://www.amocrm.ru/developers/content/crm_platform/tags-api
      * @since 1.0.0
-     */
+     * @deprecated 1.3.0
+ */
 
     public function getTags(string $entity_type = 'leads', array $data = []): object
     {
-        $allowed_entites = ['leads', 'contacts', 'companies', 'customers'];
-        if (!in_array($entity_type, $allowed_entites)) {
-            return (object)[
-                'error_code'    => 500,
-                'error_message' => Text::sprintf(
-                    'LIB_WTAMOCRM_ERROR_GETTAGS_WRONG_ENTITY_TYPE',
-                    $entity_type,
-                    implode(
-                        ', ',
-                        $allowed_entites
-                    )
-                )
-            ];
-        }
-
-        $endpoint = '/' . $entity_type . '/tags';
-
-        return $this->getResponse($endpoint, $data, 'GET', 'application/json');
+        return $this->tags()->getTags($entity_type, $data);
     }
 
     /**
      * Получение списка воронок продаж для сделок
      * ## Общая информация
-     * -    В каждой воронке есть 3 системных статуса: Неразобранное, Успешно реализовано (ID = 142), Закрыто и не реализовано (ID = 143)
-     * -    В аккаунте может быть не более 50 воронок.
-     * -    В одной воронке может быть не более 100 статусов, включая системные.
+     * - В каждой воронке есть 3 системных статуса: Неразобранное, Успешно реализовано (ID = 142), Закрыто и не реализовано (ID = 143)
+     * - В аккаунте может быть не более 50 воронок.
+     * - В одной воронке может быть не более 100 статусов, включая системные.
      * ## Метод
-     * GET  /api/v4/leads/pipelines
+     * GET /api/v4/leads/pipelines
      * @return object
      * @see   https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getLeadsPiplines(): object
     {
         $endpoint = '/leads/pipelines';
 
-        return $this->getResponse($endpoint, null, 'GET', 'application/json');
+        return $this->leads()->getLeadsPiplines();
     }
 
     /**
@@ -1029,6 +901,7 @@ class Amocrm
      * @return object
      * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getLeadsCustomFields(array $data = []): object
@@ -1053,6 +926,7 @@ class Amocrm
      * @return object
      *
      * @since 1.3.0
+     * @deprecated 1.3.0
      */
     public function getCustomFields(string $entity_type = 'leads', array $data = []): object
     {
@@ -1073,7 +947,7 @@ class Amocrm
 
         $endpoint = '/' . $entity_type . '/custom_fields';
 
-        return $this->getResponse($endpoint, $data, 'GET', 'application/json');
+        return $this->customfields()->getCustomFields($endpoint, $data, 'GET', 'application/json');
     }
 
     /**
@@ -1089,11 +963,12 @@ class Amocrm
      * @return object
      * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getContactsCustomFields(array $data = []): object
     {
-        return $this->getCustomFields('contacts', $data);
+        return $this->customfields()->getCustomFields('contacts', $data);
     }
 
     /**
@@ -1109,11 +984,12 @@ class Amocrm
      * @return object
      * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getCompaniesCustomFields(array $data = []): object
     {
-        return $this->getCustomFields('companies', $data);
+        return $this->customfields()->getCustomFields('companies', $data);
     }
 
     /**
@@ -1129,11 +1005,12 @@ class Amocrm
      * @return object
      * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getCustomersCustomFields(array $data = []): object
     {
-        return $this->getCustomFields('customers', $data);
+        return $this->customfields()->getCustomFields('customers', $data);
     }
 
     /**
@@ -1158,13 +1035,14 @@ class Amocrm
      * @link  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
      * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getContacts(array $data = []): object
     {
         $endpoint = '/contacts';
 
-        return $this->getResponse($endpoint, $data, 'GET', 'application/json');
+        return $this->contacts()->getContacts($data);
     }
 
     /**
@@ -1192,6 +1070,7 @@ class Amocrm
      * @link  https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
      * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
     public function addContacts(array $data = []): object
     {
@@ -1212,6 +1091,7 @@ class Amocrm
      * @return object
      * @link  https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
      * @since 1.0.0
+     * @deprecated 1.3.0
      */
 
     public function getUserById(int $user_id): object
@@ -1257,6 +1137,7 @@ class Amocrm
      * @return object
      * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
      * @since 1.1.0
+     * @deprecated 1.3.0
      */
 
     public function getNotes(string $entity_type, int $entity_id, array $params = [])
@@ -1270,7 +1151,7 @@ class Amocrm
 
         $endpoint = '/' . $entity_type . '/' . $entity_id . '/notes';
 
-        return $this->getResponse($endpoint, $params, 'GET', 'application/json');
+        return $this->notes()->getNotes($entity_type, $entity_id, $params);
     }
 
     /**
@@ -1325,29 +1206,33 @@ class Amocrm
      * @return object
      * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
      * @since 1.1.0
+     * @deprecated 1.3.0
      */
 
     public function addNotes(string $entity_type = 'leads', int $entity_id = 0, array $notes = []): object
     {
-        if (empty($entity_type)) {
-            return (object)[
-                'error_code'    => 500,
-                'error_message' => Text::_('LIB_WTAMOCRM_ERROR_ADDNOTES_EMPTY_ENTITY')
-            ];
-        }
-        if (!empty($entity_id)) {
-            $endpoint = '/' . $entity_type . '/' . $entity_id . '/notes';
-        } else {
-            $endpoint = '/' . $entity_type . '/notes';
-        }
-        if (empty($notes)) {
-            return (object)[
-                'error_code'    => 500,
-                'error_message' => __FUNCTION__ . ' function: Notes array is empty. Request abadoned.'
-            ];
-        }
-
-        return $this->getResponse($endpoint, $notes, 'POST', 'application/json');
+       return $this->notes()->addNotes($entity_type, $entity_id, $notes);
     }
 
+    /**
+     * @param string $name
+     * @param array<array-key, mixed> $_
+     * @return EntityInterface
+     * @since 1.3.0
+     */
+    public function __call(string $name, array $_): EntityInterface
+    {
+        $name = strtolower($name);
+
+        $class = '\\Webtolk\\Amocrm\\Entities\\' . ucfirst($name);
+        if (!class_exists($class)) {
+            throw new AmocrmException(0, "Class {$class} not found");
+        }
+
+        if (!array_key_exists($name, $this->instances)) {
+            $this->instances[$name] = new $class($this->request);
+        }
+
+        return $this->instances[$name];
+    }
 }

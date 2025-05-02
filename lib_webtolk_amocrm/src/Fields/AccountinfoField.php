@@ -25,6 +25,7 @@ class AccountinfoField extends NoteField
 	{
 
 		$amocrm         = new Amocrm();
+        dump($amocrm->tags()->getTags());
         $user_data = [
             'name' => 'Название контакта',
             'first_name' => 'Иван',
@@ -32,7 +33,7 @@ class AccountinfoField extends NoteField
         ];
 //        $amocrm_users = $amocrm->addContacts([$user_data]);
 //        dump($amocrm_users, $amocrm_users->_embedded->contacts[0]->id);
-		$result_amo_crm = $amocrm->getAccountInfo();
+		$result_amo_crm = $amocrm->account()->getAccountInfo();
 		if (isset($result_amo_crm->error_code) && !empty($result_amo_crm->error_code))
 		{
 			return '<div class="alert alert-danger row">
