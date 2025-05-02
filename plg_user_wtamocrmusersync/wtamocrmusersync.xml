@@ -4,14 +4,14 @@
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
     <authorUrl>https://web-tolk.ru/</authorUrl>
-	<creationDate>May 2025</creationDate>
+    <creationDate>May 2025</creationDate>
     <copyright>2025 Sergey Tolkachyov</copyright>
     <license>GNU General Public License v3.0</license>
     <version>1.3.0-alpha2</version>
     <description>PLG_WTAMOCRMUSERSYNC_DESC</description>
     <namespace path="src">Joomla\Plugin\User\Wtamocrmusersync</namespace>
     <scriptfile>script.php</scriptfile>
-	<files>
+    <files>
         <folder plugin="wtamocrmusersync">src</folder>
         <folder>services</folder>
     </files>
@@ -27,6 +27,13 @@
                 <field addfieldprefix="Joomla\Plugin\User\Wtamocrmusersync\Fields"
                        type="plugininfo"
                        name="plugininfo"/>
+                <field addfieldprefix="Webtolk\Amocrm\Fields"
+                       type="contactstagslist"
+                       name="amocrm_contact_tags"
+                       label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_LABEL"
+                       description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_DESC"
+                       layout="joomla.form.field.list-fancy-select"
+                       multiple="true"/>
             </fieldset>
         </fields>
     </config>

@@ -18,6 +18,7 @@ use Joomla\CMS\Language\Text;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interface\EntityInterface;
 
+use Webtolk\Amocrm\Trait\DataErrorTrait;
 use Webtolk\Amocrm\Trait\LogTrait;
 
 use function defined;
@@ -27,6 +28,7 @@ defined('_JEXEC') or die;
 class Notes implements EntityInterface
 {
     use LogTrait;
+    use DataErrorTrait;
 
     /**
      * @var array|string[]
@@ -106,11 +108,11 @@ class Notes implements EntityInterface
     public function addNotes(string $entity_type = 'leads', int $entity_id = 0, array $notes = []): object
     {
         if (!$this->checkNotesEntity($entity_type)) {
-            return $this->wrongEntityType(__METHOD__, $entity_type);
+            return $this->wrongEntityType(__METHOD__, $entity_type, self::$allowed_entites);
         }
 
         if (empty($notes)) {
-            return $this->receivedEmptyData(__METHOD__, $entity_type);
+            return $this->receivedEmptyData(__METHOD__);
         }
 
         if (!empty($entity_id)) {
@@ -168,7 +170,7 @@ class Notes implements EntityInterface
     public function getNotes(string $entity_type, int $entity_id, array $params = []): object
     {
         if (!$this->checkNotesEntity($entity_type)) {
-            return $this->wrongEntityType(__METHOD__, $entity_type);
+            return $this->wrongEntityType(__METHOD__, $entity_type, self::$allowed_entites);
         }
 
         return $this->request->getResponse(
@@ -179,34 +181,6 @@ class Notes implements EntityInterface
         );
     }
 
-    /**
-     * Возвращаем типовую ошибку для методов класса
-     *
-     * @param   string  $method
-     * @param   string  $entity_type
-     *
-     * @return object
-     *
-     * @since 1.3.0
-     */
-    private function wrongEntityType(string $method, string $entity_type): object
-    {
-        $error_message = Text::sprintf(
-            'LIB_WTAMOCRM_ERROR_NOTES_WRONG_ENTITY_TYPE',
-            __METHOD__,
-            $entity_type,
-            implode(
-                ', ',
-                self::$allowed_entites
-            )
-        );
-        $this->saveToLog($error_message, 'error');
-
-        return (object)[
-            'error_code'    => 500,
-            'error_message' => $error_message
-        ];
-    }
 
     /**
      * Редактирование примечаний.
@@ -233,36 +207,16 @@ class Notes implements EntityInterface
     public function editNotesBatch(string $entity_type, array $data): object
     {
         if (!$this->checkNotesEntity($entity_type)) {
-            return $this->wrongEntityType(__METHOD__, $entity_type);
+            return $this->wrongEntityType(__METHOD__, $entity_type, self::$allowed_entites);
         }
 
         if (empty($data)) {
-            return $this->receivedEmptyData(__METHOD__, $entity_type);
+            return $this->receivedEmptyData(__METHOD__);
         }
 
         return $this->request->getResponse('/' . $entity_type . '/notes', $data, 'PATCH', 'application/json');
     }
 
-    /**
-     * Возвращаем типовую ошибку для методов класса
-     *
-     * @param   string  $method
-     * @param   string  $entity_type
-     *
-     * @return object
-     *
-     * @since 1.3.0
-     */
-    private function receivedEmptyData(string $method, string $entity_type): object
-    {
-        $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
-        $this->saveToLog($error_message, 'warning');
-
-        return (object)[
-            'error_code'    => 500,
-            'error_message' => $error_message
-        ];
-    }
 
     /**
      * Редактирование **единичного примечания** к сущности.
@@ -288,11 +242,11 @@ class Notes implements EntityInterface
     public function editNote(string $entity_type, int $entity_id, array $data, ?int $note_id = null): object
     {
         if (!$this->checkNotesEntity($entity_type)) {
-            return $this->wrongEntityType(__METHOD__, $entity_type);
+            return $this->wrongEntityType(__METHOD__, $entity_type, self::$allowed_entites);
         }
 
         if (empty($data)) {
-            return $this->receivedEmptyData(__METHOD__, $entity_type);
+            return $this->receivedEmptyData(__METHOD__);
         }
 
         if (!empty($entity_id)) {

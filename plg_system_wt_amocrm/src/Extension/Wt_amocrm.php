@@ -43,7 +43,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface
 	/**
 	 * Will be removed. Minimum Joomla version has been rised to 4.2.7
 	 *
-	 * @deprecated 1.3.0
+	 * @deprecated 1.3.0 Will be removed in 2.0.0
 	 * @since 1.0.0
 	 */
 	public function onAfterInitialise() : void

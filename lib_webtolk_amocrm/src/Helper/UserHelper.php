@@ -13,8 +13,8 @@ namespace Webtolk\Amocrm\Helper;
 use Joomla\CMS\Factory;
 
 use Joomla\CMS\Language\Text;
-use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\DatabaseInterface;
+use Webtolk\Amocrm\Amocrm;
 use Webtolk\Amocrm\Trait\LogTrait;
 
 use function defined;
@@ -24,12 +24,6 @@ defined('_JEXEC') or die;
 class UserHelper
 {
     use LogTrait;
-    use DatabaseAwareTrait;
-
-    public function __construct()
-    {
-        $this->setDatabase(Factory::getContainer()->get(DatabaseInterface::class));
-    }
 
     /**
      * Check have we AmoCRM user id for this joomla user id?
@@ -40,11 +34,11 @@ class UserHelper
      *
      * @since 1.3.0
      */
-    public function checkIsAmoCRMUser(int $joomla_user_id): mixed
+    public static function checkIsAmoCRMUser(int $joomla_user_id): mixed
     {
-        $db    = $this->getDatabase();
+        $db    = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true)
-            ->select($db->quoteName('amocrm_user_id'))
+            ->select($db->quoteName('amocrm_contact_id'))
             ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
             ->where($db->quoteName('joomla_user_id') . ' = ' . $db->quote($joomla_user_id));
         $db->setQuery($query);
@@ -66,13 +60,13 @@ class UserHelper
      *
      * @since 1.3.0
      */
-    public function checkIsJoomlaUser(int $amocrm_user_id): mixed
+    public static function checkIsJoomlaUser(int $amocrm_user_id): mixed
     {
-        $db    = $this->getDatabase();
+        $db    = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true)
             ->select($db->quoteName('joomla_user_id'))
             ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
-            ->where($db->quoteName('AmoCRM_user_id') . ' = ' . $db->quote($amocrm_user_id));
+            ->where($db->quoteName('amocrm_contact_id') . ' = ' . $db->quote($amocrm_user_id));
         $db->setQuery($query);
         //Get single result
         $joomla_user_id = $db->loadResult();
@@ -93,12 +87,12 @@ class UserHelper
      *
      * @since 1.3.0
      */
-    public function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id): bool
+    public static function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id): bool
     {
-        $db    = $this->getDatabase();
+        $db    = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true)
             ->insert($db->quoteName('#__lib_wt_amocrm_users_sync'))
-            ->columns([$db->quoteName('joomla_user_id'), $db->quoteName('amocrm_user_id')])
+            ->columns([$db->quoteName('joomla_user_id'), $db->quoteName('amocrm_contact_id')])
             ->values(implode(',', [$db->quote($joomla_user_id), $db->quote($amocrm_contact_id)]));
         $db->setQuery($query);
 
@@ -121,10 +115,10 @@ class UserHelper
      *
      * @since 1.0.0
      */
-    public function removeJoomlaAmoCRMUserSync(array $joomla_user_ids = [], array $amocrm_user_ids = []): bool
+    public static function removeJoomlaAmoCRMUserSync(array $joomla_user_ids = [], array $amocrm_user_ids = []): bool
     {
         if (count($joomla_user_ids) > 0 && count($amocrm_user_ids) > 0) {
-            $this->saveToLog(
+            (new Amocrm())->saveToLog(
                 Text::_('LIB_WTAMOCRM_ERROR_HELPER_USERHELPER_REMOVEJOOMLAAMOCRMUSERSYNC'),
                 'error'
             );
@@ -132,7 +126,7 @@ class UserHelper
             return false;
         }
 
-        $db    = $this->getDatabase();
+        $db    = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true);
         $query->delete($db->quoteName('#__lib_wt_amocrm_users_sync'));
 
@@ -144,13 +138,13 @@ class UserHelper
         } elseif (count($amocrm_user_ids) > 0 && count($joomla_user_ids) < 1)    // delete by AmoCRM user id
         {
             $conditions = [
-                $db->quoteName('AmoCRM_user_id') . ' IN (' . implode(',', $amocrm_user_ids) . ')'
+                $db->quoteName('amocrm_contact_id') . ' IN (' . implode(',', $amocrm_user_ids) . ')'
             ];
         }
 
         $query->where($conditions);
         $db->setQuery($query);
 
-        return (bool)$db->execute();
+        return $db->execute();
     }
 }

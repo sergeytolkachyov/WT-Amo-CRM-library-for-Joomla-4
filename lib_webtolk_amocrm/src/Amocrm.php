@@ -3,7 +3,7 @@
  * @package           WT Amocrm Library
  * @version           1.3.0-alpha2
  * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
  * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since             1.0.0
  */
@@ -22,6 +22,13 @@ use Joomla\Http\Response;
 use Joomla\Registry\Registry;
 use Joomla\CMS\Date\Date;
 
+use Webtolk\Amocrm\Entities\Account;
+use Webtolk\Amocrm\Entities\Contacts;
+use Webtolk\Amocrm\Entities\Customfields;
+use Webtolk\Amocrm\Entities\Leads;
+use Webtolk\Amocrm\Entities\Notes;
+use Webtolk\Amocrm\Entities\Tags;
+use Webtolk\Amocrm\Entities\Users;
 use Webtolk\Amocrm\Interface\EntityInterface;
 
 use Webtolk\Amocrm\Trait\LogTrait;
@@ -31,40 +38,43 @@ use function defined;
 defined('_JEXEC') or die;
 
 /**
- * @method \Webtolk\Amocrm\Entities\Account account()
- * @method \Webtolk\Amocrm\Entities\Contacts contacts()
- * @method \Webtolk\Amocrm\Entities\Customfields customfields()
- * @method \Webtolk\Amocrm\Entities\Leads leads()
- * @method \Webtolk\Amocrm\Entities\Tags tags()
- * @method \Webtolk\Amocrm\Entities\Notes notes()
+ * @method Account account()
+ * @method Contacts contacts()
+ * @method Customfields customfields()
+ * @method Leads leads()
+ * @method Notes notes()
+ * @method Tags tags()
+ * @method Users users()
  *
+ * @since 1.0.0
  */
 class Amocrm
 {
     use LogTrait;
-   /**
+
+    /**
      * @var int
-     * @since 1.3.0
-     * @deprecated 1.3.0
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public static int $api_version = 4;
     /**
      * @var $token_type string Token type. Default 'Bearer'
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public string $token_type = 'Bearer';
     /**
      * @var $expires_in int Token expires time
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public int $expires_in = 0;
 
     /**
      * @var $token string
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     protected string $token = '';
@@ -73,28 +83,28 @@ class Amocrm
      * WT AmoCRM plugin params
      *
      * @var array
-     * @since 1.3.0
-     * @deprecated 1.3.0
-    */
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
+     */
     private array $plugin_params = [];
     /**
      * @var string
-     * @since 1.3.0
-     * @deprecated 1.3.0
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private string $client_id = '';
 
     /**
      * @var string
-     * @since 1.3.0
-     * @deprecated 1.3.0
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private string $client_secret = '';
 
     /**
      * @var string
-     * @since 1.3.0
-     * @deprecated 1.3.0
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private string $amocrm_domain = '';
 
@@ -128,8 +138,8 @@ class Amocrm
      *
      * @return object
      *
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getAccountInfo(): object
@@ -147,8 +157,8 @@ class Amocrm
      *
      * @return object
      *
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private function getResponse(
         string $endpoint,
@@ -177,7 +187,7 @@ class Amocrm
 
         $url = new Uri();
         $url->setHost($this->amocrm_domain)->setScheme('https');
-        $url->setPath('/api/v'.self::$api_version . $endpoint);
+        $url->setPath('/api/v' . self::$api_version . $endpoint);
 
         $headers = [
             'Authorization' => $this->token_type . ' ' . $this->token,
@@ -209,8 +219,8 @@ class Amocrm
      *
      * @return bool
      *
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function canDoRequest(): bool
     {
@@ -243,8 +253,8 @@ class Amocrm
     /**
      * Get plugin System - WT AmoCRM params
      *
-     * @since 1.3.0
-     * @deprecated 1.3.0
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private function getPluginParams(): Registry
     {
@@ -265,8 +275,8 @@ class Amocrm
      * @return bool
      *
      * @throws AmocrmException
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private function loadTokenData(): bool
     {
@@ -321,8 +331,8 @@ class Amocrm
      * Return the library pre-configured cache object
      * @return OutputController
      *
-     * @since 1.3.0
-     * @deprecated 1.3.0
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function getCache(array $cache_options = []): OutputController
     {
@@ -356,8 +366,8 @@ class Amocrm
      * В ином случае API будет отвечать с HTTP кодом 401 (unauthorized).
      * @return mixed
      * @throws AmocrmException
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function authorize()
     {
@@ -508,8 +518,8 @@ class Amocrm
      *
      * @return string|bool $refresh_token on success or false if not
      *
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function getRefreshToken()
     {
@@ -530,9 +540,9 @@ class Amocrm
      * @param   string  $token  token from Amo CRM API reponse
      *
      *
-     * @since 1.0.0
-     * @retun void
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @retun      void
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function setToken(string $token): void
     {
@@ -545,9 +555,9 @@ class Amocrm
      * @param   string  $token_type  Token type from Amo CRM API response
      *
      *
-     * @since 1.0.0
-     * @retun void
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @retun      void
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function setTokenType(string $token_type): void
     {
@@ -560,9 +570,9 @@ class Amocrm
      * @param   int  $token_expires_in
      *
      *
-     * @since 1.0.0
-     * @retun void
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @retun      void
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function setTokenExpiresIn(int $token_expires_in): void
     {
@@ -575,9 +585,9 @@ class Amocrm
      * @param   array  $tokenData  Access token, token type, token expires in (seconds), token start time in Unix format
      *
      *
-     * @since 1.0.0
-     * @retun bool true
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @retun      bool true
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function storeTokenData(array $tokenData): bool
     {
@@ -606,8 +616,8 @@ class Amocrm
      *
      * @return void
      *
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function storeRefreshToken(string $refresh_token): void
     {
@@ -627,8 +637,8 @@ class Amocrm
      *
      * @return string
      *
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private function errorHandler($response_body): string
     {
@@ -651,7 +661,7 @@ class Amocrm
      * @return object
      *
      * @since      1.0.0
-     * @deprecated 1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     private function responseHandler(Response $response, string $endpoint = ''): object
     {
@@ -703,7 +713,6 @@ class Amocrm
     }
 
 
-
     /**
      * Get lead form Amo CRM by id
      *
@@ -711,8 +720,8 @@ class Amocrm
      *
      * @return object
      *
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getLeadById(int $id): object
@@ -756,9 +765,9 @@ class Amocrm
      * @param   array  $data
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/leads-api
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/leads-api
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function createLeads(array $data): object
@@ -826,10 +835,10 @@ class Amocrm
      * @param   array  $data
      *
      * @return object
-     * @see    https://www.amocrm.ru/developers/content/crm_platform/leads-api
-     * @since  1.0.0
-     * @deprecated 1.3.0
- */
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/leads-api
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
+     */
 
     public function createLeadsComplex(array $data = []): object
     {
@@ -857,10 +866,10 @@ class Amocrm
      * @param   array   $data
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/tags-api
-     * @since 1.0.0
-     * @deprecated 1.3.0
- */
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/tags-api
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
+     */
 
     public function getTags(string $entity_type = 'leads', array $data = []): object
     {
@@ -876,9 +885,9 @@ class Amocrm
      * ## Метод
      * GET /api/v4/leads/pipelines
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getLeadsPiplines(): object
@@ -899,9 +908,9 @@ class Amocrm
      * @param   array  $data
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getLeadsCustomFields(array $data = []): object
@@ -925,8 +934,8 @@ class Amocrm
      *
      * @return object
      *
-     * @since 1.3.0
-     * @deprecated 1.3.0
+     * @since      1.3.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function getCustomFields(string $entity_type = 'leads', array $data = []): object
     {
@@ -961,9 +970,9 @@ class Amocrm
      * @param   array  $data
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getContactsCustomFields(array $data = []): object
@@ -982,9 +991,9 @@ class Amocrm
      * @param   array  $data
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getCompaniesCustomFields(array $data = []): object
@@ -1003,9 +1012,9 @@ class Amocrm
      * @param   array  $data
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getCustomersCustomFields(array $data = []): object
@@ -1031,11 +1040,11 @@ class Amocrm
      * @param   array  $data
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/contacts-api
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/contacts-api
+     * @link       https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
+     * @link       https://www.amocrm.ru/developers/content/crm_platform/filters-api
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getContacts(array $data = []): object
@@ -1066,11 +1075,11 @@ class Amocrm
      * @param   array  $data  Array of arrays. Users data.
      *
      * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @see        https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
+     * @link       https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
+     * @link       https://www.amocrm.ru/developers/content/crm_platform/filters-api
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
     public function addContacts(array $data = []): object
     {
@@ -1089,23 +1098,14 @@ class Amocrm
      * @param   int  $user_id  Amo CRM user id
      *
      * @return object
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
-     * @since 1.0.0
-     * @deprecated 1.3.0
+     * @link       https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
+     * @since      1.0.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getUserById(int $user_id): object
     {
-        if (empty($user_id)) {
-            return (object)[
-                'error_code'    => 500,
-                'error_message' => Text::_('LIB_WTAMOCRM_ERROR_GETUSERBYID_EMPTY_USER_ID')
-            ];
-        }
-
-        $endpoint = '/users/' . $user_id;
-
-        return $this->getResponse($endpoint, null, 'GET', 'application/json');
+        return $this->users()->getUserById($user_id);
     }
 
     /**
@@ -1135,22 +1135,13 @@ class Amocrm
      *                                Пример: /api/v4/leads/notes?order[updated_at]=asc
      *
      * @return object
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
-     * @since 1.1.0
-     * @deprecated 1.3.0
+     * @link       https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
+     * @since      1.1.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function getNotes(string $entity_type, int $entity_id, array $params = [])
     {
-        if (empty($entity_type) || empty($entity_id)) {
-            return (object)[
-                'error_code'    => 500,
-                'error_message' => Text::_('LIB_WTAMOCRM_ERROR_GETNOTES_EMPTY_DATA')
-            ];
-        }
-
-        $endpoint = '/' . $entity_type . '/' . $entity_id . '/notes';
-
         return $this->notes()->getNotes($entity_type, $entity_id, $params);
     }
 
@@ -1204,19 +1195,20 @@ class Amocrm
      *                                ]
      *
      * @return object
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
-     * @since 1.1.0
-     * @deprecated 1.3.0
+     * @link       https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
+     * @since      1.1.0
+     * @deprecated 1.3.0 Will be removed in 2.0.0
      */
 
     public function addNotes(string $entity_type = 'leads', int $entity_id = 0, array $notes = []): object
     {
-       return $this->notes()->addNotes($entity_type, $entity_id, $notes);
+        return $this->notes()->addNotes($entity_type, $entity_id, $notes);
     }
 
     /**
-     * @param string $name
-     * @param array<array-key, mixed> $_
+     * @param   string                   $name
+     * @param   array<array-key, mixed>  $_
+     *
      * @return EntityInterface
      * @since 1.3.0
      */

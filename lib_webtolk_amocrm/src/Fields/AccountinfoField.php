@@ -25,14 +25,7 @@ class AccountinfoField extends NoteField
 	{
 
 		$amocrm         = new Amocrm();
-        dump($amocrm->tags()->getTags());
-        $user_data = [
-            'name' => 'Название контакта',
-            'first_name' => 'Иван',
-            'last_name' => 'Петров',
-        ];
-//        $amocrm_users = $amocrm->addContacts([$user_data]);
-//        dump($amocrm_users, $amocrm_users->_embedded->contacts[0]->id);
+
 		$result_amo_crm = $amocrm->account()->getAccountInfo();
 		if (isset($result_amo_crm->error_code) && !empty($result_amo_crm->error_code))
 		{
@@ -45,7 +38,7 @@ class AccountinfoField extends NoteField
 		if (!empty($result_amo_crm))
 		{
 
-			$user_info     = $amocrm->getUserById($result_amo_crm->current_user_id);
+			$user_info     = $amocrm->users()->getUserById($result_amo_crm->current_user_id);
 			$created_at    = (new Date($result_amo_crm->created_at));
 			$updated_at    = (new Date($result_amo_crm->updated_at));
 			$user_name     = $user_info->name;
@@ -83,5 +76,3 @@ class AccountinfoField extends NoteField
 
 	}
 }
-
-?>
