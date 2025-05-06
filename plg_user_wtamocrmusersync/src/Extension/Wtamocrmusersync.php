@@ -88,7 +88,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $firstname = $user['name'];
         $lastname  = $user['name'];
 
-        if (trim($user['name']) && str_contains($user['name'], ' ')) {
+        if (trim($user['name']) && stripos($user['name'], ' ') !== false) {
             $tmp_name  = explode(' ', $user['name']);
             $firstname = $tmp_name[0];
             unset($tmp_name[0]);
