@@ -4,7 +4,7 @@
  * @package           WT Amocrm Library
  * @version           1.3.0-alpha2
  * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
  * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since             1.0.0
  */
@@ -124,10 +124,15 @@ class AmocrmRequest
             ];
         }
 
+        if (preg_match('/^https?:\/\//', $this->amocrm_domain)) {
+            $url = new Uri($this->amocrm_domain);
+        } else {
+            $url = new Uri();
+            $url->setHost($this->amocrm_domain);
+        }
 
-        $url = new Uri();
-        $url->setHost($this->amocrm_domain)->setScheme('https');
-        $url->setPath('/api/v'.self::$api_version . $endpoint);
+        $url->setScheme('https');
+        $url->setPath('/api/v' . self::$api_version . $endpoint);
 
         $headers = [
             'Authorization' => $this->token_type . ' ' . $this->token,
@@ -135,22 +140,29 @@ class AmocrmRequest
             'charset'       => 'UTF-8',
         ];
 
-        $http = (new HttpFactory())->getHttp([], ['curl', 'stream']);
-        if ($request_method != 'GET') {
-            $request_method = strtolower($request_method);
+        try {
+            $http = (new HttpFactory())->getHttp([], ['curl', 'stream']);
+            if ($request_method != 'GET') {
+                $request_method = strtolower($request_method);
 
-            // $url, $data, $headers, $timeout
-            $response = $http->$request_method($url, json_encode($data), $headers);
-        } else {
-            if (!empty($data)) {
-                $url->setQuery($data);
+                // $url, $data, $headers, $timeout
+                $response = $http->$request_method($url, json_encode($data), $headers);
+            } else {
+                if (!empty($data)) {
+                    $url->setQuery($data);
+                }
+
+                // $url, $headers, $timeout
+                $response = $http->get($url, $headers);
             }
 
-            // $url, $headers, $timeout
-            $response = $http->get($url, $headers);
+            return $this->responseHandler($response, $endpoint);
+        } catch (AmocrmException $e) {
+            return (object)[
+                'error_code'    => $e->getCode(),
+                'error_message' => $e->getMessage().'. File: '.$e->getFile().', line: '.$e->getLine()
+            ];
         }
-
-        return $this->responseHandler($response, $endpoint);
     }
 
     /**
@@ -163,21 +175,19 @@ class AmocrmRequest
      */
     public function canDoRequest(): bool
     {
-        if (!empty($this->amocrm_domain) &&
-            !empty($this->client_id) &&
-            !empty($this->client_secret) &&
-            !empty($this->expires_in) &&
-            !empty($this->token)) {
+        $plugin_params = $this->getPluginParams();
+        $token_type    = $plugin_params->get('token_type', 'normal');
+        $check         = [$this->amocrm_domain, $this->client_id, $this->client_secret, $this->token];
+        if ($token_type == 'normal') {
+            $check[] = $this->expires_in;
+        }
+        $required_checks = count($check);
+        $checked         = array_filter($check); // Check if !empty($value)
+        if ($required_checks == count($checked)) {
             return true;
         }
 
-        $plugin_params = $this->getPluginParams();
-        if (empty($plugin_params->get('amocrm_client_id', '')) || empty(
-            $plugin_params->get(
-                'amocrm_client_secret',
-                ''
-            )
-            )) {
+        if (empty($plugin_params->get('amocrm_client_id', '')) || empty($plugin_params->get('amocrm_client_secret',''))) {
             $this->saveToLog('There is no credentials found. Check theirs in plugin System - WT AmoCRM', 'WARNING');
 
             return false;
@@ -247,6 +257,15 @@ class AmocrmRequest
             return true;
         }
 
+        $plugin_params = $this->getPluginParams();
+        $token_type = $plugin_params->get('token_type', 'normal');
+
+        if ($token_type == 'long_term') {
+            $this->setTokenType('Bearer');
+            $this->setToken($plugin_params->get('long_term_token', ''));
+            return true;
+        }
+
         $cache      = $this->getCache();
         $token_data = $cache->get('wt_amo_crm');
 
@@ -288,6 +307,34 @@ class AmocrmRequest
         unset($token_data);
 
         return true;
+    }
+
+    /**
+     * Set token from Amo CRM API response to $this->$token
+     *
+     * @param   string  $token  token from Amo CRM API reponse
+     *
+     *
+     * @since 1.0.0
+     * @retun void
+     */
+    public function setToken(string $token): void
+    {
+        $this->token = $token;
+    }
+
+    /**
+     * Set token type from Amo CRM API response to $this->$token_type
+     *
+     * @param   string  $token_type  Token type from Amo CRM API response
+     *
+     *
+     * @since 1.0.0
+     * @retun void
+     */
+    public function setTokenType(string $token_type): void
+    {
+        $this->token_type = $token_type;
     }
 
     /**
@@ -492,34 +539,6 @@ class AmocrmRequest
         }
 
         return false;
-    }
-
-    /**
-     * Set token from Amo CRM API response to $this->$token
-     *
-     * @param   string  $token  token from Amo CRM API reponse
-     *
-     *
-     * @since 1.0.0
-     * @retun void
-     */
-    public function setToken(string $token): void
-    {
-        $this->token = $token;
-    }
-
-    /**
-     * Set token type from Amo CRM API response to $this->$token_type
-     *
-     * @param   string  $token_type  Token type from Amo CRM API response
-     *
-     *
-     * @since 1.0.0
-     * @retun void
-     */
-    public function setTokenType(string $token_type): void
-    {
-        $this->token_type = $token_type;
     }
 
     /**

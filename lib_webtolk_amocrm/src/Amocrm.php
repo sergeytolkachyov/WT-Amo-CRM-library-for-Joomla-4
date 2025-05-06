@@ -114,6 +114,12 @@ class Amocrm
      */
     private array $instances = [];
 
+    /**
+     * @var AmocrmRequest
+     * @since 1.3.0
+     */
+    private AmocrmRequest $request;
+
     public function __construct()
     {
         $lang      = Factory::getApplication()->getLanguage();
@@ -144,9 +150,7 @@ class Amocrm
 
     public function getAccountInfo(): object
     {
-        $endpoint = '/account';
-
-        return $this->getResponse($endpoint, null, 'GET');
+        return $this->getRequest()->getResponse('/account', null, 'GET');
     }
 
     /**
@@ -170,7 +174,7 @@ class Amocrm
          * Check if the library system plugin is enabled and credentials data are filled
          */
 
-        if (!$this->canDoRequest()) {
+        if (!$this->getRequest()->canDoRequest()) {
             return (object)[
                 'error_code'    => 400,
                 'error_message' => Text::_('LIB_WTAMOCRM_ERROR_GETRESPONSE_CANT_DO_REQUEST')

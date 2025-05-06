@@ -52,10 +52,27 @@
                        name="amocrm_client_secret"
                        label="PLG_WT_AMOCRM_AMOCRM_CLIENT_SECRET"
                        description="PLG_WT_AMOCRM_AMOCRM_CLIENT_SECRET_DESC"/>
+                <field type="radio"
+                       name="token_type"
+                       label="PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE"
+                       description="PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE_DESC"
+                       class="btn-group"
+                       default="normal">
+                    <option value="normal">PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE_NORMAL</option>
+                    <option value="long_term">PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE_LONG_TERM</option>
+                </field>
+                <field type="textarea"
+                       name="long_term_token"
+                       label="PLG_WT_AMOCRM_AMOCRM_LONG_TERM_TOKEN"
+                       description="PLG_WT_AMOCRM_AMOCRM_LONG_TERM_TOKEN_DESC"
+                       filter="raw"
+                       showon="token_type:long_term"
+                       />
                 <field type="text"
                        name="amocrm_code"
                        label="PLG_WT_AMOCRM_AMOCRM_CODE"
-                       description="PLG_WT_AMOCRM_AMOCRM_CODE_DESC"/>
+                       description="PLG_WT_AMOCRM_AMOCRM_CODE_DESC"
+                       showon="token_type:normal"/>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="redirecturl"
                        label="PLG_WT_AMOCRM_AMOCRM_REDIRECT_URI"
@@ -64,7 +81,8 @@
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="clearrefreshtokenbtn"
                        label="PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN"
-                       name="clear_refresh_token_btn"/>
+                       name="clear_refresh_token_btn"
+                       showon="token_type:normal"/>
             </fieldset>
         </fields>
     </config>
