@@ -140,7 +140,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     'ERROR'
                 );
             }
-        } else {
+        } elseif($this->params->get('update_amocrm_contact_data_by_joomla', false)) {
             // Have we AmoCRM user id for this Joomla user? False or (int) AmoCRM user id.
             $amocrm_user_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id);
 

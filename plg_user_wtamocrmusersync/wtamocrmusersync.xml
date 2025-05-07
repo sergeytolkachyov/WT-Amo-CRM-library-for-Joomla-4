@@ -34,6 +34,16 @@
                        description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_DESC"
                        layout="joomla.form.field.list-fancy-select"
                        multiple="true"/>
+                <field type="radio"
+                       name="update_amocrm_contact_data_by_joomla"
+                       label="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA"
+                       description="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
             </fieldset>
         </fields>
     </config>

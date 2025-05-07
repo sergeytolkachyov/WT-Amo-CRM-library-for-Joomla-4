@@ -36,6 +36,10 @@ return new class implements ServiceProviderInterface {
 				$config  = (array) PluginHelper::getPlugin('system', 'wt_amocrm');
 				$plugin = new Wt_amocrm($subject, $config);
 				$plugin->setApplication(\Joomla\CMS\Factory::getApplication());
+
+                $registry = $container->get(Joomla\CMS\WebAsset\WebAssetRegistry::class);
+                $registry->addRegistryFile('media/plg_system_wt_amocrm/joomla.asset.json');
+
 				return $plugin;
 			}
 		);

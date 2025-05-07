@@ -30,6 +30,10 @@
             <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
         </sql>
     </uninstall>
+    <media folder="media" destination="plg_system_wt_amocrm">
+        <folder>js</folder>
+        <filename>joomla.asset.json</filename>
+    </media>
     <config>
         <fields name="params">
             <fieldset name="basic">
@@ -83,6 +87,16 @@
                        label="PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN"
                        name="clear_refresh_token_btn"
                        showon="token_type:normal"/>
+            </fieldset>
+            <fieldset name="webhook" label="Webhook">
+                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
+                       type="token"
+                       name="webhook_token"
+                       label="webhook_token"/>
+                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
+                       type="webhookurl"
+                       name="webhook_url"
+                       label="webhook_url"/>
             </fieldset>
         </fields>
     </config>

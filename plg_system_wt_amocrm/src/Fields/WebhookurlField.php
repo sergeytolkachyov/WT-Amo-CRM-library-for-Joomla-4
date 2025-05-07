@@ -17,7 +17,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
 
 
-class RedirecturlField extends FormField
+class WebhookurlField extends FormField
 {
 
 	protected $type = 'Redirecturl';
@@ -35,23 +35,40 @@ class RedirecturlField extends FormField
 		$wa      = Factory::getApplication()->getDocument()->getWebAssetManager();
 		$wa->useScript('plg_system_wt_amocrm.copytextfield');
 
-		return '<div class="input-group">
+		$data    = $this->form->getData();
+		$webhook_token = $data->get('params.webhook_token', '');
+
+		if(empty($webhook_token))
+		{
+			$html = '<div class="alert alert-info">'.Text::_('Создайте токен и сохраните параметры плагина. Если оставить поле токена пустым, то он сгенерируется автоматически.').'</div>';
+		} else {
+			$url = new Uri(Uri::root());
+			$url->setQuery([
+				'option' => 'com_ajax',
+				'plugin' => 'wt_amocrm',
+				'group' => 'system',
+				'format' => 'raw',
+				'token' => $webhook_token,
+			]);
+
+			$html = '<div class="input-group">
 					<input
 						type="text"
 						class="form-control"
 						name="'. $this->__get('name').'"
 						id="'.$this->__get('id').'"
 						readonly
-						value="'.Uri::root().'index.php?option=com_ajax&plugin=wt_amocrm&group=system&format=raw" 
+						value="'.$url->toString().'" 
 					>
 					<button
 						class="btn btn-primary"
 						type="button"
-						id="link-copy"
 						data-webtolk-amocrm-copy-field-value
 						title="'. Text::_('JLIB_HTML_BATCH_COPY').'"> '.Text::_('JLIB_HTML_BATCH_COPY').'
 					</button>
 				</div>';
+		}
+		return $html;
 	}
 
 	/**
