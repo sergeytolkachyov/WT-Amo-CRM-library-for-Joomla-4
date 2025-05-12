@@ -88,15 +88,29 @@
                        name="clear_refresh_token_btn"
                        showon="token_type:normal"/>
             </fieldset>
-            <fieldset name="webhook" label="Webhook">
+            <fieldset name="webhook" label="PLG_WT_AMOCRM_WEBHOOK_FIELDSET_LABEL">
+                <field
+                        name="allow_amocrm_webhooks"
+                        type="radio"
+                        label="PLG_WT_AMOCRM_ALLOW_AMOCRM_WEBHOOKS"
+                        description="PLG_WT_AMOCRM_ALLOW_AMOCRM_WEBHOOKS_DESC"
+                        layout="joomla.form.field.radio.switcher"
+                        default="0"
+                        filter="boolean"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="token"
                        name="webhook_token"
-                       label="webhook_token"/>
+                       label="PLG_WT_AMOCRM_WEBHOOK_TOKEN"
+                       showon="allow_amocrm_webhooks:1"/>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="webhookurl"
                        name="webhook_url"
-                       label="webhook_url"/>
+                       label="PLG_WT_AMOCRM_FIELD_WEBHOOK_URL"
+                       showon="allow_amocrm_webhooks:1"/>
             </fieldset>
         </fields>
     </config>

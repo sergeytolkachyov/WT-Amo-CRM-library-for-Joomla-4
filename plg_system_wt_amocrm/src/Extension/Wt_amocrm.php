@@ -14,18 +14,24 @@ use JLoader;
 use Joomla\CMS\Helper\LibraryHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Session\Session;
+use Joomla\Event\DispatcherAwareInterface;
+use Joomla\Event\DispatcherAwareTrait;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
-use phpseclib3\Crypt\EC\Curves\brainpoolP160r1;
+
+use Webtolk\Amocrm\Event\WebhookEvent;
 
 use function defined;
 
 // No direct access
 defined('_JEXEC') or die;
 
-class Wt_amocrm extends CMSPlugin implements SubscriberInterface
+class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwareInterface
 {
+    use DispatcherAwareTrait;
+
     protected $allowLegacyListeners = false;
 
     /**
@@ -59,50 +65,125 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface
      * @param $event
      *
      *
-     * @since version
+     * @since 1.0.0
      */
     public function onAjaxWt_amocrm($event): void
     {
-        $token = $this->getApplication()->getInput()->getCmd('token');
+        $app = $this->getApplication();
+        /** @var string $token_from_request token from GET request */
+        $token_from_request = $app->getInput()->get->get('token', '', 'raw');
+        /** @var string $webhook_token Token from plugin params */
+        $webhook_token = $this->params->get('webhook_token', '');
+        $action        = $app->getInput()->getCmd('action');
+        /** @var string $action_type 'internal' (Joomla) or 'external' (outside Joomla) */
+        $action_type = $app->getInput()->getCmd('action_type', 'internal');
 
-//        if (!Session::checkToken('GET')) {
-//            $event->setArgument('result', Text::_('JINVALID_TOKEN'));
-//            die();
-//        }
+        $allow_amocrm_webhooks = $this->params->get('allow_amocrm_webhooks', false);
 
-        $action = $this->getApplication()->getInput()->getCmd('action');
-
-        $action_result_message = '';
-
-        switch ($action) {
-            case 'webhook':
-                $event = \Webtolk\Amocrm\Event\WebhookEvent::create('onAmocrmIncomingWebhook',
-
-                    [
-                        'subject' => $this,
-                        'result' => $this->getApplication()->getInput()
-                    ]
-                );
-                $this->getApplication()->getDispatcher()->dispatch($event->getName(), $event);
-//                dd($event->getArgument('result', []));
-// https://daykerov.demowt.ru/index.php?option=com_ajax&plugin=wt_amocrm&group=system&format=raw&action=webhook&token=adflkjhlasdflkjhasdfkjh
-//                file_put_contents(__DIR__.'/'.__FUNCTION__.'.txt', print_r($event->getArgument('result', []), true), FILE_APPEND);
-                break;
-            case 'clear_refresh_token': // Clear AmoCRM refresh token from Joomla database
-            default:
-                /**
-                 * @param $lib_params Registry
-                 */
-                $lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
-                $lib_params->set('refresh_token', '');
-                $lib_params->set('refresh_token_date', '');
-                LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params);
-                $action_result_message = 'AmoCRM refresh token has been cleared';
-                break;
+        if ($allow_amocrm_webhooks && // incoming webhooks are enabled
+            !empty($token_from_request) && // token is exists in incoming request
+            !empty($webhook_token) && // we have a token in plugin params
+            $webhook_token == $token_from_request && // check tokens match
+            $action_type === 'external'// we have an action param
+        ) {
+            $action_result_message = $this->handleWebhook($action);
+        } elseif (Session::checkToken('GET') && $action_type === 'internal') {
+            $action_result_message = $this->callJoomlaInternal($action);
+        } else {
+            $this->getApplication()->setHeader('status', 403);
+            die(Text::_('JINVALID_TOKEN'));
         }
 
         if (!empty($action_result_message)) {
             $event->setArgument('result', $action_result_message);
         }
+
+        $this->getApplication()->setHeader('status', 200);
+    }
+
+    /**
+     *
+     * AmoCRM webhooks handler
+     *
+     * @param   string  $action
+     *
+     * @return mixed
+     *
+     * @since 1.3.0
+     */
+    private function handleWebhook(string $action)
+    {
+        switch ($action) {
+            case 'webhook':
+            default:
+
+                $remove     = ['option', 'plugin', 'group', 'format', 'action', 'action_type', 'token'];
+                $data       = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
+                $dispatcher = $this->getDispatcher();
+                PluginHelper::importPlugin('system', null, true, $dispatcher);
+                PluginHelper::importPlugin('user', null, true, $dispatcher);
+                PluginHelper::importPlugin('amocrm', null, true, $dispatcher);
+
+                $event = WebhookEvent::create(
+                    'onAmocrmIncomingWebhook',
+                    [
+                        'eventClass' => WebhookEvent::class,
+                        'subject'    => (new Registry($data)),
+                    ]
+                );
+
+                $dispatcher->dispatch($event->getName(), $event);
+
+                break;
+        }
+    }
+
+    /**
+     * Call internal Joomla methods
+     *
+     * @param   string  $action
+     *
+     * @return mixed
+     *
+     * @since 1.3.0
+     */
+    private function callJoomlaInternal(string $action)
+    {
+        if (!Session::checkToken('GET')) {
+            return Text::_('JINVALID_TOKEN');
+        }
+
+        switch ($action) {
+            case 'clear_refresh_token': // Clear AmoCRM refresh token from Joomla database
+            default:
+                $result = $this->clearRefreshToken();
+                break;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Clear old refhresh token from database
+     *
+     * @return string
+     *
+     * @since 1.3.0
+     */
+    private function clearRefreshToken(): string
+    {
+        /**
+         * @param $lib_params Registry
+         */
+        $lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
+        $lib_params->set('refresh_token', '');
+        $lib_params->set('refresh_token_date', '');
+        $action_result_message = 'AmoCRM refresh token has been cleared';
+
+        if (!LibraryHelper::saveParams('Webtolk/Amocrm', $lib_params)) {
+            $action_result_message = 'Failed to remove AmoCRM refresh token from database';
+        }
+
+        return $action_result_message;
     }
 }

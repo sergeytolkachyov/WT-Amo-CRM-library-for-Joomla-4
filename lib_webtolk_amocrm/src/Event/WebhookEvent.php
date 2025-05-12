@@ -9,21 +9,49 @@
 
 namespace Webtolk\Amocrm\Event;
 
-use Joomla\CMS\Event\Workflow\AbstractEvent;
+use Joomla\CMS\Event\AbstractEvent;
 
 class WebhookEvent extends AbstractEvent
 {
-    public function getAccount(): array
+    /**
+     * Return all the webhook raw data
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    public function getData():array
     {
-        return $this->arguments['account'];
+        return $this->arguments['subject']->toArray();
     }
 
-    public function getContactsUpdated():array
+    public function getAccount(): array
     {
-        return $this->arguments['contacts']['update'] ?? [];
+        return $this->getData()['account'];
     }
-    public function getContactsDeleted():array
+
+    /**
+     * Get all contacts data if exists. All contacts have a type 'company' or type 'contact'
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    public function getContacts(): array
     {
-        return $this->arguments['contacts']['delete'] ?? [];
+        return $this->getData()['contacts'] ?? [];
+    }
+
+
+    /**
+     * Get all leads data if exists
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    public function getLeads(): array
+    {
+        return $this->getData()['leads'] ?? [];
     }
 }

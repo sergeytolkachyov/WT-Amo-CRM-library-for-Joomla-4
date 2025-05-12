@@ -75,8 +75,3 @@ class RedirecturlField extends FormField
 	}
 }
 
-
-?>
-
-
-

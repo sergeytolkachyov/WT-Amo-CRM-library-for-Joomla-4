@@ -14,8 +14,6 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Form\FormField;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\User\UserHelper;
 
 
@@ -43,11 +41,11 @@ class TokenField extends FormField
 
         if (empty($this->value)) {
             $field_input[] = '<div class="invalid-feedback d-block">';
-            $field_input[] = 'Токен не создан. Создайте новый токен вручную или очистите поле и сохраните настройки плагина. Токен будет сгенерирован автоматически. После этого снова сохраните параметры плагина.';
+            $field_input[] = Text::_('PLG_WT_AMOCRM_FIELD_WEBHOOK_TOKEN_TOKEN_IS_EMPTY');
             $field_input[] = '</div>';
         } else {
             $field_input[] = '<div class="valid-feedback d-block">';
-            $field_input[] = 'Токен сохранён. Для создания нового токена измените его вручную или очистите поле и дважды сохраните настройки плагина.';
+            $field_input[] = Text::_('PLG_WT_AMOCRM_FIELD_WEBHOOK_TOKEN_TOKEN_IS_CREATED');
             $field_input[] = '</div>';
         }
 

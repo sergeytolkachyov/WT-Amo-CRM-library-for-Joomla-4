@@ -10,19 +10,15 @@
 
 namespace Joomla\Plugin\User\Wtamocrmusersync\Extension;
 
-use Exception;
-use Joomla\CMS\Date\Date;
-use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\User\UserFactoryInterface;
-use Joomla\CMS\User\UserHelper;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Utilities\ArrayHelper;
 use Webtolk\Amocrm\Amocrm;
+use Webtolk\Amocrm\Event\WebhookEvent;
 use Webtolk\Amocrm\Helper\UserHelper as AmocrmUserHelper;
 
 use function defined;
@@ -48,8 +44,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'onUserAfterSave'        => 'onUserAfterSave',
-            'onUserAfterDelete'      => 'onUserAfterDelete',
+            'onUserAfterSave'         => 'onUserAfterSave',
+            'onUserAfterDelete'       => 'onUserAfterDelete',
+            'onAmocrmIncomingWebhook' => 'onAmocrmIncomingWebhook',
         ];
     }
 
@@ -120,17 +117,16 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         // We have a new user. Let's register he in AmoCRM
         if ($isnew) {
-
             if (!empty($amocrm_contact_tags = $this->params->get('amocrm_contact_tags', []))) {
                 $user_data['_embedded']['tags'] = [];
                 foreach ($amocrm_contact_tags as $tag_id) {
                     $user_data['_embedded']['tags'][] = [
-                        'id' => (int) $tag_id
+                        'id' => (int)$tag_id
                     ];
                 }
             }
             $amocrm_users = $amocrm->contacts()->addContacts([$user_data]);
-            if (!property_exists($amocrm_users,'error_code')) {
+            if (!property_exists($amocrm_users, 'error_code')) {
                 $amocrm_user_id = $amocrm_users->_embedded->contacts[0]->id;
                 // Save relations
                 AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_user_id);
@@ -140,22 +136,27 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     'ERROR'
                 );
             }
-        } elseif($this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+        } elseif ($this->params->get('update_amocrm_contact_data_by_joomla', false)) {
             // Have we AmoCRM user id for this Joomla user? False or (int) AmoCRM user id.
             $amocrm_user_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id);
 
             if ($amocrm_user_id) {
-
                 $result = $amocrm->contacts()->editContact($amocrm_user_id, $user_data);
 
                 $amocrm->saveToLog(
-                    Text::sprintf('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_HAS_BEEN_UPDATED', $joomla_user_id),
+                    Text::sprintf(
+                        'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_HAS_BEEN_UPDATED',
+                        $joomla_user_id
+                    ),
                     'info'
                 );
             } else {
                 // We loose AmoCRM user id :((
                 $amocrm->saveToLog(
-                    Text::sprintf('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_NO_AMOCRM_CONTACT_ID_FOR_JOOMLA_USER_ID', $joomla_user_id),
+                    Text::sprintf(
+                        'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_NO_AMOCRM_CONTACT_ID_FOR_JOOMLA_USER_ID',
+                        $joomla_user_id
+                    ),
                     'warning'
                 );
             }
@@ -167,7 +168,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * Method is called after user data is deleted from the database
      *
-     * @param Event $event
+     * @param   Event  $event
      *
      * @return  void
      *
@@ -193,12 +194,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
             if ($amocrm_contact_id) {
                 $amocrm = new Amocrm();
-                $notes = [
+                $notes  = [
                     [
                         'created_by' => 0, // 0 - создал робот
-                        'note_type' => 'common',
-                        'params' => [
-                            'text' => Text::sprintf('PLG_WTAMOCRMUSERSYNC_JOOMLA_USER_HAS_BEEN_REMOVED', HTMLHelper::date('now', Text::_('DATE_FORMAT_LC5')))
+                        'note_type'  => 'common',
+                        'params'     => [
+                            'text' => Text::sprintf(
+                                'PLG_WTAMOCRMUSERSYNC_JOOMLA_USER_HAS_BEEN_REMOVED',
+                                HTMLHelper::date('now', Text::_('DATE_FORMAT_LC5'))
+                            )
                         ],
                     ]
                 ];
@@ -208,5 +212,20 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id]);
             }
         }
+    }
+
+    /**
+     * @param   WebhookEvent  $event
+     *
+     *
+     * @since 1.3.0
+     */
+    public function onAmocrmIncomingWebhook($event)
+    {
+        file_put_contents(
+            JPATH_SITE . '/amocrm_webhook.txt',
+            '!!!!! - ' . __METHOD__ . PHP_EOL . print_r($event->getData(), true) . PHP_EOL . PHP_EOL,
+            FILE_APPEND
+        );
     }
 }

@@ -1,11 +1,11 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.3.0-alpha2
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
+ * @package        WT Amocrm Library
+ * @version        1.3.0-alpha2
+ * @Author         Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @license        GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since          1.0.0
  */
 
 namespace Joomla\Plugin\System\Wt_amocrm\Fields;
@@ -20,80 +20,78 @@ use Joomla\CMS\Uri\Uri;
 class WebhookurlField extends FormField
 {
 
-	protected $type = 'Redirecturl';
+    protected $type = 'Redirecturl';
 
-	/**
-	 * Method to get the field input markup for a spacer.
-	 * The spacer does not have accept input.
-	 *
-	 * @return  string  The field input markup.
-	 *
-	 * @since   1.7.0
-	 */
-	protected function getInput()
-	{
-		$wa      = Factory::getApplication()->getDocument()->getWebAssetManager();
-		$wa->useScript('plg_system_wt_amocrm.copytextfield');
+    /**
+     * Method to get the field input markup for a spacer.
+     * The spacer does not have accept input.
+     *
+     * @return  string  The field input markup.
+     *
+     * @since   1.7.0
+     */
+    protected function getInput()
+    {
+        $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
+        $wa->useScript('plg_system_wt_amocrm.copytextfield');
 
-		$data    = $this->form->getData();
-		$webhook_token = $data->get('params.webhook_token', '');
+        $data = $this->form->getData();
+        $webhook_token = $data->get('params.webhook_token', '');
 
-		if(empty($webhook_token))
-		{
-			$html = '<div class="alert alert-info">'.Text::_('Создайте токен и сохраните параметры плагина. Если оставить поле токена пустым, то он сгенерируется автоматически.').'</div>';
-		} else {
-			$url = new Uri(Uri::root());
-			$url->setQuery([
-				'option' => 'com_ajax',
-				'plugin' => 'wt_amocrm',
-				'group' => 'system',
-				'format' => 'raw',
-				'token' => $webhook_token,
-			]);
+        if (empty($webhook_token)) {
+            $html = '<div class="alert alert-info">' . Text::_(
+                    'PLG_WT_AMOCRM_FIELD_WEBHOOK_URL_EMPTY_WEBHOOK_TOKEN_DESC'
+                ) . '</div>';
+        } else {
+            $url = new Uri(Uri::root());
+            $url->setQuery([
+                'option'      => 'com_ajax',
+                'plugin'      => 'wt_amocrm',
+                'group'       => 'system',
+                'format'      => 'raw',
+                'action'      => 'webhook',
+                'action_type' => 'external',
+                'token'       => $webhook_token,
+            ]);
 
-			$html = '<div class="input-group">
+            $html = '<div class="input-group">
 					<input
 						type="text"
 						class="form-control"
-						name="'. $this->__get('name').'"
-						id="'.$this->__get('id').'"
+						name="' . $this->__get('name') . '"
+						id="' . $this->__get('id') . '"
 						readonly
-						value="'.$url->toString().'" 
+						value="' . $url->toString() . '" 
 					>
 					<button
 						class="btn btn-primary"
 						type="button"
 						data-webtolk-amocrm-copy-field-value
-						title="'. Text::_('JLIB_HTML_BATCH_COPY').'"> '.Text::_('JLIB_HTML_BATCH_COPY').'
+						title="' . Text::_('JLIB_HTML_BATCH_COPY') . '"> ' . Text::_('JLIB_HTML_BATCH_COPY') . '
 					</button>
 				</div>';
-		}
-		return $html;
-	}
+        }
 
-	/**
-	 * @return  string  The field label markup.
-	 *
-	 * @since   1.7.0
-	 */
-	protected function getLabel()
-	{
-		return Text::_(($this->element['label'] ? (string) $this->element['label'] : (string) $this->element['name']));
-	}
+        return $html;
+    }
 
-	/**
-	 * @return  string  The field label markup.
-	 *
-	 * @since   1.7.0
-	 */
-	protected function getTitle()
-	{
-		return $this->getLabel();
-	}
+    /**
+     * @return  string  The field label markup.
+     *
+     * @since   1.7.0
+     */
+    protected function getTitle()
+    {
+        return $this->getLabel();
+    }
+
+    /**
+     * @return  string  The field label markup.
+     *
+     * @since   1.7.0
+     */
+    protected function getLabel()
+    {
+        return Text::_(($this->element['label'] ? (string)$this->element['label'] : (string)$this->element['name']));
+    }
 }
-
-
-?>
-
-
-
