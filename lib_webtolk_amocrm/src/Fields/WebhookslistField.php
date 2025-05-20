@@ -35,7 +35,7 @@ class WebhookslistField extends FormField
         $layoutData = parent::getLayoutData();
 
         $webhooks  = (new Amocrm())->webhooks();
-        $onlycurrentsite       = !empty($this->element['onlycurrentsite']) && boolval($this->element['onlycurrentsite']);
+        $onlycurrentsite = (!empty($this->element['onlycurrentsite']) && (string)$this->element['onlycurrentsite'] == 'true') ? true : false;
         $filter = [];
 
         if($onlycurrentsite && !empty($url = $webhooks->getJoomlaWebhookUrl())) {

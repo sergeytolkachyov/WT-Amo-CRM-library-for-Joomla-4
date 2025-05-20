@@ -23,7 +23,7 @@ extract($displayData);
  *                               the $amocrm_webhooks array contains webhooks only for
  *                               the current site.
  */
-dump($onlycurrentsite, $amocrm_webhooks);
+
 $total_webhooks = $amocrm_webhooks->_total_items;
 $webhooks       = $amocrm_webhooks->_embedded->webhooks;
 
@@ -31,11 +31,11 @@ $webhooks       = $amocrm_webhooks->_embedded->webhooks;
 <div class="p-3 border border-1">
     <div class="d-flex flex-column flex-md-row justify-content-md-between"><span class="mb-3"><span
                     class="badge bg-secondary"><?php
-                echo Text::_('Всего вебхуков'); ?></span> <span class="badge bg-primary"><?php
+                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_TOTAL'); ?></span> <span class="badge bg-primary"><?php
                 echo $total_webhooks; ?></span></span>
         <span><span class="badge bg-secondary"><?php
-                echo Text::_('Показаны вебхуки для'); ?></span> <span class="badge bg-primary"><?php
-                echo Text::_('текущего сайта'); ?></span></span>
+                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_SHOWN_FOR'); ?></span> <span class="badge bg-primary"><?php
+                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_SHOWN_ONLYCURRENTSITE_'.($onlycurrentsite ? 'TRUE':'FALSE')); ?></span></span>
     </div>
     <?php
     if (!empty($webhooks)): ?>
@@ -77,7 +77,7 @@ $webhooks       = $amocrm_webhooks->_embedded->webhooks;
         </ul>
     <?php else: ?>
     <div class="alert alert-info">
-        <?php echo Text::_('В вашем аккаунте AmoCRM нет подключённых вебхуков');?>
+        <?php echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_THERE_IS_NO_WEBHOOKS');?>
     </div>
     <?php endif; ?>
 </div>

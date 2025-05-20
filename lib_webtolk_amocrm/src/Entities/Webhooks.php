@@ -56,7 +56,7 @@ class Webhooks implements EntityInterface
      * Метод доступен с правами администратора аккаунта.
      *
      * ## GET Параметры
-     * - filter object Фильтр
+     * - filter object Фильтр. Фильтрация данных в AmoCRM **оплачивается отдельно**.
      * - filter[destination] string Фильтр по точному адресу вебхука
      *
      * @param   array  $data
