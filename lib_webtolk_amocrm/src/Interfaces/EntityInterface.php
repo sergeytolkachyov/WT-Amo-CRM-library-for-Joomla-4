@@ -8,7 +8,7 @@
  * @since             1.0.0
  */
 
-namespace Webtolk\Amocrm\Interface;
+namespace Webtolk\Amocrm\Interfaces;
 
 use Webtolk\Amocrm\AmocrmRequest;
 

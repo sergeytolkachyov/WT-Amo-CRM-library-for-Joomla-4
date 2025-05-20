@@ -15,7 +15,7 @@
 namespace Webtolk\Amocrm\Entities;
 
 use Webtolk\Amocrm\AmocrmRequest;
-use Webtolk\Amocrm\Interface\EntityInterface;
+use Webtolk\Amocrm\Interfaces\EntityInterface;
 
 use function defined;
 

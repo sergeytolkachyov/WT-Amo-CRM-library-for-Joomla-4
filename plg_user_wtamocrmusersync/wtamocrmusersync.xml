@@ -27,23 +27,103 @@
                 <field addfieldprefix="Joomla\Plugin\User\Wtamocrmusersync\Fields"
                        type="plugininfo"
                        name="plugininfo"/>
-                <field addfieldprefix="Webtolk\Amocrm\Fields"
-                       type="contactstagslist"
-                       name="amocrm_contact_tags"
-                       label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_LABEL"
-                       description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_DESC"
-                       layout="joomla.form.field.list-fancy-select"
-                       multiple="true"/>
+                <field type="note"
+                       name="joomla_to_amocrm_note"
+                       label="PLG_WTAMOCRMUSERSYNC_JOOMLA_TO_AMOCRM_NOTE"
+                       class="my-4 alert alert-info w-100"
+                       heading="h3"/>
                 <field type="radio"
-                       name="update_amocrm_contact_data_by_joomla"
-                       label="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA"
-                       description="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA_DESC"
+                       name="create_amocrm_contact"
+                       label="PLG_WTAMOCRMUSERSYNC_CREATE_AMOCRM_CONTACT"
+                       description="PLG_WTAMOCRMUSERSYNC_CREATE_AMOCRM_CONTACT_DESC"
                        layout="joomla.form.field.radio.switcher"
                        filter="bool"
                        default="0">
                     <option value="0">JNO</option>
                     <option value="1">JYES</option>
                 </field>
+                <field addfieldprefix="Webtolk\Amocrm\Fields"
+                       type="contactstagslist"
+                       name="amocrm_contact_tags"
+                       label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_LABEL"
+                       description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_DESC"
+                       layout="joomla.form.field.list-fancy-select"
+                       multiple="true"
+                       showon="create_amocrm_contact:1"/>
+                <field type="radio"
+                       name="update_amocrm_contact_data_by_joomla"
+                       label="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA"
+                       description="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="create_amocrm_contact:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+            <fieldset name="webhook" label="PLG_WTAMOCRMUSERSYNC_WEBHOOK_FIELDSET_LABEL"
+                      description="PLG_WTAMOCRMUSERSYNC_WEBHOOK_FIELDSET_DESC">
+                <field type="note"
+                       name="amocrm_to_joomla_note"
+                       label="PLG_WTAMOCRMUSERSYNC_AMOCRM_TO_JOOMLA_NOTE"
+                       class="my-4 alert alert-info w-100"
+                       heading="h3"/>
+                <field type="radio"
+                       name="allow_webhook_actions"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_WEBHOOK_ACTIONS"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_WEBHOOK_ACTIONS_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="allow_create_user"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_CREATE_USER"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_CREATE_USER_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="allow_delete_user_data"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_DELETE_USER_DATA"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_DELETE_USER_DATA_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="allow_update_user_data"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_UPDATE_USER_DATA"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_UPDATE_USER_DATA_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="update_user_email"
+                       label="PLG_WTAMOCRMUSERSYNC_UPDATE_USER_EMAIL"
+                       description="PLG_WTAMOCRMUSERSYNC_UPDATE_USER_EMAIL_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1[AND]allow_update_user_data:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+
             </fieldset>
         </fields>
     </config>

@@ -16,9 +16,9 @@ namespace Webtolk\Amocrm\Entities;
 
 use Joomla\CMS\Language\Text;
 use Webtolk\Amocrm\AmocrmRequest;
-use Webtolk\Amocrm\Interface\EntityInterface;
+use Webtolk\Amocrm\Interfaces\EntityInterface;
 
-use Webtolk\Amocrm\Trait\LogTrait;
+use Webtolk\Amocrm\Traits\LogTrait;
 
 use function defined;
 

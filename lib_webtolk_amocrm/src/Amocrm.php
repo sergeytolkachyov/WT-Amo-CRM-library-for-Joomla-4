@@ -29,9 +29,10 @@ use Webtolk\Amocrm\Entities\Leads;
 use Webtolk\Amocrm\Entities\Notes;
 use Webtolk\Amocrm\Entities\Tags;
 use Webtolk\Amocrm\Entities\Users;
-use Webtolk\Amocrm\Interface\EntityInterface;
+use Webtolk\Amocrm\Entities\Webhooks;
+use Webtolk\Amocrm\Interfaces\EntityInterface;
 
-use Webtolk\Amocrm\Trait\LogTrait;
+use Webtolk\Amocrm\Traits\LogTrait;
 
 use function defined;
 
@@ -45,6 +46,7 @@ defined('_JEXEC') or die;
  * @method Notes notes()
  * @method Tags tags()
  * @method Users users()
+ * @method Webhooks webhooks()
  *
  * @since 1.0.0
  */
@@ -128,15 +130,6 @@ class Amocrm
         $lang->load($extension, $base_dir);
 
         $this->request = new AmocrmRequest();
-    }
-
-    /**
-     * @return AmocrmRequest
-     * @since 1.3.0
-     */
-    public function getRequest(): AmocrmRequest
-    {
-        return $this->request;
     }
 
     /**
@@ -272,6 +265,15 @@ class Amocrm
         }
 
         return new Registry($this->plugin_params);
+    }
+
+    /**
+     * @return AmocrmRequest
+     * @since 1.3.0
+     */
+    public function getRequest(): AmocrmRequest
+    {
+        return $this->request;
     }
 
     /**

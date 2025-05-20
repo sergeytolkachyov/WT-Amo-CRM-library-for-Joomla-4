@@ -25,6 +25,13 @@ class WebhookEvent extends AbstractEvent
         return $this->arguments['subject']->toArray();
     }
 
+    /**
+     * Get AmoCRM account data: id, subdomain, link
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
     public function getAccount(): array
     {
         return $this->getData()['account'];

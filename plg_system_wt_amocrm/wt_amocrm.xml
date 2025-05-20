@@ -111,6 +111,12 @@
                        name="webhook_url"
                        label="PLG_WT_AMOCRM_FIELD_WEBHOOK_URL"
                        showon="allow_amocrm_webhooks:1"/>
+                <field addfieldprefix="Webtolk\Amocrm\Fields"
+                       type="webhookslist"
+                       name="webhooks_list"
+                       onlycurrentsite="false"
+                       label="test"
+                       showon="allow_amocrm_webhooks:1"/>
             </fieldset>
         </fields>
     </config>

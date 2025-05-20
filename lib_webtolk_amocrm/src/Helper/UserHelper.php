@@ -15,7 +15,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\Database\DatabaseInterface;
 use Webtolk\Amocrm\Amocrm;
-use Webtolk\Amocrm\Trait\LogTrait;
+use Webtolk\Amocrm\Traits\LogTrait;
 
 use function defined;
 

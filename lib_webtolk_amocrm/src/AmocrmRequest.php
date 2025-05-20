@@ -25,7 +25,7 @@ use Joomla\CMS\Date\Date;
 use Joomla\CMS\Log\Log;
 use Webtolk\Amocrm\AmocrmClientException;
 
-use Webtolk\Amocrm\Trait\LogTrait;
+use Webtolk\Amocrm\Traits\LogTrait;
 
 use function defined;
 
@@ -81,14 +81,6 @@ class AmocrmRequest
      * @since 1.3.0
      */
     private string $amocrm_domain = '';
-
-    public function __construct()
-    {
-//        $lang      = Factory::getApplication()->getLanguage();
-//        $extension = 'lib_webtolk_amocrm';
-//        $base_dir  = JPATH_SITE;
-//        $lang->load($extension, $base_dir);
-    }
 
     /**
      * @param   string  $endpoint        AmoCRM API endpoint
@@ -151,7 +143,6 @@ class AmocrmRequest
                 if (!empty($data)) {
                     $url->setQuery($data);
                 }
-
                 // $url, $headers, $timeout
                 $response = $http->get($url, $headers);
             }
@@ -204,7 +195,7 @@ class AmocrmRequest
      *
      * @since 1.3.0
      */
-    private function getPluginParams(): Registry
+    public function getPluginParams(): Registry
     {
         if (!$this->plugin_params) {
             if (!PluginHelper::isEnabled('system', 'wt_amocrm')) {

@@ -13,6 +13,7 @@ namespace Joomla\Plugin\User\Wtamocrmusersync\Extension;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\User\UserFactoryAwareTrait;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
@@ -29,6 +30,7 @@ defined('_JEXEC') or die;
 class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 {
     use DatabaseAwareTrait;
+    use UserFactoryAwareTrait;
 
     protected $allowLegacyListeners = false;
 
@@ -74,6 +76,10 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         [$user, $isnew, $success, $msg] = array_values($event->getArguments());
 
         if (!$success) {
+            return;
+        }
+
+        if (!$this->params->get('create_amocrm_contact', false)) {
             return;
         }
 
@@ -219,13 +225,110 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      *
      * @since 1.3.0
+     * @see   WebhookEvent
      */
-    public function onAmocrmIncomingWebhook($event)
+    public function onAmocrmIncomingWebhook($event): void
     {
-        file_put_contents(
-            JPATH_SITE . '/amocrm_webhook.txt',
-            '!!!!! - ' . __METHOD__ . PHP_EOL . print_r($event->getData(), true) . PHP_EOL . PHP_EOL,
-            FILE_APPEND
-        );
+        if (!$this->params->get('allow_webhook_actions', false)) {
+            return;
+        }
+
+        /** @var array $contacts Array of contacts from webhook if exists */
+        $contacts = $event->getContacts();
+
+        if (empty($contacts)) {
+            return;
+        }
+        if ($this->params->get('allow_create_user', false) && array_key_exists('add', $contacts)) {
+            $this->createUsers($contacts['add']);
+        }
+        if ($this->params->get('allow_update_user_data', false) && array_key_exists('update', $contacts)) {
+            $this->updateUsers($contacts['update']);
+        }
+        if ($this->params->get('allow_delete_user_data', false) && array_key_exists('delete', $contacts)) {
+            $this->deleteUsers($contacts['delete']);
+        }
+        /**
+         * -всегда надо проверять amocrm contact id, так как может быть настроен И вебхук И создание юзеров внутри джумлы
+         * - создавать пользователей при вебхуке из Амо
+         * - обновлять пользователей при вебхуке из амо
+         * - удалять пользователей при вебхуке из амо
+         */
+    }
+
+    private function createUsers(array $contacts)
+    {
+    }
+
+    /**
+     * @param   array  $contacts
+     *
+     *
+     * @since 1.3.0
+     */
+    private function updateUsers(array $contacts)
+    {
+        if (!empty($contacts && is_array($contacts))) {
+            foreach ($contacts as $contact) {
+                if ($contact['type'] == 'contact' && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser(
+                        $contact['id']
+                    ))) {
+                    $user_data = [
+                        'id'   => $joomla_user_id,
+                        'name' => $contact['name']
+                    ];
+                    foreach ($contact['custom_fields'] as $custom_field) {
+                        if ($custom_field['code'] == 'EMAIL' &&
+                            $this->params->get('update_user_email', false) &&
+                            !empty($custom_field['values'][0]['value'])) {
+                                $user_data['email'] = trim($custom_field['values'][0]['value']);
+                        }
+//                        $user_data['com_fields']['field_name'] = 'new value';
+                    }
+                    $this->saveUser($user_data);
+                }
+            }
+        }
+    }
+
+    /**
+     * Save Joomla user data
+     *
+     * @param   array  $user_data
+     *
+     *
+     * @since 1.3.0
+     */
+    private function saveUser(array $user_data = [])
+    {
+        if (empty($user_data)) {
+            return;
+        }
+        $userModel = $this->getUserFactory()->loadUserById($user_data['id']);
+        $userModel->bind($user_data);
+        $userModel->save();
+    }
+
+    /**
+     * Delete Joomla users by AmoCRM incoming webhook
+     *
+     * @param   array  $contacts
+     *
+     *
+     * @since 1.3.0
+     */
+    private function deleteUsers(array $contacts)
+    {
+        if (!empty($contacts && is_array($contacts))) {
+            foreach ($contacts as $contact) {
+                if ($contact['type'] == 'contact' && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser(
+                        $contact['id']
+                    ))) {
+                    $user = $this->getUserFactory()->loadUserById($joomla_user_id);
+                    $user->delete();
+                    $this->getApplication()->logout($joomla_user_id);
+                }
+            }
+        }
     }
 }

@@ -15,6 +15,7 @@ use Joomla\CMS\Form\FormField;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
+use Webtolk\Amocrm\Amocrm;
 
 
 class WebhookurlField extends FormField
@@ -43,16 +44,8 @@ class WebhookurlField extends FormField
                     'PLG_WT_AMOCRM_FIELD_WEBHOOK_URL_EMPTY_WEBHOOK_TOKEN_DESC'
                 ) . '</div>';
         } else {
-            $url = new Uri(Uri::root());
-            $url->setQuery([
-                'option'      => 'com_ajax',
-                'plugin'      => 'wt_amocrm',
-                'group'       => 'system',
-                'format'      => 'raw',
-                'action'      => 'webhook',
-                'action_type' => 'external',
-                'token'       => $webhook_token,
-            ]);
+
+            $url = (new Amocrm())->webhooks()->getJoomlaWebhookUrl();
 
             $html = '<div class="input-group">
 					<input
@@ -61,7 +54,7 @@ class WebhookurlField extends FormField
 						name="' . $this->__get('name') . '"
 						id="' . $this->__get('id') . '"
 						readonly
-						value="' . $url->toString() . '" 
+						value="' . $url . '" 
 					>
 					<button
 						class="btn btn-primary"
