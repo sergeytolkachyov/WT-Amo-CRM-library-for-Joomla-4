@@ -10,6 +10,7 @@
 
 namespace Joomla\Plugin\User\Wtamocrmusersync\Extension;
 
+use Joomla\CMS\Form\Form;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
@@ -49,6 +50,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             'onUserAfterSave'         => 'onUserAfterSave',
             'onUserAfterDelete'       => 'onUserAfterDelete',
             'onAmocrmIncomingWebhook' => 'onAmocrmIncomingWebhook',
+            'onContentPrepareForm' => 'onContentPrepareForm',
         ];
     }
 
@@ -299,7 +301,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @since 1.3.0
      */
-    private function saveUser(array $user_data = [])
+    private function saveUser(array $user_data = []):void
     {
         if (empty($user_data)) {
             return;
@@ -329,6 +331,33 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     $this->getApplication()->logout($joomla_user_id);
                 }
             }
+        }
+    }
+
+    /**
+     * Add a
+     *
+     * @param   Event  $event
+     *
+     *
+     * @since 1.3.0
+     */
+    public function onContentPrepareForm(Event $event): void
+    {
+        $form     = $event->getArgument(0);
+        $formName = $form->getName();
+
+        // Проверяем имя формы, чтобы не добавить таб в материалы или ещё куда-нибудь
+        if ($formName === 'com_users.user')
+        {
+            Form::addFormPath(JPATH_SITE . '/plugins/user/wtamocrmusersync/form');
+            // fields - это имя файла в указанной папке - fields.xml
+            $form->loadFile('amocrm', false);
+            // грузим языковые константы для формы
+            $lang      = $this->getApplication()->getLanguage();
+            $extension = 'lib_webtolk_amocrm';
+            $base_dir  = JPATH_SITE;
+            $lang->load($extension, $base_dir);
         }
     }
 }

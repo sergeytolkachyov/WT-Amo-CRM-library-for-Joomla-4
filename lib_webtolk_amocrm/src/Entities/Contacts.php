@@ -70,6 +70,34 @@ class Contacts implements EntityInterface
     }
 
     /**
+     * Получение контакта по ID
+     * ## Метод
+     * GET /api/v4/contacts/{id}
+     *
+     * ## Описание
+     * Метод позволяет получить данные конкретного контакта по ID.
+     *
+     * ## Ограничения
+     * Метод доступен в соответствии с правами пользователя
+     *
+     * @param   int     $contact_id AmoCRM contact id
+     * @param   string  $with Данный параметр принимает строку, в том числе из нескольких значений, указанных через запятую.
+     *                        Данный метод поддерживает следующие параметры. См. ссылку
+     *
+     * @return object
+     * @link https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-03cd15fc-1b19-487c-93c5-99f959628f45-params
+     * @since 1.3.0
+     */
+    public function getContactById(int $contact_id, string $with = ''): object
+    {
+        $data = [];
+        if(!empty($with)){
+            $data['with'] = $with;
+        }
+        return $this->request->getResponse('/contacts/'.$contact_id, $data, 'GET', 'application/json');
+    }
+
+    /**
      * Метод позволяет добавлять **контакты** в аккаунт AmoCRM пакетно.
      * ## Метод
      * POST /api/v4/contacts

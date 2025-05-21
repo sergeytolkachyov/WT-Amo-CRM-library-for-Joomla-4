@@ -116,14 +116,7 @@ class AmocrmRequest
             ];
         }
 
-        if (preg_match('/^https?:\/\//', $this->amocrm_domain)) {
-            $url = new Uri($this->amocrm_domain);
-        } else {
-            $url = new Uri();
-            $url->setHost($this->amocrm_domain);
-        }
-
-        $url->setScheme('https');
+        $url = $this->getAmoCRMHost();
         $url->setPath('/api/v' . self::$api_version . $endpoint);
 
         $headers = [
@@ -667,4 +660,23 @@ class AmocrmRequest
         }
     }
 
+    /**
+     * Get AmoCRM host Joomla\Uri\Uri object
+     *
+     * @return Uri
+     *
+     * @since 1.3.0
+     */
+    public function getAmoCRMHost(): Uri
+    {
+        if (preg_match('/^https?:\/\//', $this->amocrm_domain)) {
+            $url = new Uri($this->amocrm_domain);
+        } else {
+            $url = new Uri();
+            $url->setHost($this->amocrm_domain);
+        }
+
+        $url->setScheme('https');
+        return $url;
+    }
 }
