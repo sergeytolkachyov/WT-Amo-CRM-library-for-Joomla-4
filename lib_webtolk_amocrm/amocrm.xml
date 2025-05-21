@@ -11,6 +11,10 @@
 	<authorEmail>info@web-tolk.ru</authorEmail>
 	<authorUrl>https://web-tolk.ru</authorUrl>
 	<namespace path="src">Webtolk\Amocrm</namespace>
+	<scriptfile>script.php</scriptfile>
+	<layouts folder="layouts" destination="libraries/webtolk/amocrm">
+		<folder>fields</folder>
+	</layouts>
 	<languages>
 		<language tag="ru-RU">language/ru-RU/lib_webtolk_amocrm.ini</language>
 		<language tag="en-GB">language/en-GB/lib_webtolk_amocrm.ini</language>

@@ -115,7 +115,7 @@
                        type="webhookslist"
                        name="webhooks_list"
                        onlycurrentsite="false"
-                       label="test"
+                       label="PLG_WT_AMOCRM_FIELD_WEBHOOKS_LIST"
                        showon="allow_amocrm_webhooks:1"/>
             </fieldset>
         </fields>

@@ -28,14 +28,23 @@ $total_webhooks = $amocrm_webhooks->_total_items;
 $webhooks       = $amocrm_webhooks->_embedded->webhooks;
 
 ?>
+
 <div class="p-3 border border-1">
-    <div class="d-flex flex-column flex-md-row justify-content-md-between"><span class="mb-3"><span
-                    class="badge bg-secondary"><?php
-                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_TOTAL'); ?></span> <span class="badge bg-primary"><?php
-                echo $total_webhooks; ?></span></span>
-        <span><span class="badge bg-secondary"><?php
-                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_SHOWN_FOR'); ?></span> <span class="badge bg-primary"><?php
-                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_SHOWN_ONLYCURRENTSITE_'.($onlycurrentsite ? 'TRUE':'FALSE')); ?></span></span>
+    <div class="d-flex flex-column flex-md-row justify-content-md-between">
+        <span class="mb-3">
+            <span class="badge bg-secondary"><?php
+                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_TOTAL'); ?></span>
+            <span class="badge bg-primary"><?php
+                echo $total_webhooks; ?></span>
+        </span>
+        <span>
+            <span class="badge bg-secondary"><?php
+                echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_SHOWN_FOR'); ?></span>
+            <span class="badge bg-primary"><?php
+                echo Text::_(
+                    'LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOKS_SHOWN_ONLYCURRENTSITE_' . ($onlycurrentsite ? 'TRUE' : 'FALSE')
+                ); ?></span>
+        </span>
     </div>
     <?php
     if (!empty($webhooks)): ?>
@@ -45,8 +54,10 @@ $webhooks       = $amocrm_webhooks->_embedded->webhooks;
                 <li class="list-group-item">
                     <p class="mb-3"><strong>URL:</strong> <code class="text-wrap"><?php
                             echo $webhook->destination; ?></code></p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <span><span class="badge bg-secondary"><?php echo Text::_('JSTATUS');?>:</span> <?php
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span><span class="badge bg-secondary"><?php
+                                echo Text::_('JSTATUS'); ?>:</span>
+                            <?php
                             if ($webhook->disabled) {
                                 $webhook_status_css  = 'danger';
                                 $webhook_status_text = Text::_('JDISABLED');
@@ -61,23 +72,35 @@ $webhooks       = $amocrm_webhooks->_embedded->webhooks;
                         </span>
 
                         <span>
-                            <span class="badge bg-secondary"><?php echo Text::_('JGLOBAL_CREATED'); ?>:</span> <span class="badge bg-primary"><?php
+                            <span class="badge bg-secondary"><?php
+                                echo Text::_('JGLOBAL_CREATED'); ?>:</span> <span class="badge bg-primary"><?php
                                 echo HTMLHelper::date($webhook->created_at, Text::_('DATE_FORMAT_LC5')); ?></span>
                         </span>
                         <span>
                             <span class="badge bg-secondary"><?php
                                 echo Text::_('JGLOBAL_MODIFIED'); ?>:</span> <span class="badge bg-primary"><?php
-                                echo HTMLHelper::date($webhook->updated_at, Text::_('DATE_FORMAT_LC5')); ?></span></span>
+                                echo HTMLHelper::date(
+                                    $webhook->updated_at,
+                                    Text::_('DATE_FORMAT_LC5')
+                                ); ?></span></span>
                     </div>
-
+                    <div><span class="badge bg-warning"><?php
+                            echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_WEBHOOK_AMOCRM_EVENTS'); ?>:</span> <?php
+                        echo !empty($webhook->settings) ? '<span class="badge bg-info">' . implode(
+                                '</span> <span class="badge bg-info">',
+                                $webhook->settings
+                            ) . '</span>' : ''; ?> </div>
 
                 </li>
             <?php
             endforeach; ?>
         </ul>
-    <?php else: ?>
-    <div class="alert alert-info">
-        <?php echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_THERE_IS_NO_WEBHOOKS');?>
-    </div>
-    <?php endif; ?>
+    <?php
+    else: ?>
+        <div class="alert alert-info">
+            <?php
+            echo Text::_('LIB_WTAMOCRM_FIELD_WEBHOOKSLIST_THERE_IS_NO_WEBHOOKS'); ?>
+        </div>
+    <?php
+    endif; ?>
 </div>
