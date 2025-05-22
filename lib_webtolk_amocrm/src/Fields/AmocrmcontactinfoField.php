@@ -24,34 +24,6 @@ class AmocrmcontactinfoField extends FormField
     protected $layout = 'libraries.webtolk.amocrm.fields.amocrmcontactinfo';
 
     /**
-     * Method to get the field input markup.
-     *
-     * @return  string  The field input markup.
-     *
-     * @since   1.7.0
-     */
-//	protected function getInput()
-//	{
-//        return ' ';
-//	}
-
-    /**
-     * Method to get the field label markup.
-     *
-     * @return  string  The field label markup.
-     *
-     * @since   1.7.0
-     */
-//    protected function getLabel()
-//    {
-//        if (empty($this->layout)) {
-//            throw new \UnexpectedValueException(\sprintf('%s has no layout assigned.', $this->name));
-//        }
-//
-//        return $this->getRenderer($this->layout)->render($this->collectLayoutData());
-//    }
-
-    /**
      * Method to get the data to be passed to the layout for rendering.
      *
      * @return  array
@@ -97,7 +69,7 @@ class AmocrmcontactinfoField extends FormField
         $layoutData['has_amocrm_contact_id'] = true;
         $amocrm         = new Amocrm();
         $result_amo_crm = $amocrm->contacts()->getContactById($contact_id);
-        if (isset($result_amo_crm->error_code) && !empty($result_amo_crm->error_code))
+        if (!empty($result_amo_crm->error_code))
         {
             $layoutData['label'] = '<span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation"></i></span> '.$layoutData['label'];
             $layoutData['has_error'] = true;

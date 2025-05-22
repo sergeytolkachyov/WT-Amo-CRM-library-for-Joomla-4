@@ -67,7 +67,7 @@ class AccountinfoField extends FormField
         $amocrm         = new Amocrm();
 
         $result_amo_crm = $amocrm->account()->getAccountInfo();
-        if (isset($result_amo_crm->error_code) && !empty($result_amo_crm->error_code))
+        if (!empty($result_amo_crm->error_code))
         {
             $layoutData['has_error'] = true;
             $layoutData['amocrm_error'] = $result_amo_crm;
