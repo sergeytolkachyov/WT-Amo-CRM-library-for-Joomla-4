@@ -26,12 +26,11 @@ extract($displayData);
  * @var   string     $message      Field message
  * @var   string     $contact_link Link to contact in AmoCRM
  * @var   bool       $showtags     Hide or show contact tags
- *
+ * @var   string     $with         catalog_elements, leads and customers linked with contact
+ *                                 see https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
+ *                                 This data will be in `_embedded` array in $contact_info
  */
 
-?>
-
-<?php
 // Uncomment it to see all the field data.
 // dump($displayData);
 ?>
@@ -62,11 +61,17 @@ if ($has_error): ?>
     return;
 endif; ?>
 
-<?php echo HTMLHelper::link($contact_link, $contact_info->name, ['target' => '_blank']); ?> <span class="badge bg-primary">id: <?php echo $contact_info->id; ?></span>
+<?php
+
+echo HTMLHelper::link($contact_link, $contact_info->name, ['target' => '_blank']); ?> <span class="badge bg-primary">id: <?php
+    echo $contact_info->id; ?></span>
 
 <?php
-if($showtags && !empty($contact_info->_embedded->tags)) :
+if ($showtags && !empty($contact_info->_embedded->tags)) :
     foreach ($contact_info->_embedded->tags as $tag): ?>
-        <span class="badge bg-light text-dark border border-1">#<?php echo $tag->name;?></span>
-<?php endforeach;
+        <span class="badge bg-light text-dark border border-1">#<?php
+            echo $tag->name; ?></span>
+    <?php
+    endforeach;
 endif;
+

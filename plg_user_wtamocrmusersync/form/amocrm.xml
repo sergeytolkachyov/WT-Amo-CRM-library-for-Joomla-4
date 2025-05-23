@@ -4,9 +4,10 @@
         <field
                 name="amocrm_user_info"
                 addfieldprefix="Webtolk\Amocrm\Fields"
-                type="amocrmcontactinfo"
+                type="contactinfo"
                 joomlauseridsource="id"
                 showtags="true"
+                with="catalog_elements,leads,customers"
                 label="PLG_WTAMOCRMUSERSYNC_USER_PROFILE_AMOCRM_INFO"
         />
     </fieldset>

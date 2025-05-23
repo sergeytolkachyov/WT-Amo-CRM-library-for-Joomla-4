@@ -17,11 +17,11 @@ use Joomla\CMS\Language\Text;
 use Webtolk\Amocrm\Amocrm;
 use Webtolk\Amocrm\Helper\UserHelper as AmocrmUserHelper;
 
-class AmocrmcontactinfoField extends FormField
+class ContactinfoField extends FormField
 {
 
-	protected $type = 'Amocrmcontactinfo';
-    protected $layout = 'libraries.webtolk.amocrm.fields.amocrmcontactinfo';
+	protected $type = 'Contactinfo';
+    protected $layout = 'libraries.webtolk.amocrm.fields.contactinfo';
 
     /**
      * Method to get the data to be passed to the layout for rendering.
@@ -49,6 +49,7 @@ class AmocrmcontactinfoField extends FormField
         $layoutData['amocrm_error'] = false;
         $layoutData['contact_info'] = false;
         $layoutData['showtags'] = (!empty($this->element['showtags']) && (string)$this->element['showtags'] == 'true') ? true : false;
+        $layoutData['with'] = !empty($this->element['with']) ? (string)$this->element['with'] : '';
 
         if(empty($joomlauserid)) {
             $layoutData['label'] = '<span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation"></i></span> '.$layoutData['label'];
@@ -68,7 +69,7 @@ class AmocrmcontactinfoField extends FormField
 
         $layoutData['has_amocrm_contact_id'] = true;
         $amocrm         = new Amocrm();
-        $result_amo_crm = $amocrm->contacts()->getContactById($contact_id);
+        $result_amo_crm = $amocrm->contacts()->getContactById($contact_id, $layoutData['with']);
         if (!empty($result_amo_crm->error_code))
         {
             $layoutData['label'] = '<span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation"></i></span> '.$layoutData['label'];

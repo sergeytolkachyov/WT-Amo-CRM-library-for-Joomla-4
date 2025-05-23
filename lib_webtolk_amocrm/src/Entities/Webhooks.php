@@ -68,6 +68,9 @@ class Webhooks implements EntityInterface
      */
     public function getWebhooks(array $data = []): object
     {
+        if(isset($data['filter']['destination'])) {
+            $data['filter']['destination'] = urlencode($data['filter']['destination']);
+        }
         return $this->request->getResponse('/webhooks', $data, 'GET');
     }
 

@@ -114,7 +114,7 @@
                 <field addfieldprefix="Webtolk\Amocrm\Fields"
                        type="webhookslist"
                        name="webhooks_list"
-                       onlycurrentsite="false"
+                       onlycurrentsite="true"
                        label="PLG_WT_AMOCRM_FIELD_WEBHOOKS_LIST"
                        showon="allow_amocrm_webhooks:1"/>
             </fieldset>
