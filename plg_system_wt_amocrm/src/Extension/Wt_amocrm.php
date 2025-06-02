@@ -75,13 +75,17 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
         $token_from_request = $app->getInput()->get->get('token', '', 'raw');
         /** @var string $webhook_token Token from plugin params */
         $webhook_token = $this->params->get('webhook_token', '');
-        $action        = $app->getInput()->getString('action');
+        $action        = $app->getInput()->getString('action','');
+
+        if(empty($action)) {
+            return;
+        }
+
         /** @var string $action_type 'internal' (Joomla) or 'external' (outside Joomla) */
         $action_type = $app->getInput()->getString('action_type', 'internal');
 
         $allow_amocrm_webhooks = $this->params->get('allow_amocrm_webhooks', false);
 
-file_put_contents(JPATH_SITE.'/amocrm.txt', print_r($this->getApplication()->getInput()->getArray(), true).PHP_EOL, FILE_APPEND);
         if ($action_type === 'internal') {
 
                 $action_result_message = $this->callJoomlaInternal($action);

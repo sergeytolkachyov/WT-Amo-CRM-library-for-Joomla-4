@@ -72,10 +72,11 @@
                        filter="raw"
                        showon="token_type:long_term"
                        />
-                <field type="text"
+                <field type="textarea"
                        name="amocrm_code"
                        label="PLG_WT_AMOCRM_AMOCRM_CODE"
                        description="PLG_WT_AMOCRM_AMOCRM_CODE_DESC"
+                       filter="raw"
                        showon="token_type:normal"/>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="redirecturl"
@@ -87,6 +88,16 @@
                        label="PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN"
                        name="clear_refresh_token_btn"
                        showon="token_type:normal"/>
+                <field type="radio"
+                       name="avoid_rest_api_limits_exceeding"
+                       label="PLG_WT_AMOCRM_AVOID_REST_API_LIMITS_EXCEEDING"
+                       description="PLG_WT_AMOCRM_AVOID_REST_API_LIMITS_EXCEEDING_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
             </fieldset>
             <fieldset name="webhook" label="PLG_WT_AMOCRM_WEBHOOK_FIELDSET_LABEL">
                 <field

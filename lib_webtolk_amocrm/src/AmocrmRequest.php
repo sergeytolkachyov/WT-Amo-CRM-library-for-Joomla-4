@@ -127,6 +127,14 @@ class AmocrmRequest
 
         try {
             $http = (new HttpFactory())->getHttp([], ['curl', 'stream']);
+            if($this->getPluginParams()->get('avoid_rest_api_limits_exceeding', 0) == 1) {
+                /**
+                 * Избегаем превышения лимита обращений к REST API - 7 вызовов в секунду.
+                 * @link https://www.amocrm.ru/developers/content/api/recommendations
+                 */
+                usleep(150000);
+            }
+
             if ($request_method != 'GET') {
                 $request_method = strtolower($request_method);
 
@@ -401,9 +409,9 @@ class AmocrmRequest
         $headers = [
             'Content-Type' => 'application/json'
         ];
-        $authUrl = new Uri();
-        $authUrl->setScheme('https')->setHost($this->amocrm_domain);
-        $authUrl->setPath('/oauth2/access_token');
+        $authUrl = $this->getAmoCRMHost();
+        $endpoint = '/oauth2/access_token';
+        $authUrl->setPath($endpoint);
 
         try {
             $response = $http->post(
@@ -412,94 +420,64 @@ class AmocrmRequest
                 $headers
             );
 
+            $response_body = $this->responseHandler($response, $endpoint);
 
-            $response_body = json_decode($response->body);
-
-            if ($response->code == 200) {
-                /**
-                 * Set access token
-                 */
-
-                if (!$response_body->access_token) {
-                    $error_message = Text::_('LIB_WTAMOCRM_ERROR_AUTHORIZE_NO_TOKEN');
-                    $this->saveToLog($error_message, 'ERROR');
-                    $error_array = [
-                        'error_code'    => 500,
-                        'error_message' => $error_message
-                    ];
-
-                    return (object)$error_array;
-                } else {
-                    $this->setToken($response_body->access_token);
-                }
-                /**
-                 * Set access token type. Bearer by default
-                 */
-                if (!$response_body->token_type) {
-                    $this->setTokenType('Bearer');
-                } else {
-                    $this->setTokenType($response_body->token_type);
-                }
-
-                /**
-                 * Set token expires period. 86400 by default
-                 */
-                if (!$response_body->expires_in) {
-                    $this->setTokenExpiresIn(86400);
-                } else {
-                    $this->setTokenExpiresIn($response_body->expires_in);
-                }
-
-                /**
-                 * Сохраняем токен в кэше. Жизнь кэша - 86400 секунд по умолчанию
-                 * или же значение, равное $response_body->expires_in
-                 */
-                $this->storeTokenData([
-                    'token'      => $response_body->access_token,
-                    'token_type' => $response_body->token_type,
-                    'expires_in' => $response_body->expires_in,
-                ]);
-                /**
-                 * Сохраняем в базу refresh_token
-                 */
-                if ($response_body->refresh_token) {
-                    $this->storeRefreshToken($response_body->refresh_token);
-                }
-
-                return $response;
-            } elseif ($response->code >= 400 && $response->code < 500) {
-                // API работает. Ошибка отдается в json
-
-                if ($response_body->title || $response_body->detail || $response_body->{'validation-errors'}) {
-                    $error_message = $this->errorHandler($response_body);
-                } else {
-                    $error_message = 'no error description';
-                }
-                $this->saveToLog(
-                    $response->code . ' - Error while trying to authorize to Amo CRM. Amo CRM API response: ' . htmlspecialchars(
-                        $error_message
-                    ),
-                    'ERROR'
-                );
-                $error_array = [
-                    'error_code'    => $response->code,
-                    'error_message' => __FUNCTION__ . ' function: Error while trying to authorize to Amo CRM. Amo CRM API response: ' . $error_message
-                ];
-
-                return (object)$error_array;
-            } elseif ($response->code >= 500) {
-                // API не работает, сервер лёг. В $response->body отдаётся HTML
-                $this->saveToLog(
-                    $response->code . ' - Error while trying to authorize to Amo CRM.Amo CRM API response: ' . $response->body,
-                    'ERROR'
-                );
-                $error_array = [
-                    'error_code'    => $response->code,
-                    'error_message' => __FUNCTION__ . ' function: Error while trying to authorize to Amo CRM. Amo CRM API response: ' . $response->body
-                ];
-
-                return (object)$error_array;
+            if(property_exists($response_body,'error_code')) {
+                return $response_body;
             }
+
+            /**
+             * Set access token
+             */
+
+            if (!$response_body->access_token) {
+                $error_message = Text::_('LIB_WTAMOCRM_ERROR_AUTHORIZE_NO_TOKEN');
+                $this->saveToLog($error_message, 'ERROR');
+                $error_array = [
+                    'error_code'    => 500,
+                    'error_message' => $error_message
+                ];
+
+                return (object)$error_array;
+            } else {
+                $this->setToken($response_body->access_token);
+            }
+            /**
+             * Set access token type. Bearer by default
+             */
+            if (!$response_body->token_type) {
+                $this->setTokenType('Bearer');
+            } else {
+                $this->setTokenType($response_body->token_type);
+            }
+
+            /**
+             * Set token expires period. 86400 by default
+             */
+            if (!$response_body->expires_in) {
+                $this->setTokenExpiresIn(86400);
+            } else {
+                $this->setTokenExpiresIn($response_body->expires_in);
+            }
+
+            /**
+             * Сохраняем токен в кэше. Жизнь кэша - 86400 секунд по умолчанию
+             * или же значение, равное $response_body->expires_in
+             */
+            $this->storeTokenData([
+                'token'      => $response_body->access_token,
+                'token_type' => $response_body->token_type,
+                'expires_in' => $response_body->expires_in,
+            ]);
+            /**
+             * Сохраняем в базу refresh_token
+             */
+            if ($response_body->refresh_token) {
+                $this->storeRefreshToken($response_body->refresh_token);
+            }
+
+            return $response;
+
         } catch (AmocrmClientException $e) {
             throw new AmocrmClientException('Error while trying to authorize to Amo CRM', 500, $e);
         }
@@ -623,20 +601,25 @@ class AmocrmRequest
     private function responseHandler(Response $response, string $endpoint = ''): object
     {
         $body = json_decode($response->getBody());
-        switch ($response->getStatusCode()) {
-            case ($response->getStatusCode() >= 400 && $response->getStatusCode() < 500) :
-                if (property_exists($body, 'title') ||
+        $status_code = $response->getStatusCode();
+        switch ($status_code) {
+            case ($status_code >= 400 && $status_code < 500) :
+
+                $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_NO_ERROR_DESC');
+                if (is_object($body) && (
+                    property_exists($body, 'title') ||
                     property_exists($body, 'detail') ||
-                    property_exists($body, 'validation-errors')) {
+                    property_exists($body, 'validation-errors'))
+                ) {
                     $error_message = $this->errorHandler($body);
-                } else {
-                    $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_NO_ERROR_DESC');
+                } elseif(empty($body) && strpos((string)$response->getBody(),'Forbidden') !== false) {
+                    $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_FORBIDDEN_DESC');
                 }
 
                 $this->saveToLog($error_message, 'ERROR');
 
                 return (object)[
-                    'error_code'    => $response->code,
+                    'error_code'    => $status_code,
                     'error_message' => Text::sprintf(
                         'LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_400',
                         $endpoint,
@@ -644,12 +627,12 @@ class AmocrmRequest
                     )
                 ];
                 break;
-            case ($response->getStatusCode() >= 500):
+            case ($status_code >= 500):
                 $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_500', print_r($body, true));
                 $this->saveToLog($error_message, 'ERROR');
 
                 return (object)[
-                    'error_code'    => $response->code,
+                    'error_code'    => $status_code,
                     'error_message' => $error_message
                 ];
                 break;

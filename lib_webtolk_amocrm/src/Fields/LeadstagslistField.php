@@ -51,7 +51,7 @@ class LeadstagslistField extends ListField
 		}
 		elseif (isset($result_amo_crm->error_code))
 		{
-			Factory::getApplication()->enqueueMessage($result_amo_crm->error . " " . $result_amo_crm->error_description, 'error');
+			Factory::getApplication()->enqueueMessage($result_amo_crm->error_code . ' ' . $result_amo_crm->error_message, 'error');
 
 			return $options;
 		}

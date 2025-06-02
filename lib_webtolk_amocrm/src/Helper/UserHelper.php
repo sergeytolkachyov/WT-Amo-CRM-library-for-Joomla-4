@@ -82,18 +82,27 @@ class UserHelper
      *
      * @param   int  $joomla_user_id
      * @param   int  $amocrm_contact_id
+     * @param   bool $is_temporary_user Is this user has temporary userdata?
      *
      * @return bool True or false
      *
      * @since 1.3.0
      */
-    public static function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id): bool
+    public static function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id, bool $is_temporary_user = false): bool
     {
         $db    = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true)
             ->insert($db->quoteName('#__lib_wt_amocrm_users_sync'))
-            ->columns([$db->quoteName('joomla_user_id'), $db->quoteName('amocrm_contact_id')])
-            ->values(implode(',', [$db->quote($joomla_user_id), $db->quote($amocrm_contact_id)]));
+            ->columns([
+                $db->quoteName('joomla_user_id'),
+                $db->quoteName('amocrm_contact_id'),
+                $db->quoteName('is_temporary_user'),
+            ])
+            ->values(implode(',', [
+                $db->quote($joomla_user_id),
+                $db->quote($amocrm_contact_id),
+                ($is_temporary_user ? $db->quote('1') : $db->quote('0'))
+            ]));
         $db->setQuery($query);
 
         return $db->execute();

@@ -61,4 +61,40 @@ class WebhookEvent extends AbstractEvent
     {
         return $this->getData()['leads'] ?? [];
     }
+
+    /**
+     * Get all tasks data if exists
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    public function getTasks(): array
+    {
+        return $this->getData()['task'] ?? [];
+    }
+
+    /**
+     * Get all unsorted data if exists
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    public function getUnsorted(): array
+    {
+        return $this->getData()['unsorted'] ?? [];
+    }
+
+    /**
+     * Get all messages data if exists
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    public function getMessages(): array
+    {
+        return $this->getData()['message'] ?? [];
+    }
 }

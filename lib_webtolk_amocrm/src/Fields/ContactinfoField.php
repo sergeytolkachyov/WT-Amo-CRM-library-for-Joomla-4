@@ -70,6 +70,7 @@ class ContactinfoField extends FormField
         $layoutData['has_amocrm_contact_id'] = true;
         $amocrm         = new Amocrm();
         $result_amo_crm = $amocrm->contacts()->getContactById($contact_id, $layoutData['with']);
+
         if (!empty($result_amo_crm->error_code))
         {
             $layoutData['label'] = '<span class="badge bg-danger"><i class="fa-solid fa-triangle-exclamation"></i></span> '.$layoutData['label'];

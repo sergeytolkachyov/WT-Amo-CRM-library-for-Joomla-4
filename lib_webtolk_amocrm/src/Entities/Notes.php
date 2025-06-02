@@ -61,10 +61,23 @@ class Notes implements EntityInterface
      * ## Ограничения
      * Метод доступен всем пользователям аккаунта. Успешность выполнения действия зависит от прав на сущность.
      *
+     * ## Типы примечаний (note_type)
+     * - `common` - Текстовое примечание. Обязателен массив `params`: `params['text'] = 'Текст примечания.';`
+     * - `service_message` - Системное сообщение (добавляется интеграциями). Обязателен массив `params`: `params['text'] = 'Текст примечания.'; params['service'] = 'Название сервиса.'`
+     * - `extended_service_message` - Расширенное системное сообщение (поддерживает больше текста и сворачивается в интерфейсе). Обязателен массив `params`: `params['text'] = 'Текст примечания.'; params['service'] = 'Название сервиса.'`
+     * - `call_in` - Входящий звонок
+     * - `call_out` - Исходящий звонок
+     * - `message_cashier` - Сообщение кассиру
+     * - `geolocation` - Текстовое примечание с гео-координатами (добавляются мобильным приложением)
+     * - `sms_in` - Входящее SMS
+     * - `sms_out` - Исходящее SMS
+     * - `attachment` - Примечание с файлом
+     *
      * @param   string  $entity_type  Amo CRM entity type: lead|contact etc
      * @param   int     $entity_id    ID сущности, в которую добавляется примечание. Обязателен при использовании метода создания примечания в сущности,
      *                                если создание идет через метод /api/v4/{entity_type}/{entity_id}/notes, то данный параметр передавать не нужно
      * @param   array   $notes        Массив с примечаниями. Пример
+     *
      *                                [
      *                                {
      *                                "entity_id": 167353,
@@ -99,6 +112,7 @@ class Notes implements EntityInterface
      *                                }
      *                                }
      *                                ]
+     *
      *
      * @return object
      * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-add
