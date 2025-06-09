@@ -10,22 +10,35 @@
 
 namespace Joomla\Plugin\User\Wtamocrmusersync\Extension;
 
+use Exception;
+use Joomla\CMS\Application\ApplicationHelper;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Date\Date;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Form;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Log\Log;
+use Joomla\CMS\Mail\MailTemplate;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\String\PunycodeHelper;
 use Joomla\CMS\User\User;
 use Joomla\CMS\User\UserFactoryAwareTrait;
+use Joomla\CMS\User\UserHelper;
 use Joomla\Database\DatabaseAwareTrait;
+use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
+use RuntimeException;
 use Webtolk\Amocrm\Amocrm;
 use Webtolk\Amocrm\Event\WebhookEvent;
 use Webtolk\Amocrm\Helper\UserHelper as AmocrmUserHelper;
 
+use function count;
 use function defined;
 
 // No direct access
@@ -36,9 +49,21 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     use DatabaseAwareTrait;
     use UserFactoryAwareTrait;
 
-    protected $allowLegacyListeners = false;
-
     protected $autoloadLanguage = true;
+
+    /**
+     * AmoCRM library object
+     *
+     * @var   1.3.0
+     * @since version
+     */
+    private Amocrm $amocrm;
+
+    public function __construct($subject, $config)
+    {
+        parent::__construct($subject, $config);
+        $this->amocrm = new Amocrm();
+    }
 
     /**
      * Returns an array of events this subscriber will listen to.
@@ -84,7 +109,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             return;
         }
 
-        $amocrm = new Amocrm();
+        $amocrm = $this->amocrm;
 
         /**
          * ЭТот метод также вызывается при создании пользователя
@@ -96,15 +121,23 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if ($isnew && !empty($user['amocrm_new_user_from_webhook_contact_id'])) {
             // Создаём пользователя из вебхука. Просто добавляем ассоциацию.
             $is_temporary_user = isset($user['is_temporary_user']) ? $user['is_temporary_user'] : false;
-            AmocrmUserHelper::addJoomlaAmoCRMUserSync($user['id'], $user['amocrm_new_user_from_webhook_contact_id'], $is_temporary_user);
+            AmocrmUserHelper::addJoomlaAmoCRMUserSync(
+                $user['id'],
+                $user['amocrm_new_user_from_webhook_contact_id'],
+                $is_temporary_user
+            );
 
             // Информируем AmoCRM, что всё хорошо
-            $notes  = [
+            $notes = [
                 [
                     'created_by' => 0, // 0 - создал робот
                     'note_type'  => 'service_message',
                     'params'     => [
-                        'text'    => Text::sprintf('PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SUCCESSFULLY_CREATED', $user['id'], Uri::root()),
+                        'text'    => Text::sprintf(
+                            'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SUCCESSFULLY_CREATED',
+                            $user['id'],
+                            Uri::root()
+                        ),
                         'service' => 'WT AmoCRM for Joomla'
                     ]
                 ]
@@ -240,11 +273,10 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id);
 
             if ($amocrm_contact_id) {
-
-                if(empty($user['amocrm_delete_user_from_webhook'])) {
+                if (empty($user['amocrm_delete_user_from_webhook'])) {
                     // Если установлен этот флаг - удаление произошло на стороне AmoCRM.
                     // Тогда мы просто молча удаляем, не отправляя уведомление в AmoCRM.
-                    $amocrm = new Amocrm();
+                    $amocrm = $this->amocrm;
                     $notes  = [
                         [
                             'created_by' => 0, // 0 - создал робот
@@ -316,7 +348,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     private function createUsers(array $contacts)
     {
         if (!empty($contacts && is_array($contacts))) {
-            $amocrm = new Amocrm();
+            $amocrm = $this->amocrm;
 
             foreach ($contacts as $contact) {
                 if ($contact['type'] == 'contact') {
@@ -361,9 +393,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                      */
 
                     if ($temp_email) {
-                        $host = (new Uri(Uri::root()))->getHost();
-                        $user_data['email']    = 'change-this-fake-email-amocrm-' . $contact['id'] . '@' . $host;
-                        $user_data['username'] = 'change-this-fake-login-amocrm-' . $contact['id'];
+                        $host                           = (new Uri(Uri::root()))->getHost();
+                        $user_data['email']             = 'change-this-fake-email-amocrm-' . $contact['id'] . '@' . $host;
+                        $user_data['username']          = 'change-this-fake-login-amocrm-' . $contact['id'];
                         $user_data['is_temporary_user'] = true;
                     } else {
                         $user_data['username'] = $user_data['email'];
@@ -371,17 +403,33 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     // $user_data['params']; // user params json
 
                     $user_data['block'] = $this->params->get('auto_enable_new_user', 0) ? 0 : 1;
-                    // Check if the user needs to activate their account.
-//                    if (($useractivation == 1) || ($useractivation == 2)) {
-//                        $user_data['activation'] = ApplicationHelper::getHash(UserHelper::genRandomPassword());
-//                        $user_data['block']      = 1;
-//                    }
+                    $comUsersParams     = ComponentHelper::getParams('com_users');
+                    $useractivation     = $comUsersParams->get('useractivation');
+                    if ($this->params->get('notify_new_user', 0) == 1) {
+                        // Check if the user needs to activate their account.
+                        if (($useractivation == 1) || ($useractivation == 2)) {
+                            $user_data['activation'] = ApplicationHelper::getHash(UserHelper::genRandomPassword());
+                            $user_data['block']      = 1;
+                        }
+                    }
 
-                    /** @var bool $isSaved User successfully saved or not */
-                    $isSaved = $this->saveUser($user_data, true);
+                    /** @var bool|User $savedUser false or successfully saved user object */
+                    $savedUser = $this->saveUser($user_data, true);
 
-                    if (!$temp_email) {
+                    if (!$savedUser) {
+                        $amocrm->saveToLog(
+                            'Error create Joomla user for AmoCRM contact id:' . $contact['id'] . ', user data: ' . print_r(
+                                $user_data,
+                                true
+                            ),
+                            'error'
+                        );
+                    }
+
+                    if (!$temp_email && $this->params->get('notify_new_user', 0) == 1) {
                         // отправляем уведомления пользователю о создании аккаунта
+                        // с учётом параметров com_users.
+                        $this->userNotify($savedUser, $comUsersParams);
                     }
                 }
             }
@@ -394,10 +442,11 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   array  $user_data
      * @param   bool   $isNew  Create new user (true) or update existing one (false)?
      *
+     * @return bool|User false or saved $user object
      *
      * @since 1.3.0
      */
-    private function saveUser(array $user_data = [], bool $isNew = false): bool
+    private function saveUser(array $user_data = [], bool $isNew = false)
     {
         if (empty($user_data)) {
             return false;
@@ -414,11 +463,219 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         // Store the data.
         if (!$user->save()) {
+            return false;
+        }
+
+        return $user;
+    }
+
+    /**
+     * @param   User      $user            Created user object
+     * @param   Registry  $comUsersParams  Params of the `com_users` component
+     *
+     * @return bool
+     *
+     * @throws Exception
+     * @since 1.3.0
+     */
+    private function userNotify($user, $comUsersParams): bool
+    {
+        $app = $this->getApplication();
+        $db  = $this->getDatabase();
+        $app->getLanguage()->load('com_users');
+        $query          = $db->getQuery(true);
+        $useractivation = $comUsersParams->get('useractivation');
+        $sendpassword   = $comUsersParams->get('sendpassword', 1);
+
+        // Compile the notification mail values.
+        $data             = get_object_vars($user);
+        $data['fromname'] = $app->get('fromname');
+        $data['mailfrom'] = $app->get('mailfrom');
+        $data['sitename'] = $app->get('sitename');
+        $data['siteurl']  = Uri::root();
+
+        $mailtemplate = 'com_users.registration.user.registration_mail';
+
+        // Handle account activation/confirmation emails.
+        if ($useractivation == 2) {
+            // Set the link to confirm the user email.
+            $linkMode = $app->get('force_ssl', 0) == 2 ? Route::TLS_FORCE : Route::TLS_IGNORE;
+
+            $data['activate'] = Route::link(
+                'site',
+                'index.php?option=com_users&task=registration.activate&token=' . $data['activation'],
+                false,
+                $linkMode,
+                true
+            );
+
+            $mailtemplate = 'com_users.registration.user.admin_activation';
+        } elseif ($useractivation == 1) {
+            // Set the link to activate the user account.
+            $linkMode = $app->get('force_ssl', 0) == 2 ? Route::TLS_FORCE : Route::TLS_IGNORE;
+
+            $data['activate'] = Route::link(
+                'site',
+                'index.php?option=com_users&task=registration.activate&token=' . $data['activation'],
+                false,
+                $linkMode,
+                true
+            );
+
+            $mailtemplate = 'com_users.registration.user.self_activation';
+        }
+
+
+        if ($sendpassword) {
+            $mailtemplate .= '_w_pw';
+        }
+
+        // Try to send the registration email.
+        try {
+            $mailer = new MailTemplate($mailtemplate, $app->getLanguage()->getTag());
+            $mailer->addTemplateData($data);
+            $mailer->addRecipient($data['email']);
+            $mailer->addUnsafeTags(['username', 'password_clear', 'name']);
+            $return = $mailer->send();
+        } catch (Exception $exception) {
+            try {
+                Log::add(Text::_($exception->getMessage()), Log::WARNING, 'jerror');
+                $this->amocrm->saveToLog(Text::_($exception->getMessage()), 'error');
+                $return = false;
+            } catch (RuntimeException $exception) {
+                Factory::getApplication()->enqueueMessage(Text::_($exception->errorMessage()), 'warning');
+
+                $this->amocrm->saveToLog(Text::_('COM_MESSAGES_ERROR_MAIL_FAILED'), 'warning');
+
+                $return = false;
+            }
+        }
+
+        // Send mail to all users with user creating permissions and receiving system emails
+        if (($useractivation < 2) && ($comUsersParams->get('mail_to_admin') == 1)) {
+            // Get all admin users
+            $query->clear()
+                ->select($db->quoteName(['name', 'email', 'sendEmail', 'id']))
+                ->from($db->quoteName('#__users'))
+                ->where($db->quoteName('sendEmail') . ' = 1')
+                ->where($db->quoteName('block') . ' = 0');
+
+            $db->setQuery($query);
+
+            try {
+                $rows = $db->loadObjectList();
+            } catch (RuntimeException $e) {
+                $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
+
+                return false;
+            }
+
+            // Send mail to all superadministrators id
+            foreach ($rows as $row) {
+                $usercreator = $this->getUserFactory()->loadUserById($row->id);
+
+                if (!$usercreator->authorise('core.create', 'com_users') || !$usercreator->authorise(
+                        'core.manage',
+                        'com_users'
+                    )) {
+                    continue;
+                }
+
+                try {
+                    $mailer = new MailTemplate(
+                        'com_users.registration.admin.new_notification',
+                        $app->getLanguage()->getTag()
+                    );
+                    $mailer->addTemplateData($data);
+                    $mailer->addRecipient($row->email);
+                    $mailer->addUnsafeTags(['username', 'name']);
+                    $return = $mailer->send();
+                } catch (Exception $exception) {
+                    try {
+                        Log::add(Text::_($exception->getMessage()), Log::WARNING, 'jerror');
+
+                        $return = false;
+                    } catch (RuntimeException $exception) {
+                        Factory::getApplication()->enqueueMessage(Text::_($exception->errorMessage()), 'warning');
+
+                        $return = false;
+                    }
+                }
+
+                // Check for an error.
+                if ($return !== true) {
+                    $this->amocrm->saveToLog(
+                        Text::_('COM_USERS_REGISTRATION_ACTIVATION_NOTIFY_SEND_MAIL_FAILED'),
+                        'warning'
+                    );
+
+                    return false;
+                }
+            }
+        }
+
+        // Check for an error.
+        if ($return !== true) {
+            $this->amocrm->saveToLog(Text::_('COM_USERS_REGISTRATION_SEND_MAIL_FAILED'), 'error');
+
+            // Send a system message to administrators receiving system mails
+            $db = $this->getDatabase();
+            $query->clear()
+                ->select($db->quoteName('id'))
+                ->from($db->quoteName('#__users'))
+                ->where($db->quoteName('block') . ' = 0')
+                ->where($db->quoteName('sendEmail') . ' = 1');
+            $db->setQuery($query);
+
+            try {
+                $userids = $db->loadColumn();
+            } catch (RuntimeException $e) {
+                $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
+
+                return false;
+            }
+
+            if (count($userids) > 0) {
+                $jdate     = new Date();
+                $dateToSql = $jdate->toSql();
+                $subject   = Text::_('COM_USERS_MAIL_SEND_FAILURE_SUBJECT');
+                $message   = Text::sprintf('COM_USERS_MAIL_SEND_FAILURE_BODY', $data['username']);
+
+                // Build the query to add the messages
+                foreach ($userids as $userid) {
+                    $values = [
+                        ':user_id_from',
+                        ':user_id_to',
+                        ':date_time',
+                        ':subject',
+                        ':message',
+                    ];
+                    $query->clear()
+                        ->insert($db->quoteName('#__messages'))
+                        ->columns($db->quoteName(['user_id_from', 'user_id_to', 'date_time', 'subject', 'message']))
+                        ->values(implode(',', $values));
+                    $query->bind(':user_id_from', $userid, ParameterType::INTEGER)
+                        ->bind(':user_id_to', $userid, ParameterType::INTEGER)
+                        ->bind(':date_time', $dateToSql)
+                        ->bind(':subject', $subject)
+                        ->bind(':message', $message);
+
+                    $db->setQuery($query);
+
+                    try {
+                        $db->execute();
+                    } catch (RuntimeException $e) {
+                        $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
+
+                        return false;
+                    }
+                }
+            }
 
             return false;
         }
 
-        return true;
+        return $return;
     }
 
     /**
@@ -469,7 +726,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 if ($contact['type'] == 'contact' && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser(
                         $contact['id']
                     ))) {
-                    $user = $this->getUserFactory()->loadUserById($joomla_user_id);
+                    $user                                  = $this->getUserFactory()->loadUserById($joomla_user_id);
                     $user->amocrm_delete_user_from_webhook = true;
                     $user->delete();
                     $this->getApplication()->logout($joomla_user_id);
@@ -479,10 +736,12 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     }
 
     /**
-     * Add a
+     * Add an AmoCRM contact Joomla Form field to user edit view in
+     * admin panel.
      *
      * @param   Event  $event
      *
+     * @return void
      *
      * @since 1.3.0
      */

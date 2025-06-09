@@ -139,8 +139,8 @@
             <fieldset name="create_users_rules" label="PLG_WTAMOCRMUSERSYNC_CREATE_USERS_RULES_FIELDSET_LABEL" description="PLG_WTAMOCRMUSERSYNC_CREATE_USERS_RULES_FIELDSET_DESC">
                 <field type="usergrouplist"
                        name="default_user_group"
-                       label="Группа юзеров по умолчанию"
-                       description="Новые пользователи будут принадлежать выбранной группе пользователей"
+                       label="PLG_WTAMOCRMUSERSYNC_DEFAULT_USER_GROUP"
+                       description="PLG_WTAMOCRMUSERSYNC_DEFAULT_USER_GROUP_DESC"
                        default="2"
                        filter="integer"
                        showon="allow_webhook_actions:1[AND]allow_create_user:1"/>
@@ -156,9 +156,9 @@
                     <option value="1">JYES</option>
                 </field>
                 <field type="radio"
-                       name="auto_activate_new_user"
-                       label="PLG_WTAMOCRMUSERSYNC_AUTO_ACTIVATE_NEW_USER"
-                       description="PLG_WTAMOCRMUSERSYNC_AUTO_ACTIVATE_NEW_USER_DESC"
+                       name="notify_new_user"
+                       label="PLG_WTAMOCRMUSERSYNC_NOTIFY_NEW_USER"
+                       description="PLG_WTAMOCRMUSERSYNC_NOTIFY_NEW_USER_DESC"
                        layout="joomla.form.field.radio.switcher"
                        filter="integer"
                        default="0"
@@ -166,6 +166,59 @@
                     <option value="0">JNO</option>
                     <option value="1">JYES</option>
                 </field>
+            </fieldset>
+            <fieldset name="fields_mapping" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDSET_LABEL" description="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDSET_DESC">
+                <field name="fields_mapping"
+                       type="subform"
+                       label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING"
+                       multiple="true"
+                       groupByFieldset="true"
+                       layout="joomla.form.field.subform.repeatable-table"
+                       parentclass="stack"
+                >
+                    <form>
+                        <fieldset name="fields_mapping_joomla_field" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_MAPPING_JOOMLA_FIELD">
+                            <field type="radio"
+                                   name="joomla_field_type"
+                                   label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE"
+                                   description="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE_DESC"
+                                   default="user_params"
+                                   showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                                <option value="user_params">PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE_USER_PARAMS</option>
+                                <option value="user_custom_field">PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE_USER_CUSTOM_FIELD</option>
+                            </field>
+
+                        </fieldset>
+                        <fieldset name="joomla_side" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE">
+                            <field
+                                    name="user_params_param_name"
+                                    type="text"
+                                    label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE_USER_PARAMS_PARAM_NAME"
+                                    description="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE_USER_PARAMS_PARAM_NAME_DESC"
+                                    hint="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE_USER_PARAMS_PARAM_NAME_HINT"
+                                    showon="joomla_field_type:user_params"
+                            />
+                            <field name="com_users_custom_field_id"
+                                   type="sql"
+                                   label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_MAPPING_JOOMLA_FIELD_CUSTOM_FIELD"
+                                   default="--"
+                                   query="SELECT id, title FROM #__fields WHERE state = 1 AND context = 'com_users.user'"
+                                   key_field="id"
+                                   value_field="title"
+                                   showon="joomla_field_type:user_custom_field"
+                            />
+                        </fieldset>
+                        <fieldset name="fields_mapping_amocrm_field" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_AMOCRM_SIDE">
+                            <field
+                                    name="amocrm_contact_field_id"
+                                    addfieldprefix="Webtolk\Amocrm\Fields"
+                                    type="contactcustomfieldslist"
+                                    label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_AMOCRM_SIDE_AMOCRM_CONTACT_FIELD_ID"
+                            />
+                        </fieldset>
+                    </form>
+                </field>
+
             </fieldset>
         </fields>
     </config>
