@@ -88,7 +88,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
 
         if ($action_type === 'internal') {
 
-                $action_result_message = $this->callJoomlaInternal($action);
+            $action_result_message = $this->callJoomlaInternal($action);
 
         } elseif ($action_type === 'external' &&
             $allow_amocrm_webhooks && // incoming webhooks are enabled

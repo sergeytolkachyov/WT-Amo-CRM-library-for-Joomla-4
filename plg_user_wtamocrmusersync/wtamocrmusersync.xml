@@ -201,7 +201,7 @@
                             <field name="com_users_custom_field_id"
                                    type="sql"
                                    label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_MAPPING_JOOMLA_FIELD_CUSTOM_FIELD"
-                                   default="--"
+                                   default="0"
                                    query="SELECT id, title FROM #__fields WHERE state = 1 AND context = 'com_users.user'"
                                    key_field="id"
                                    value_field="title"

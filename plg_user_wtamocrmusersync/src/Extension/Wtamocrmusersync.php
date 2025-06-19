@@ -49,20 +49,56 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     use DatabaseAwareTrait;
     use UserFactoryAwareTrait;
 
+    /**
+     * AmoCRM to Joomla fields mapping.
+     * $mapping[$amocrm_contact_id] = ['type'=> '', 'custom_field_id','user_param_name'];
+     *
+     * @var array
+     * @since 1.3.0
+     */
+    private static array $mapping = [];
     protected $autoloadLanguage = true;
 
     /**
      * AmoCRM library object
      *
-     * @var   1.3.0
-     * @since version
+     * @var Amocrm
+     * @since 1.3.0
      */
     private Amocrm $amocrm;
 
+    /**
+     * Add Amocrm class and fill fields mapping
+     *
+     * @param $subject
+     * @param $config
+     *
+     * @since 1.3.0
+     */
     public function __construct($subject, $config)
     {
         parent::__construct($subject, $config);
         $this->amocrm = new Amocrm();
+        $this->fillJoomlaToAmoFieldsMapping();
+    }
+
+    /**
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    private function fillJoomlaToAmoFieldsMapping()
+    {
+        $fields_mapping = (new Registry($this->params->get('fields_mapping', [])))->toArray();
+
+        if (!empty($fields_mapping)) {
+            foreach ($fields_mapping as $row) {
+                $amocrm_contact_field_id = $row['amocrm_contact_field_id'];
+                unset($row['amocrm_contact_field_id']);
+                self::$mapping[$amocrm_contact_field_id] = $row;
+            }
+        }
     }
 
     /**
@@ -81,7 +117,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             'onContentPrepareForm'    => 'onContentPrepareForm',
         ];
     }
-
 
     /**
      * On saving user data logging method
@@ -112,7 +147,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $amocrm = $this->amocrm;
 
         /**
-         * ЭТот метод также вызывается при создании пользователя
+         * Этот метод также вызывается при создании пользователя
          * по вебхуку со стороны AmoCRM.
          * - Ищем в объекте пользователя временный флаг, сообщающий нам об этом.
          * - Создаём ассоциацию Joomla user - AmoCRM contact
@@ -693,22 +728,110 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 if ($contact['type'] == 'contact' && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser(
                         $contact['id']
                     ))) {
-                    $user_data = [
+                    $user_data          = [
                         'id'   => $joomla_user_id,
                         'name' => $contact['name']
                     ];
+                    $user_params        = [];
+                    $user_custom_fields = [];
                     foreach ($contact['custom_fields'] as $custom_field) {
                         if ($custom_field['code'] == 'EMAIL' &&
                             $this->params->get('update_user_email', false) &&
                             !empty($custom_field['values'][0]['value'])) {
                             $user_data['email'] = trim($custom_field['values'][0]['value']);
                         }
-//                        $user_data['com_fields']['field_name'] = 'new value';
+                        $amo_custom_field_id = $custom_field['id'];
+
+                        if (array_key_exists($amo_custom_field_id, self::$mapping)) {
+                            if ($custom_field['code'] == 'SMART_ADDRESS') {
+                                $values                 = array_column($custom_field['values'], 'value');
+                                $amo_custom_field_value = implode(', ', $values);
+                            } else {
+                                $amo_custom_field_value = $custom_field['values'][0]['value'];
+                            }
+
+                            // смотрим тип хранилища на стороне Joomla и сохраняем
+
+                            switch (self::$mapping[$amo_custom_field_id]['joomla_field_type']) {
+                                case 'user_custom_field':
+                                    if (!empty(
+                                    $field_id = trim(
+                                        self::$mapping[$amo_custom_field_id]['com_users_custom_field_id']
+                                    )
+                                    )) {
+                                        $user_custom_fields[$field_id] = $amo_custom_field_value;
+                                    }
+                                    break;
+                                case 'user_params':
+                                default:
+                                    if (!empty(
+                                    $param_name = trim(
+                                        self::$mapping[$amo_custom_field_id]['user_params_param_name']
+                                    )
+                                    )) {
+                                        $user_params['amocrm'][$param_name] = $amo_custom_field_value;
+                                    }
+                                    break;
+                            }
+                        }
                     }
+
+                    if (!empty($user_params)) {
+                        $user_data['params'] = $user_params;
+                    }
+
                     $this->saveUser($user_data);
+                    if (!empty($user_custom_fields)) {
+                        $this->saveCustomFieldsData($joomla_user_id, $user_custom_fields);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Save the custom fields data for User.
+     *
+     * Not using the standart way with `$user['com_fields']['field_name'] = $value`
+     * because FieldsHelper needs an active user session.
+     * But we have not it here
+     *
+     * @param   int    $joomla_user_id
+     * @param   array  $user_custom_fields
+     *
+     * @return void
+     * @since 1.3.0
+     */
+    private function saveCustomFieldsData($joomla_user_id, array $user_custom_fields): void
+    {
+        $db = $this->getDatabase();
+        // Delete exists fields first
+        $conditions = [
+            $db->quoteName('field_id') . ' IN(' . implode(',', $db->quote(array_keys($user_custom_fields))) . ')',
+            $db->quoteName('item_id') . ' = ' . $db->quote($joomla_user_id),
+        ];
+
+        $query = $db->getQuery(true);
+        $query->delete($db->quoteName('#__fields_values'))
+            ->where($conditions);
+        $db->setQuery($query);
+
+        $db->execute();
+
+        $query->clear();
+        $query->insert($db->quoteName('#__fields_values'))
+            ->columns([
+                $db->quoteName('field_id'),
+                $db->quoteName('item_id'),
+                $db->quoteName('value'),
+            ]);
+
+        foreach ($user_custom_fields as $field_id => $field_value) {
+            $query->values(implode(',', [$db->quote($field_id), $db->quote($joomla_user_id), $db->quote($field_value)])
+            );
+        }
+
+        $db->setQuery($query)->execute();
     }
 
     /**
