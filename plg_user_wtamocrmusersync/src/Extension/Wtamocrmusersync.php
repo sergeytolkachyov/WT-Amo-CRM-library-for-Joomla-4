@@ -767,7 +767,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
             $amo_custom_field_id = $custom_field['id'];
 
-            if (array_key_exists($amo_custom_field_id, self::$mapping)) {
+            if (array_key_exists($amo_custom_field_id, self::$mapping) && self::$mapping[$amo_custom_field_id]['joomla_field_type'] == 'user_custom_field') {
                 if ($custom_field['code'] == 'SMART_ADDRESS') {
                     $values                 = array_column($custom_field['values'], 'value');
                     $amo_custom_field_value = implode(', ', $values);
@@ -811,7 +811,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
             $amo_custom_field_id = $custom_field['id'];
 
-            if (array_key_exists($amo_custom_field_id, self::$mapping)) {
+            if (array_key_exists($amo_custom_field_id, self::$mapping) && self::$mapping[$amo_custom_field_id]['joomla_field_type'] == 'user_params') {
                 if ($custom_field['code'] == 'SMART_ADDRESS') {
                     $values                 = array_column($custom_field['values'], 'value');
                     $amo_custom_field_value = implode(', ', $values);
