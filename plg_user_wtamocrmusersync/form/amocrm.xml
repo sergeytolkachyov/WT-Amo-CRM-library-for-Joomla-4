@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+    <fieldset name="wtamocrm" label="PLG_WTAMOCRMUSERSYNC_WTAMOCRM_FIELDSET_LABEL">
+        <field
+                name="amocrm_user_info"
+                addfieldprefix="Webtolk\Amocrm\Fields"
+                type="contactinfo"
+                joomlauseridsource="id"
+                showtags="true"
+                with="catalog_elements,leads,customers"
+                label="PLG_WTAMOCRMUSERSYNC_USER_PROFILE_AMOCRM_INFO"
+        />
+    </fieldset>
+</form>

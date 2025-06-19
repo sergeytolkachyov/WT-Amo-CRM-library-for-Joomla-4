@@ -1,9 +1,9 @@
 <?php
 /**
  * @package       WT Amocrm Library
- * @version       1.2.1
+ * @version       1.3.0-alpha2
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @сopyright (c) 2022 - October 2023 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
  * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since         1.0.0
  */
@@ -39,12 +39,15 @@ class ClearrefreshtokenbtnField extends FormField
 		$url = new Uri(Uri::root());
 		$url->setScheme('https');
 		$url->setPath('/administrator/index.php');
-		$url->setVar('option','com_ajax');
-		$url->setVar('plugin','wt_amocrm');
-		$url->setVar('group','system');
-		$url->setVar('format','json');
-		$url->setVar('action','clear_refresh_token');
-		$url->setVar(Session::getFormToken(),'1');
+		$url->setQuery([
+			'option'                => 'com_ajax',
+			'plugin'                => 'wt_amocrm',
+			'group'                 => 'system',
+			'format'                => 'json',
+			'action'                => 'clear_refresh_token',
+			'action_type'           => 'internal',
+			Session::getFormToken() => '1'
+		]);
 
 		$wa      = Factory::getApplication()->getDocument()->getWebAssetManager();
 		$wa->addInlineScript(
@@ -104,9 +107,3 @@ class ClearrefreshtokenbtnField extends FormField
 		return $this->getLabel();
 	}
 }
-
-
-?>
-
-
-

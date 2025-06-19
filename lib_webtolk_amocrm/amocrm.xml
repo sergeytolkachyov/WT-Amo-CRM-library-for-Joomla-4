@@ -2,17 +2,26 @@
 <extension type="library" method="upgrade">
 	<name>WebTolk AmoCRM library</name>
 	<libraryname>Webtolk/Amocrm</libraryname>
-	<version>1.2.1</version>
+	<version>1.3.0-alpha2</version>
 	<description>AmoCRM connection library</description>
-	<creationDate>October 2023</creationDate>
+	<creationDate>May 2025</creationDate>
 	<copyright>2022-2023 Sergey Tolkachyov</copyright>
 	<license>GNU/GPL 3.0</license>
 	<author>Sergey Tolkachyov</author>
 	<authorEmail>info@web-tolk.ru</authorEmail>
 	<authorUrl>https://web-tolk.ru</authorUrl>
 	<namespace path="src">Webtolk\Amocrm</namespace>
+	<scriptfile>script.php</scriptfile>
+	<layouts folder="layouts" destination="libraries/webtolk/amocrm">
+		<folder>fields</folder>
+	</layouts>
+	<languages>
+		<language tag="ru-RU">language/ru-RU/lib_webtolk_amocrm.ini</language>
+		<language tag="en-GB">language/en-GB/lib_webtolk_amocrm.ini</language>
+	</languages>
 	<files>
 		<folder>src</folder>
+		<folder>language</folder>
 		<filename>amocrm.xml</filename>
 	</files>
 </extension>

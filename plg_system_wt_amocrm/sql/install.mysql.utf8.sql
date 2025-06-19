@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS `#__lib_wt_amocrm_users_sync` (`joomla_user_id` int(11) NOT NULL UNIQUE, `amocrm_contact_id` int(11) NOT NULL UNIQUE) DEFAULT CHARSET=utf8;

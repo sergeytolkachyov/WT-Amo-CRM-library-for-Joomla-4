@@ -4,10 +4,10 @@
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
     <authorUrl>https://web-tolk.ru/</authorUrl>
-	<creationDate>October 2023</creationDate>
+	<creationDate>May 2025</creationDate>
     <copyright>2022-2023 Sergey Tolkachyov</copyright>
     <license>GNU General Public License v3.0</license>
-    <version>1.2.1</version>
+    <version>1.3.0-alpha2</version>
     <description>Amo CRM library settings</description>
     <namespace path="src">Joomla\Plugin\System\Wt_amocrm</namespace>
 	<files>
@@ -20,6 +20,20 @@
         <language tag="en-GB">language/en-GB/plg_system_wt_amocrm.ini</language>
         <language tag="en-GB">language/en-GB/plg_system_wt_amocrm.sys.ini</language>
     </languages>
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
+        </sql>
+    </install>
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
+        </sql>
+    </uninstall>
+    <media folder="media" destination="plg_system_wt_amocrm">
+        <folder>js</folder>
+        <filename>joomla.asset.json</filename>
+    </media>
     <config>
         <fields name="params">
             <fieldset name="basic">
@@ -42,10 +56,28 @@
                        name="amocrm_client_secret"
                        label="PLG_WT_AMOCRM_AMOCRM_CLIENT_SECRET"
                        description="PLG_WT_AMOCRM_AMOCRM_CLIENT_SECRET_DESC"/>
-                <field type="text"
+                <field type="radio"
+                       name="token_type"
+                       label="PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE"
+                       description="PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE_DESC"
+                       class="btn-group"
+                       default="normal">
+                    <option value="normal">PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE_NORMAL</option>
+                    <option value="long_term">PLG_WT_AMOCRM_AMOCRM_TOKEN_TYPE_LONG_TERM</option>
+                </field>
+                <field type="textarea"
+                       name="long_term_token"
+                       label="PLG_WT_AMOCRM_AMOCRM_LONG_TERM_TOKEN"
+                       description="PLG_WT_AMOCRM_AMOCRM_LONG_TERM_TOKEN_DESC"
+                       filter="raw"
+                       showon="token_type:long_term"
+                       />
+                <field type="textarea"
                        name="amocrm_code"
                        label="PLG_WT_AMOCRM_AMOCRM_CODE"
-                       description="PLG_WT_AMOCRM_AMOCRM_CODE_DESC"/>
+                       description="PLG_WT_AMOCRM_AMOCRM_CODE_DESC"
+                       filter="raw"
+                       showon="token_type:normal"/>
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="redirecturl"
                        label="PLG_WT_AMOCRM_AMOCRM_REDIRECT_URI"
@@ -54,7 +86,48 @@
                 <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
                        type="clearrefreshtokenbtn"
                        label="PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN"
-                       name="clear_refresh_token_btn"/>
+                       name="clear_refresh_token_btn"
+                       showon="token_type:normal"/>
+                <field type="radio"
+                       name="avoid_rest_api_limits_exceeding"
+                       label="PLG_WT_AMOCRM_AVOID_REST_API_LIMITS_EXCEEDING"
+                       description="PLG_WT_AMOCRM_AVOID_REST_API_LIMITS_EXCEEDING_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+            <fieldset name="webhook" label="PLG_WT_AMOCRM_WEBHOOK_FIELDSET_LABEL">
+                <field
+                        name="allow_amocrm_webhooks"
+                        type="radio"
+                        label="PLG_WT_AMOCRM_ALLOW_AMOCRM_WEBHOOKS"
+                        description="PLG_WT_AMOCRM_ALLOW_AMOCRM_WEBHOOKS_DESC"
+                        layout="joomla.form.field.radio.switcher"
+                        default="0"
+                        filter="boolean"
+                >
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
+                       type="token"
+                       name="webhook_token"
+                       label="PLG_WT_AMOCRM_WEBHOOK_TOKEN"
+                       showon="allow_amocrm_webhooks:1"/>
+                <field addfieldprefix="Joomla\Plugin\System\Wt_amocrm\Fields"
+                       type="webhookurl"
+                       name="webhook_url"
+                       label="PLG_WT_AMOCRM_FIELD_WEBHOOK_URL"
+                       showon="allow_amocrm_webhooks:1"/>
+                <field addfieldprefix="Webtolk\Amocrm\Fields"
+                       type="webhookslist"
+                       name="webhooks_list"
+                       onlycurrentsite="true"
+                       label="PLG_WT_AMOCRM_FIELD_WEBHOOKS_LIST"
+                       showon="allow_amocrm_webhooks:1"/>
             </fieldset>
         </fields>
     </config>

@@ -1,9 +1,9 @@
 <?php
 /**
  * @package       WT Amocrm Library
- * @version       1.2.1
+ * @version       1.3.0-alpha2
  * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @сopyright (c) 2022 - October 2023 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
  * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since         1.0.0
  */
@@ -34,7 +34,13 @@ return new class implements ServiceProviderInterface {
 			function (Container $container) {
 				$subject = $container->get(DispatcherInterface::class);
 				$config  = (array) PluginHelper::getPlugin('system', 'wt_amocrm');
-				return new Wt_amocrm($subject, $config);
+				$plugin = new Wt_amocrm($subject, $config);
+				$plugin->setApplication(\Joomla\CMS\Factory::getApplication());
+
+                $registry = $container->get(Joomla\CMS\WebAsset\WebAssetRegistry::class);
+                $registry->addRegistryFile('media/plg_system_wt_amocrm/joomla.asset.json');
+
+				return $plugin;
 			}
 		);
 	}

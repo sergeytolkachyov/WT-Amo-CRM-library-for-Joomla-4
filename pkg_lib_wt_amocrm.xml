@@ -2,9 +2,9 @@
 <extension type="package" method="upgrade">
 	<name>WT Amo CRM library package</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>October 2023</creationDate>
+	<creationDate>May 2025</creationDate>
 	<packagename>lib_wt_amocrm</packagename>
-	<version>1.2.1</version>
+	<version>1.3.0-alpha2</version>
 	<url>https://web-tolk.ru</url>
 	<packager>Sergey Tolkachyov</packager>
 	<packagerurl>https://web-tolk.ru/dev/biblioteki/wt-amo-crm-library</packagerurl>
@@ -16,11 +16,12 @@
 		<language tag="en-GB">language/ru-RU/pkg_lib_wt_amocrm.sys.ini</language>
 	</languages>
 	<files>
-	   <folder type="library" id="pkglibwtamocrm">lib_webtolk_amocrm</folder>
-	   <folder type="plugin" id="Webtolk/Amocrm" group="system">plg_system_wt_amocrm</folder>
+	   <folder type="library" id="Webtolk/Amocrm">lib_webtolk_amocrm</folder>
+	   <folder type="plugin" id="wt_amocrm" group="system">plg_system_wt_amocrm</folder>
+	   <folder type="plugin" id="wtamocrmusersync" group="user">plg_user_wtamocrmusersync</folder>
 	</files>
 	<updateservers>
-			<server type="extension" name="Web-Tolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate.html?element=pkg_lib_wt_amocrm</server>
+			<server type="extension" name="WebTolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate?element=pkg_lib_wt_amocrm</server>
 	</updateservers>
 	<changelogurl>https://web-tolk.ru/jchangelog?element=pkg_lib_wt_amocrm</changelogurl>
 </extension>
