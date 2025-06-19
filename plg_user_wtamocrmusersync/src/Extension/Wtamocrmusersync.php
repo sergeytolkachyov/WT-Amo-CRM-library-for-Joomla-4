@@ -416,7 +416,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                                 );
                                 $temp_email         = false;
                             }
-//                      $user_data['com_fields']['field_name'] = 'new value';
+
+                            $this->preprocessUserParams($contact, $user_data);
                         }
                     }
 
@@ -459,7 +460,11 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                             ),
                             'error'
                         );
+
+                        continue;
                     }
+
+                    $this->processUserCustomFields($savedUser->id, $contact, $user_data);
 
                     if (!$temp_email && $this->params->get('notify_new_user', 0) == 1) {
                         // отправляем уведомления пользователю о создании аккаунта
@@ -490,6 +495,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $user = new User();
         } else {
             $user = $this->getUserFactory()->loadUserById($user_data['id']);
+            $user_params = new Registry($user->params);
+            $user_params->merge(new Registry($user_data['params']), true);
+            $user_data['params'] = $user_params->toArray();
         }
         // Bind the data.
         if (!$user->bind($user_data)) {
@@ -728,64 +736,97 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 if ($contact['type'] == 'contact' && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser(
                         $contact['id']
                     ))) {
-                    $user_data          = [
+                    $user_data = [
                         'id'   => $joomla_user_id,
                         'name' => $contact['name']
                     ];
-                    $user_params        = [];
-                    $user_custom_fields = [];
-                    foreach ($contact['custom_fields'] as $custom_field) {
-                        if ($custom_field['code'] == 'EMAIL' &&
-                            $this->params->get('update_user_email', false) &&
-                            !empty($custom_field['values'][0]['value'])) {
-                            $user_data['email'] = trim($custom_field['values'][0]['value']);
-                        }
-                        $amo_custom_field_id = $custom_field['id'];
 
-                        if (array_key_exists($amo_custom_field_id, self::$mapping)) {
-                            if ($custom_field['code'] == 'SMART_ADDRESS') {
-                                $values                 = array_column($custom_field['values'], 'value');
-                                $amo_custom_field_value = implode(', ', $values);
-                            } else {
-                                $amo_custom_field_value = $custom_field['values'][0]['value'];
-                            }
-
-                            // смотрим тип хранилища на стороне Joomla и сохраняем
-
-                            switch (self::$mapping[$amo_custom_field_id]['joomla_field_type']) {
-                                case 'user_custom_field':
-                                    if (!empty(
-                                    $field_id = trim(
-                                        self::$mapping[$amo_custom_field_id]['com_users_custom_field_id']
-                                    )
-                                    )) {
-                                        $user_custom_fields[$field_id] = $amo_custom_field_value;
-                                    }
-                                    break;
-                                case 'user_params':
-                                default:
-                                    if (!empty(
-                                    $param_name = trim(
-                                        self::$mapping[$amo_custom_field_id]['user_params_param_name']
-                                    )
-                                    )) {
-                                        $user_params['amocrm'][$param_name] = $amo_custom_field_value;
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-
-                    if (!empty($user_params)) {
-                        $user_data['params'] = $user_params;
-                    }
-
+                    $this->preprocessUserParams($contact, $user_data);
                     $this->saveUser($user_data);
-                    if (!empty($user_custom_fields)) {
-                        $this->saveCustomFieldsData($joomla_user_id, $user_custom_fields);
-                    }
+                    $this->processUserCustomFields($joomla_user_id, $contact, $user_data);
                 }
             }
+        }
+    }
+
+    /**
+     * Fill AmoCRM contact fields to $user['params']
+     * Fired AFTER user created or updated.
+     *
+     * @param   int    $joomla_user_id
+     * @param   array  $contact
+     * @param   array  $user_data
+     *
+     * @return void
+     * @since 1.3.0
+     */
+    private function processUserCustomFields(int $joomla_user_id, array $contact, array $user_data): void
+    {
+        $user_custom_fields = [];
+        foreach ($contact['custom_fields'] as $custom_field) {
+
+            $amo_custom_field_id = $custom_field['id'];
+
+            if (array_key_exists($amo_custom_field_id, self::$mapping)) {
+                if ($custom_field['code'] == 'SMART_ADDRESS') {
+                    $values                 = array_column($custom_field['values'], 'value');
+                    $amo_custom_field_value = implode(', ', $values);
+                } else {
+                    $amo_custom_field_value = $custom_field['values'][0]['value'];
+                }
+
+                if (!empty(
+                $field_id = trim(self::$mapping[$amo_custom_field_id]['com_users_custom_field_id']))) {
+                    $user_custom_fields[$field_id] = $amo_custom_field_value;
+                }
+            }
+        }
+
+        if (!empty($user_custom_fields)) {
+            $this->saveCustomFieldsData($joomla_user_id, $user_custom_fields);
+        }
+    }
+
+    /**
+     * Fired BEFORE user created or updated
+     *
+     * @param   array  $contact AmoCRM contact data from webhook
+     * @param   array  $user_data user data for bind
+     *
+     *
+     * @since 1.3.0
+     */
+    private function preprocessUserParams(array $contact, array &$user_data): void
+    {
+        $user_params        = [];
+        foreach ($contact['custom_fields'] as $custom_field) {
+            // Update main user email on update webhook
+            if ($custom_field['code'] == 'EMAIL' &&
+                $this->params->get('update_user_email', false) &&
+                !empty($custom_field['values'][0]['value'])) {
+                $user_data['email'] = PunycodeHelper::emailToPunycode(
+                    $custom_field['values'][0]['value']
+                );
+            }
+
+            $amo_custom_field_id = $custom_field['id'];
+
+            if (array_key_exists($amo_custom_field_id, self::$mapping)) {
+                if ($custom_field['code'] == 'SMART_ADDRESS') {
+                    $values                 = array_column($custom_field['values'], 'value');
+                    $amo_custom_field_value = implode(', ', $values);
+                } else {
+                    $amo_custom_field_value = $custom_field['values'][0]['value'];
+                }
+
+                if (!empty($param_name = trim(self::$mapping[$amo_custom_field_id]['user_params_param_name']))) {
+                    $user_params['amocrm'][$param_name] = $amo_custom_field_value;
+                }
+            }
+        }
+
+        if (!empty($user_params)) {
+            $user_data['params'] = $user_params;
         }
     }
 
