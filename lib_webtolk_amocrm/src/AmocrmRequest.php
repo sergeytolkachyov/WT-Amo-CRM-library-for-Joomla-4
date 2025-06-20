@@ -120,9 +120,10 @@ class AmocrmRequest
         $url->setPath('/api/v' . self::$api_version . $endpoint);
 
         $headers = [
-            'Authorization' => $this->token_type . ' ' . $this->token,
-            'Content-Type'  => $content_type,
-            'charset'       => 'UTF-8',
+            'Authorization'    => $this->token_type . ' ' . $this->token,
+            'Content-Type'     => $content_type,
+            'charset'          => 'UTF-8',
+            'X-Requested-With' => 'XMLHttpRequest'
         ];
 
         try {
@@ -144,8 +145,10 @@ class AmocrmRequest
                 if (!empty($data)) {
                     $url->setQuery($data);
                 }
+
                 // $url, $headers, $timeout
                 $response = $http->get($url, $headers);
+
             }
 
             return $this->responseHandler($response, $endpoint);
@@ -337,12 +340,12 @@ class AmocrmRequest
      */
     public function getCache(array $cache_options = []): OutputController
     {
-        $jconfig = Factory::getContainer()->get('config');
+        $config = Factory::getContainer()->get('config');
         $options = [
             'defaultgroup' => 'wt_amo_crm',
             'caching'      => true,
-            'cachebase'    => $jconfig->get('cache_path'),
-            'storage'      => $jconfig->get('cache_handler'),
+            'cachebase'    => $config->get('cache_path'),
+            'storage'      => $config->get('cache_handler'),
         ];
         $options = array_merge($options, $cache_options);
 
@@ -372,7 +375,6 @@ class AmocrmRequest
     private function authorize()
     {
         $plugin_params = $this->getPluginParams();
-
         $amocrm_code = $plugin_params->get('amocrm_code', '');
         if (empty($amocrm_code)) {
             $error_message = Text::_('LIB_WTAMOCRM_ERROR_AUTHORIZE_EMPTY_CLIENT_OR_SECRET');
@@ -386,12 +388,22 @@ class AmocrmRequest
                 'error_message' => $error_message
             ];
         }
+        $redirect_uri = Uri::getInstance();
+        $redirect_uri->setPath('/index.php');
+
+        $redirect_uri->setQuery([
+            'option'=>'com_ajax',
+            'plugin'=>'wt_amocrm',
+            'group'=>'system',
+            'format'=>'raw',
+        ]);
 
         $authorize_data = [
             'client_id'     => $this->client_id,
             'client_secret' => $this->client_secret,
-            'redirect_uri'  => Uri::root() . 'index.php?option=com_ajax&plugin=wt_amocrm&group=system&format=raw',
+            'redirect_uri'  => $redirect_uri->toString(),
         ];
+
         $refresh_token  = $this->getRefreshToken();
         /**
          * Если $refresh_token не получен, то скорее всего это первый запуск.
@@ -404,23 +416,24 @@ class AmocrmRequest
             $authorize_data['refresh_token'] = $refresh_token;
             $authorize_data['grant_type']    = 'refresh_token';
         }
-
         $http    = (new HttpFactory())->getHttp([], ['curl', 'stream']);
         $headers = [
-            'Content-Type' => 'application/json'
+            'Content-Type' => 'application/json',
+            'charset'          => 'UTF-8',
+            'X-Requested-With' => 'XMLHttpRequest'
         ];
+
         $authUrl = $this->getAmoCRMHost();
         $endpoint = '/oauth2/access_token';
         $authUrl->setPath($endpoint);
 
-        try {
+            try {
             $response = $http->post(
                 $authUrl,
                 json_encode($authorize_data),
                 $headers
             );
-
-            $response_body = $this->responseHandler($response, $endpoint);
+                $response_body = $this->responseHandler($response, $endpoint);
 
             if(property_exists($response_body,'error_code')) {
                 return $response_body;
