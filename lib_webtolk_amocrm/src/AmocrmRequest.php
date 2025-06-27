@@ -96,7 +96,8 @@ class AmocrmRequest
         string $endpoint,
         ?array $data = null,
         string $request_method = 'POST',
-        string $content_type = 'application/x-www-form-urlencoded'
+        string $content_type = 'application/x-www-form-urlencoded',
+        bool $custom_endpoint = false
     ): object {
         /**
          * Check if the library system plugin is enabled and credentials data are filled
@@ -117,7 +118,13 @@ class AmocrmRequest
         }
 
         $url = $this->getAmoCRMHost();
-        $url->setPath('/api/v' . self::$api_version . $endpoint);
+        if($custom_endpoint) {
+            $url->setPath($endpoint);
+        } else {
+            $url->setPath('/api/v' . self::$api_version . $endpoint);
+        }
+
+
 
         $headers = [
             'Authorization'    => $this->token_type . ' ' . $this->token,
@@ -294,11 +301,11 @@ class AmocrmRequest
         } else {
             $this->setToken((string)$token_data->token);
             $this->setTokenType((string)$token_data->token_type);
-
             unset($token_data);
 
             return true;
         }
+
         unset($token_data);
 
         return true;

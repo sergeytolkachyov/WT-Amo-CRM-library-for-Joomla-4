@@ -66,6 +66,13 @@
                        description="PLG_WTAMOCRMUSERSYNC_CYCLICAL_REQUESTS_RISK_DESC"
                        class="alert alert-danger w-100"
                        showon="update_amocrm_contact_data_by_joomla:1[AND]allow_webhook_actions:1[AND]allow_update_user_data:1"/>
+                <field
+                        name="amocrm_contact_joomla_profile_link_field_id"
+                        addfieldprefix="Webtolk\Amocrm\Fields"
+                        type="contactcustomfieldslist"
+                        label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_FIELD_ID"
+                        description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_FIELD_ID_DESC"
+                />
             </fieldset>
             <fieldset name="webhook" label="PLG_WTAMOCRMUSERSYNC_WEBHOOK_FIELDSET_LABEL"
                       description="PLG_WTAMOCRMUSERSYNC_WEBHOOK_FIELDSET_DESC">
