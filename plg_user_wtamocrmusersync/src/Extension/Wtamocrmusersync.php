@@ -146,6 +146,13 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         $amocrm = $this->amocrm;
 
+        $link_to_user = (new Uri(Uri::root()))->setPath('/administrator/index.php');
+        $link_to_user->setQuery([
+            'option'         => 'com_users',
+            'view'           => 'users',
+            'filter[search]' => 'id:' . $user['id'],
+        ]);
+        $link_to_user = $link_to_user->toString();
         /**
          * Этот метод также вызывается при создании пользователя
          * по вебхуку со стороны AmoCRM.
@@ -163,6 +170,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             );
 
             // Информируем AmoCRM, что всё хорошо
+
             $notes = [
                 [
                     'created_by' => 0, // 0 - создал робот
@@ -175,10 +183,29 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                         ),
                         'service' => 'WT AmoCRM for Joomla'
                     ]
-                ]
+                ],
             ];
 
             $amocrm->notes()->addNotes('contacts', $user['amocrm_new_user_from_webhook_contact_id'], $notes);
+
+            // Link to Joomla user profile
+            if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1)) && $joomla_profile_link_amo_field_id > 0) {
+                $custom_fields_data = [
+                    'custom_fields_values' => [
+                        [
+                            'field_id' => $joomla_profile_link_amo_field_id,
+                            'values'   => [
+                                [
+                                    'value' => $link_to_user
+                                ]
+                            ]
+                        ],
+                    ]
+                ];
+
+                $amocrm->contacts()->editContact($user['amocrm_new_user_from_webhook_contact_id'], $custom_fields_data);
+            }
+
             // Уходим. Больше ничего не нужно. Чистим за собой.
             unset($user['amocrm_new_user_from_webhook_contact_id']);
 
@@ -229,7 +256,17 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 ]
             ],
         ];
-
+        // Link to Joomla user profile
+        if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1)) && $joomla_profile_link_amo_field_id > 0) {
+            $user_data['custom_fields_values'][] = [
+                'field_id' => $joomla_profile_link_amo_field_id,
+                'values' => [
+                    [
+                        'value' => $link_to_user
+                    ]
+                ]
+            ];
+        }
         // We have a new user. Let's register he in AmoCRM
         if ($isnew) {
             if (!empty($amocrm_contact_tags = $this->params->get('amocrm_contact_tags', []))) {
@@ -240,6 +277,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     ];
                 }
             }
+
+
             $amocrm_users = $amocrm->contacts()->addContacts([$user_data]);
             if (!property_exists($amocrm_users, 'error_code')) {
                 $amocrm_user_id = $amocrm_users->_embedded->contacts[0]->id;
@@ -380,7 +419,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @since 1.3.0
      */
-    private function createUsers(array $contacts)
+    public function createUsers(array $contacts)
     {
         if (!empty($contacts && is_array($contacts))) {
             $amocrm = $this->amocrm;
@@ -762,6 +801,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      */
     private function processUserCustomFields(int $joomla_user_id, array $contact, array $user_data): void
     {
+        if(!array_key_exists('custom_fields', $contact)) {
+            return;
+        }
         $user_custom_fields = [];
         foreach ($contact['custom_fields'] as $custom_field) {
 
@@ -798,6 +840,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      */
     private function preprocessUserParams(array $contact, array &$user_data): void
     {
+        if(!array_key_exists('custom_fields', $contact)) {
+            return;
+        }
         $user_params        = [];
         foreach ($contact['custom_fields'] as $custom_field) {
             // Update main user email on update webhook
