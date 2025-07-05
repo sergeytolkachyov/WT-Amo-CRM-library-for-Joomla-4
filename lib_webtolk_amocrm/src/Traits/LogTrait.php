@@ -36,7 +36,10 @@ trait LogTrait
             ['lib_webtolk_amo_crm']
         );
         Factory::getApplication()->enqueueMessage($data, $priority);
-        $priority = 'Log::' . $priority;
+        $priorityName = 'Log::' . $priority;
+        if (defined($priorityName)) {
+            $priority = constant($priorityName);
+        }
         Log::add($data, $priority, 'lib_webtolk_amo_crm');
     }
 }

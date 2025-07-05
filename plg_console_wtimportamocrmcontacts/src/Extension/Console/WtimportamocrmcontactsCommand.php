@@ -12,6 +12,7 @@
 namespace Joomla\Plugin\Console\Wtimportamocrmcontacts\Extension\Console;
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\Console\Command\AbstractCommand;
 use Joomla\Registry\Registry;
@@ -101,25 +102,25 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 
 		$scriptStart = microtime(true);
 
-		$contacts = [];
-
         $amocrm = new Amocrm();
         $total_contacts = $amocrm->getRequest()->getResponse('/ajax/contacts/list/contacts/',['only_count'=>'Y','skip_filter'=>'Y'],'GET','',true);
+        if(property_exists($total_contacts,'error_code')) {
+            $symfonyStyle->error($total_contacts->error_code.' '.Text::_($total_contacts->error_message));
+            return Command::FAILURE;
+        }
         $completed = false;
         $page = 1;
-        $limit = 3;
+        $limit = 250;
         $data = [];
         $contactsCount = $total_contacts->count;
         $contactsExcludedCount = 0;
         $contactsByTagsCount = 0;
 
-
         if ($test_mode) {
             $limit = 5;
-
         }
 
-        ProgressBar::setFormatDefinition('contactsProgress', '[%bar%] %current%/%total% contacts in batch. Page: <info>%page%</info>. Contacts excluded by tags: <info>%contactsexcludedcount%</info>. Contacts handled: <info>%contactscount%</info>');
+        ProgressBar::setFormatDefinition('contactsProgress', '[%bar%] %current%/%total% contacts in batch. Contacts excluded by tags: <info>%contactsexcludedcount%</info>. Contacts handled: <info>%total%</info>');
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat('contactsProgress');
         $progressBar->start();
@@ -132,14 +133,17 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
             ];
             $contacts = $amocrm->contacts()->getContacts($filter);
 
+            if(property_exists($contacts,'error_code')) {
+                $symfonyStyle->error($contacts->error_code.' '.Text::_($contacts->error_message));
+                return Command::FAILURE;
+            }
+
             if(!property_exists($contacts, '_embedded')) {
-                dump($contacts);
                 $completed = true;
                 break;
             }
             $contacts = (new Registry($contacts->_embedded->contacts))->toArray();
 
-            dump(count($contacts));
             $progressBar->setMessage($contactsCount,'total');
             $i = 0;
             foreach ($contacts as &$contact) {
@@ -187,7 +191,6 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
                 $progressBar->setMessage($contactsByTagsCount, 'contactsbytagscount');
                 $progressBar->setMessage($contactsExcludedCount, 'contactsexcludedcount');
                 $progressBar->advance();
-            sleep(1);
             }
 
 
@@ -213,12 +216,17 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
                 break;
             }
 
-
+            /**
+             * Возможно добавить параметр force_temp_user
+             * чтобы все созданные из амо имели статус временных, не зависимо от
+             * того заполнен емейл или нет.
+             *
+             * ЛИБО ЖЕ формировать временные ссылки для дорегистрации независимо от флага пользователя. 
+             */
             // Save AmoCRM contacts to Joomla users
             $wtamocrmusersync->createUsers($contacts);
 
             $page++;
-            $progressBar->setMessage($page,'page');
 
             if($limit < count($contacts)) {
                 $completed = true;
