@@ -31,6 +31,7 @@ use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Filesystem\File;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 use RuntimeException;
@@ -84,11 +85,11 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
     /**
      *
-     * @return array
+     * @return void
      *
      * @since 1.3.0
      */
-    private function fillJoomlaToAmoFieldsMapping()
+    private function fillJoomlaToAmoFieldsMapping():void
     {
         $fields_mapping = (new Registry($this->params->get('fields_mapping', [])))->toArray();
 
@@ -164,6 +165,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (!empty($user['amocrm_new_user_from_webhook_contact_id']) && ($isnew || !empty($user['need_to_link_to_existing_joomla_user']))) {
             // Создаём пользователя из вебхука. Просто добавляем ассоциацию.
             $is_temporary_user = isset($user['is_temporary_user']) ? $user['is_temporary_user'] : false;
+            if($this->params->get('force_temporary_user_status_when_create', 0) == 1) {
+                $is_temporary_user = true;
+            }
             AmocrmUserHelper::addJoomlaAmoCRMUserSync(
                 $user['id'],
                 $user['amocrm_new_user_from_webhook_contact_id'],
@@ -479,6 +483,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                          * - If several Joomla users found - log this and skip. Solve this issue by manual
                          */
                         $joomla_user_ids = $this->findJoomlaUserByEmail($contact_emails);
+
                         if (count($joomla_user_ids) > 1) {
 
                             array_walk($joomla_user_ids, function(&$value, $key) {
@@ -493,6 +498,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
                             // пишем лог
                             $amocrm->saveToLog($note_text,'WARNING');
+                            // Пишем в отдельный файл логов дублей
+                            $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
 
                             // пишем уведомление в контакт, что найдено несколько
                             // юзеров Joomla с емейлами этого контакта.
@@ -538,6 +545,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
                                 // пишем лог
                                 $amocrm->saveToLog($note_text,'WARNING');
+                                // Пишем в отдельный файл логов дублей
+                                $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
 
                                 // пишем уведомление в контакт, что найдено несколько
                                 // юзеров Joomla с емейлами этого контакта.
@@ -571,8 +580,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
                     if ($temp_email) {
                         $host                           = (new Uri(Uri::root()))->getHost();
-                        $user_data['email']             = 'change-this-fake-email-amocrm-' . $contact['id'] . '@' . $host;
-                        $user_data['username']          = 'change-this-fake-login-amocrm-' . $contact['id'];
+                        $temporary_user_email = 'change-this-fake-email-amocrm-' . $contact['id'] . '@' . $host;
+                        $user_data['email']             = $temporary_user_email;
+                        $user_data['username']          = $temporary_user_email;
                         $user_data['is_temporary_user'] = true;
                     } else {
                         $user_data['username'] = $user_data['email'];
@@ -1086,11 +1096,13 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $users_found = [];
         if(!empty($emails)) {
             $db = $this->getDatabase();
-            $query = $db->getQuery()->clear();
-            $query->select($db->quoteName(['id','email']))->from('#__users')->whereIn('email', $emails);
+            // Don't use Query constructor due https://github.com/joomla/joomla-cms/issues/45710
+            $query = 'SELECT '.implode(',',$db->quoteName(['id','email'])).' FROM '.$db->quoteName('#__users').' WHERE '.$db->quoteName('email').' IN('.implode(', ', $db->quote($emails)).')';
+
             $users_found = $db->setQuery($query)->loadAssocList();
         }
 
         return $users_found;
     }
+
 }

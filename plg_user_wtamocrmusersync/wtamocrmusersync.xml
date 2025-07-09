@@ -182,7 +182,26 @@
                     <option value="0">JNO</option>
                     <option value="1">JYES</option>
                 </field>
-
+                <field type="note"
+                       name="temporary_users_description"
+                       label="PLG_WTAMOCRMUSERSYNC_TEMPORARY_USERS_DESCRIPTION_LABEL"
+                       description="PLG_WTAMOCRMUSERSYNC_TEMPORARY_USERS_DESCRIPTION_DESC"
+                       class="alert alert-info"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="force_temporary_user_status_when_create"
+                       label="PLG_WTAMOCRMUSERSYNC_FORCE_TEMPORARY_USER_STATUS_WHEN_CREATE"
+                       description="PLG_WTAMOCRMUSERSYNC_FORCE_TEMPORARY_USER_STATUS_WHEN_CREATE_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="0"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
             </fieldset>
             <fieldset name="fields_mapping" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDSET_LABEL" description="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDSET_DESC">
                 <field name="fields_mapping"
