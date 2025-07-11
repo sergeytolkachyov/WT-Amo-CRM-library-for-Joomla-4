@@ -1096,9 +1096,10 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $users_found = [];
         if(!empty($emails)) {
             $db = $this->getDatabase();
-            // Don't use Query constructor due https://github.com/joomla/joomla-cms/issues/45710
-            $query = 'SELECT '.implode(',',$db->quoteName(['id','email'])).' FROM '.$db->quoteName('#__users').' WHERE '.$db->quoteName('email').' IN('.implode(', ', $db->quote($emails)).')';
-
+            $query = $db->getQuery()->clear();
+            $query->select('*')
+                ->from('#__users')
+                ->whereIn('email', $emails, ParameterType::STRING);
             $users_found = $db->setQuery($query)->loadAssocList();
         }
 
