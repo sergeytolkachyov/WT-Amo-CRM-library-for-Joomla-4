@@ -12,6 +12,7 @@ namespace Joomla\Plugin\System\Wt_amocrm\Extension;
 
 use JLoader;
 use Joomla\CMS\Helper\LibraryHelper;
+use Joomla\CMS\Layout\LayoutHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Plugin\PluginHelper;
@@ -21,6 +22,7 @@ use Joomla\Event\DispatcherAwareTrait;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
 
+use Webtolk\Amocrm\Amocrm;
 use Webtolk\Amocrm\Event\WebhookEvent;
 
 use function defined;
@@ -122,6 +124,9 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
         }
 
         switch ($action) {
+            case 'modalselect': // Clear AmoCRM refresh token from Joomla database
+                $result = $this->modalSelect();
+                break;
             case 'clear_refresh_token': // Clear AmoCRM refresh token from Joomla database
             default:
                 $result = $this->clearRefreshToken();
@@ -192,5 +197,41 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
 
                 break;
         }
+    }
+
+    /**
+     * Select items list for modal select window
+     *
+     * @since 1.3.0
+     */
+    private function modalSelect()
+    {
+        $entity = $this->getApplication()->getInput()->get('entity','');
+        if(empty($entity)) {
+            return 'There is no AmoCRM entity specified.';
+        }
+        $amocrm = new Amocrm();
+        $entity_type = $this->getApplication()->getInput()->get('entity_type','leads');
+        $remove = ['option', 'plugin', 'group', 'format', 'action', 'action_type', 'token', 'entity', 'entity_type', 'tmpl', Session::getFormToken()];
+        $data   = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
+
+        switch ($entity) {
+            case 'leads':
+                    $displayData = $amocrm->leads()->getLeads($data);
+                break;
+            case 'tags':
+                    $displayData = $amocrm->tags()->getTags($entity_type, $data);
+                break;
+            case 'contacts':
+                    $displayData = $amocrm->contacts()->getContacts($data);
+                break;
+            default:
+                break;
+        }
+
+
+        $displayData = (new Registry($displayData))->toArray();
+        return LayoutHelper::render('libraries.webtolk.amocrm.fields.entitymodalselect', ['entity' => $entity, 'data' => $displayData]);
+
     }
 }

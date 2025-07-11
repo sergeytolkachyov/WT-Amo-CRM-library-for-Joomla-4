@@ -229,6 +229,25 @@ class Leads implements EntityInterface
     }
 
     /**
+     * Метод позволяет получить список сделок.
+     *
+     * ## Метод
+     * GET /api/v4/leads
+     *
+     * @param   array  $data request data array
+     *
+     * @return object
+     *
+     * @since 1.3.0
+     * @see https://www.amocrm.ru/developers/content/crm_platform/leads-api
+     */
+
+    public function getLeads(array $data = []): object
+    {
+        return $this->request->getResponse('/leads', $data, 'GET');
+    }
+
+    /**
      * Пакетное редактирование **сделок**.
      *
      *  ## Метод
