@@ -10,10 +10,11 @@
                 with="catalog_elements,leads,customers"
                 label="PLG_WTAMOCRMUSERSYNC_USER_PROFILE_AMOCRM_INFO"
         />
-        <field type="contactselectmodal"
+        <field type="entitymodalselect"
                addfieldprefix="Webtolk\Amocrm\Fields"
                name="amocrm_contact_id"
-               label="asasd"
-               description="asd"/>
+               entity="contacts"
+               label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_ID"
+               description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_ID_DESC"/>
     </fieldset>
 </form>

@@ -91,7 +91,7 @@ class UserHelper
     public static function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id, bool $is_temporary_user = false): bool
     {
         $db    = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true)
+        $query = $db->getQuery()->clear()
             ->insert($db->quoteName('#__lib_wt_amocrm_users_sync'))
             ->columns([
                 $db->quoteName('joomla_user_id'),
@@ -104,6 +104,44 @@ class UserHelper
                 ($is_temporary_user ? $db->quote('1') : $db->quote('0'))
             ]));
         $db->setQuery($query);
+
+        return $db->execute();
+    }
+
+    /**
+     * Update joomla user id to AmoCRM user id mapping
+     * BY JOOMLA USER ID
+     *
+     * @param   int  $joomla_user_id
+     * @param   int  $amocrm_contact_id
+     * @param   bool $is_temporary_user Is this user has temporary userdata?
+     *
+     * @return bool True or false
+     *
+     * @since 1.3.0
+     */
+    public static function updateJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id, bool $is_temporary_user = false): bool
+    {
+        $db    = Factory::getContainer()->get(DatabaseInterface::class);
+
+        $data = new \stdClass();
+        $data->joomla_user_id = $joomla_user_id;
+        $data->amocrm_contact_id = $amocrm_contact_id;
+        $data->is_temporary_user = $is_temporary_user ? 1 : 0;
+        $db->updateObject('#__lib_wt_amocrm_users_sync', $data, 'joomla_user_id');
+//        $query = $db->getQuery()->clear()
+//            ->insert($db->quoteName('#__lib_wt_amocrm_users_sync'))
+//            ->columns([
+//                $db->quoteName('joomla_user_id'),
+//                $db->quoteName('amocrm_contact_id'),
+//                $db->quoteName('is_temporary_user'),
+//            ])
+//            ->values(implode(',', [
+//                $db->quote($joomla_user_id),
+//                $db->quote($amocrm_contact_id),
+//                ($is_temporary_user ? $db->quote('1') : $db->quote('0'))
+//            ]));
+//        $db->setQuery($query);
 
         return $db->execute();
     }
@@ -136,7 +174,7 @@ class UserHelper
         }
 
         $db    = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
         $query->delete($db->quoteName('#__lib_wt_amocrm_users_sync'));
 
         // delete by Joomla user id

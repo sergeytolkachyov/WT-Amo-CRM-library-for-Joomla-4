@@ -211,7 +211,6 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
             return 'There is no AmoCRM entity specified.';
         }
         $amocrm = new Amocrm();
-        $entity_type = $this->getApplication()->getInput()->get('entity_type','leads');
         $remove = ['option', 'plugin', 'group', 'format', 'action', 'action_type', 'token', 'entity', 'entity_type', 'tmpl', Session::getFormToken()];
         $data   = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
 
@@ -219,18 +218,14 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
             case 'leads':
                     $displayData = $amocrm->leads()->getLeads($data);
                 break;
-            case 'tags':
-                    $displayData = $amocrm->tags()->getTags($entity_type, $data);
-                break;
             case 'contacts':
-                    $displayData = $amocrm->contacts()->getContacts($data);
-                break;
             default:
+                    $displayData = $amocrm->contacts()->getContacts($data);
                 break;
         }
 
-
         $displayData = (new Registry($displayData))->toArray();
+
         return LayoutHelper::render('libraries.webtolk.amocrm.fields.entitymodalselect', ['entity' => $entity, 'data' => $displayData]);
 
     }

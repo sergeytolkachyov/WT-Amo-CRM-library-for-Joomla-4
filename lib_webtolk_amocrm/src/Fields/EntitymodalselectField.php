@@ -22,10 +22,17 @@ use function defined;
 
 defined('_JEXEC') or die;
 
-class ContactselectmodalField extends ModalSelectField
+class EntitymodalselectField extends ModalSelectField
 {
-    protected $type = 'Contactselectmodal';
+    protected $type = 'Entitymodalselect';
 
+    /**
+     * Entity by default. Set it by `entity = "leads|contacts|tags"` in XML
+     *
+     * @var string
+     * @since 1.3.0
+     */
+    protected string $entity = 'contacts';
     /**
      * Method to attach a Form object to the field.
      *
@@ -40,35 +47,37 @@ class ContactselectmodalField extends ModalSelectField
      */
     public function setup(\SimpleXMLElement $element, $value, $group = null)
     {
-
-        // Получаем само поле
         $result = parent::setup($element, $value, $group);
 
         if (!$result)
         {
             return $result;
         }
+        /** @var string $entity leads, contacts etc. */
+        $entity = $this->entity = (!empty($this->element['entity'])) ? (string)$this->element['entity'] : 'contacts';
 
         $urlSelect = (new Uri())->setPath(Uri::base(true) . '/index.php');
-        $urlSelect->setQuery([
+        $query_params = [
             'option'                => 'com_ajax',
             'plugin'                => 'wt_amocrm',
             'group'                 => 'system',
             'format'                => 'html',
             'tmpl'                  => 'component',
             'action'                => 'modalselect',
-            'entity'                => 'contacts',
+            'entity'                => $entity,
             'action_type'           => 'internal',
             Session::getFormToken() => '1'
-        ]);
+        ];
 
-        $modalTitle = Text::_('LIB_WTAMOCRM_FIELD_CONTACT_MODAL_SELECT_CHOOSE_CONTACT');
+        $urlSelect->setQuery($query_params);
+        $title = Text::_('LIB_WTAMOCRM_FIELD_ENTITY_MODAL_SELECT_CHOOSE_'.strtoupper($entity));
+
         $this->urls['select'] = (string) $urlSelect;
 
-        $this->modalTitles['select'] = $modalTitle;
+        $this->modalTitles['select'] = $title;
 
         // hint - подсказка placeholder в HTML поля.
-        $this->hint = $this->hint ?: Text::_('LIB_WTAMOCRM_FIELD_CONTACT_MODAL_SELECT_CHOOSE_CONTACT');
+        $this->hint = $this->hint ?: $title;
 
         return $result;
     }
@@ -82,7 +91,8 @@ class ContactselectmodalField extends ModalSelectField
      */
     protected function getValueTitle()
     {
-        $value = (int) $this->value ?: ''; // Это id материала или товара или...
+        $value = (int) $this->value ?: ''; // Это id сущности
+
         $title = '';
 
         if ($value)
@@ -90,11 +100,20 @@ class ContactselectmodalField extends ModalSelectField
             try
             {
                 $amocrm = new Amocrm();
-                $contact = $amocrm->contacts()->getContactById($value);
+                switch ($this->entity) {
+                    case 'leads':
+                        $entity = $amocrm->leads()->getLeadById($value);
+                        break;
+                    case 'contacts':
+                    default:
+                        $entity = $amocrm->contacts()->getContactById($value);
+                        break;
+                }
+
                 if(isset($contact->error_code)) {
-                    $title = $contact->error_code.' - '.$contact->error_message;
+                    $title = $entity->error_code.' - '.$entity->error_message;
                 } else {
-                    $title = $contact->name;
+                    $title = $entity->name;
                 }
             }
             catch (\Throwable $e)

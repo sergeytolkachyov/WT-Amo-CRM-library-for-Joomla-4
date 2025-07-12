@@ -116,11 +116,16 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             'onUserAfterDelete'       => 'onUserAfterDelete',
             'onAmocrmIncomingWebhook' => 'onAmocrmIncomingWebhook',
             'onContentPrepareForm'    => 'onContentPrepareForm',
+            'onContentPrepareData'    => 'onContentPrepareData',
         ];
     }
 
     /**
-     * On saving user data logging method
+     * On saving user data.
+     * This method can be fired on:
+     * - incoming webhook if enabled
+     * - CLI job
+     * - manual editing in Administrator panel
      *
      * Method is called after user data is stored in the database.
      * This method logs who created/edited any user's data
@@ -233,6 +238,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         /** @var  $joomla_user_id int Joomla user id */
         $joomla_user_id = ArrayHelper::getValue($user, 'id', 0, 'int');
+        /** @var int $amocrm_contact_id ID контакта Amo из поля выбора контакта в модальном окне */
+        $amocrm_contact_id = ArrayHelper::getValue($user, 'amocrm_contact_id', 0, 'int');
 
         $firstname = $user['name'];
         $lastname  = $user['name'];
@@ -287,43 +294,72 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     ];
                 }
             }
+            // Если конакт Amo НЕ указан  вручную - создаём конакт
+            // и пытаемся получить его ID.
+            if(!$amocrm_contact_id) {
+                $amocrm_users = $amocrm->contacts()->addContacts([$user_data]);
+                if (!property_exists($amocrm_users, 'error_code')) {
+                    $amocrm_contact_id = $amocrm_users->_embedded->contacts[0]->id;
+                }
+            }
 
-
-            $amocrm_users = $amocrm->contacts()->addContacts([$user_data]);
-            if (!property_exists($amocrm_users, 'error_code')) {
-                $amocrm_user_id = $amocrm_users->_embedded->contacts[0]->id;
-                // Save relations
-                AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_user_id);
+            // Если id есть - сохраняем
+            if($amocrm_contact_id) {
+                AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
             } else {
                 $amocrm->saveToLog(
                     "WT AmoCRM user sync plugin, onUserAfterSave: for Joomla user with id $joomla_user_id haven't created related AmoCRM contact",
                     'ERROR'
                 );
             }
-        } elseif ($this->params->get('update_amocrm_contact_data_by_joomla', false)) {
-            // Have we AmoCRM user id for this Joomla user? False or (int) AmoCRM user id.
-            $amocrm_user_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id);
 
-            if ($amocrm_user_id) {
-                $result = $amocrm->contacts()->editContact($amocrm_user_id, $user_data);
-
-                $amocrm->saveToLog(
-                    Text::sprintf(
-                        'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_HAS_BEEN_UPDATED',
-                        $joomla_user_id
-                    ),
-                    'info'
-                );
+        } else {
+            // Если в форме пользователя не выбран вручную контакт AmoCRM
+            // - значит привязку хотят удалить / изменить
+            $this->getApplication()->enqueueMessage('Мы на верном пути!');
+            if(!$amocrm_contact_id) {
+                AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id]);
             } else {
-                // We loose AmoCRM user id :((
-                $amocrm->saveToLog(
-                    Text::sprintf(
-                        'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_NO_AMOCRM_CONTACT_ID_FOR_JOOMLA_USER_ID',
-                        $joomla_user_id
-                    ),
-                    'warning'
-                );
+                // Возможно хотят привязать другой контакт Amo.
+                if($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
+                    if(AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
+                        $message = 'Связь пользователя Joomla с контактом AmoCRM успешно изменена';
+                        $type='success';
+                    } else {
+                        $message = 'Ошибка изменения связи пользователя Joomla с контактом AmoCRM';
+                        $type='success';
+                    }
+                    $this->getApplication()->enqueueMessage($message, $type);
+                } else {
+                    // Старой ассоциации нет. В объекте данные есть - создаём новую ассоциацию.
+                    AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
+                }
             }
+
+            // Редактируем данные в AmoCRM из Joomla
+            if ($this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+                if ($amocrm_contact_id) {
+                    $result = $amocrm->contacts()->editContact($amocrm_contact_id, $user_data);
+
+                    $amocrm->saveToLog(
+                        Text::sprintf(
+                            'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_HAS_BEEN_UPDATED',
+                            $joomla_user_id
+                        ),
+                        'info'
+                    );
+                } else {
+                    // We loose AmoCRM user id :((
+                    $amocrm->saveToLog(
+                        Text::sprintf(
+                            'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_NO_AMOCRM_CONTACT_ID_FOR_JOOMLA_USER_ID',
+                            $joomla_user_id
+                        ),
+                        'warning'
+                    );
+                }
+            }
+
         }
     }
 
@@ -1081,6 +1117,28 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $base_dir  = JPATH_SITE;
             $lang->load($extension, $base_dir);
         }
+    }
+
+    /**
+     * Bind 3d party data to user object
+     *
+     * @param   Event  $event
+     *
+     *
+     * @since 1.3.0
+     */
+    public function onContentPrepareData(Event $event)
+    {
+        [$context, $data, $form] = array_values($event->getArguments());
+        if (!$this->getApplication()->isClient('administrator') || $context !== 'com_users.profile') {
+            return;
+        }
+        $amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($data->id);
+        if($amocrm_contact_id) {
+            $data->amocrm_contact_id = $amocrm_contact_id;
+        }
+
+        $event->updateData($data);
     }
 
     /**
