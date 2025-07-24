@@ -227,19 +227,24 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             return;
         }
 
+        /** @var  $joomla_user_id int Joomla user id */
+        $joomla_user_id = ArrayHelper::getValue($user, 'id', 0, 'int');
+        /** @var int $amocrm_contact_id ID контакта Amo из поля выбора контакта в модальном окне */
+        $amocrm_contact_id = ArrayHelper::getValue($user, 'amocrm_contact_id', 0, 'int');
+
         /**
          * Пользователь создаётся вручную в панели администратора
          * или же самостоятельно регистрируется на сайте.
          *
          */
         if (!$this->params->get('create_amocrm_contact', false)) {
+            /**
+             * Ручное изменение привязки AmoCRM контакта у Joomla пользователя в панели администратора
+             */
+            $this->processEditJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
+
             return;
         }
-
-        /** @var  $joomla_user_id int Joomla user id */
-        $joomla_user_id = ArrayHelper::getValue($user, 'id', 0, 'int');
-        /** @var int $amocrm_contact_id ID контакта Amo из поля выбора контакта в модальном окне */
-        $amocrm_contact_id = ArrayHelper::getValue($user, 'amocrm_contact_id', 0, 'int');
 
         $firstname = $user['name'];
         $lastname  = $user['name'];
@@ -314,32 +319,21 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             }
 
         } else {
-            // Если в форме пользователя не выбран вручную контакт AmoCRM
-            // - значит привязку хотят удалить / изменить
-            $this->getApplication()->enqueueMessage('Мы на верном пути!');
-            if(!$amocrm_contact_id) {
-                AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id]);
-            } else {
-                // Возможно хотят привязать другой контакт Amo.
-                if($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
-                    if(AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
-                        $message = 'Связь пользователя Joomla с контактом AmoCRM успешно изменена';
-                        $type='success';
-                    } else {
-                        $message = 'Ошибка изменения связи пользователя Joomla с контактом AmoCRM';
-                        $type='success';
-                    }
-                    $this->getApplication()->enqueueMessage($message, $type);
-                } else {
-                    // Старой ассоциации нет. В объекте данные есть - создаём новую ассоциацию.
-                    AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
-                }
-            }
+            /**
+             * Ручное изменение привязки AmoCRM контакта у Joomla пользователя в панели администратора
+             */
+            $result = $this->processEditJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
 
-            // Редактируем данные в AmoCRM из Joomla
-            if ($this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+            // ИСПРАВЛЕНЫ БАГИ
+            // - если выходит ошибка о том, что привязываемый контакт уже занят другим joomla пользователем,
+            // контакт amoCrm все равно обновляется с данными пользователя, к которому мы неудачно пытались его привязать
+            // - в случае перепривязки аккаунта, т.е. когда в событие приходит не пустой amocrm_contact_id,
+            // ссылка на профиль joomla пользователя на прошлом аккаунте не удаляется.
+
+            // Редактируем данные в AmoCRM из Joomla, если нет конфликта перепривязки
+            if ($result && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
                 if ($amocrm_contact_id) {
-                    $result = $amocrm->contacts()->editContact($amocrm_contact_id, $user_data);
+                    $amocrm->contacts()->editContact($amocrm_contact_id, $user_data);
 
                     $amocrm->saveToLog(
                         Text::sprintf(
@@ -360,6 +354,149 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 }
             }
 
+        }
+    }
+
+    /**
+     * Обработка ручного изменения привязки AmoCRM контакта у Joomla пользователя в панели администратора
+     *
+     * @param   int   $joomla_user_id     Joomla user ID
+     *
+     * @param   int   $amocrm_contact_id  AmoCRM contact ID
+     *
+     * @return  bool  True в случае успешной привязки, False в случае ошибки
+     *
+     * @since   1.3.0-alpha2
+     */
+    private function processEditJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id): bool
+    {
+        if (!$joomla_user_id) {
+            $this->getApplication()->enqueueMessage('Не удалось получить ID Joomla пользователя!');
+            return false;
+        }
+
+        // Если в форме пользователя не выбран вручную контакт AmoCRM
+        // - значит привязку хотят удалить
+        if (!$amocrm_contact_id) {
+            // если очищается привязка контакта AmoCRM, необходимо удалить из ранее привязанного контакта ссылку на профиль Joomla пользователя
+            if ($this->params->get('create_amocrm_contact', false) && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+                // находим связанный ID контакта AmoCRM
+                if ($finded_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
+                    $this->clearJoomlaProfileLinkInAmoCRMContact($finded_amocrm_contact_id);
+                }
+            }
+            //
+
+            // удаляем связь Joomla пользователь - AmoCRM контакт
+            if (AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id])) {
+                $message = 'Связь пользователя Joomla с контактом AmoCRM успешно удалена';
+                $type = 'success';
+            } else {
+                $message = 'Ошибка удаления связи пользователя Joomla с контактом AmoCRM';
+                $type = 'error';
+            }
+
+            $this->getApplication()->enqueueMessage($message, $type);
+            return true;
+        }
+
+        // Возможно хотят привязать другой контакт Amo.
+        // Проверим, занят ли привязываемый AmoCRM контакт другим пользователем
+        if ($finded_joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($amocrm_contact_id)) {
+            // Если найденный пользователь не мы, то выводим сообщение об ошибке
+            if ($finded_joomla_user_id !== $joomla_user_id) {
+                $this->getApplication()->enqueueMessage('Привязываемый AmoCRM контакт уже имеет связь с пользователем ' . $finded_joomla_user_id . '! Пожалуйста, удалите эту связь вручную.', 'error');
+            }
+            // дальнейшие операции обновления/добавления невозможны
+            return false;
+        }
+
+        // Проверяем, есть ли у данного Joomla пользователя старая ассоциация с AmoCRM контактом
+        if ($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
+            // т.к. происходит перепривязка, необходимо удалить из старого AmoCRM контакта ссылку на профиль Joomla пользователя
+            if ($this->params->get('create_amocrm_contact', false) && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+                $this->clearJoomlaProfileLinkInAmoCRMContact($old_amocrm_contact_id);
+            }
+
+            // Если есть, обновляем ассоциацию
+            if (AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
+                $message = 'Связь пользователя Joomla с контактом AmoCRM успешно изменена';
+                $type = 'success';
+            } else {
+                $message = 'Ошибка изменения связи пользователя Joomla с контактом AmoCRM';
+                $type = 'error';
+            }
+        } else {
+            // Старой ассоциации нет. В объекте данные есть - создаём новую ассоциацию.
+            if (AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
+                $message = 'Связь пользователя Joomla с контактом AmoCRM успешно создана';
+                $type = 'success';
+            } else {
+                $message = 'Ошибка создания связи пользователя Joomla с контактом AmoCRM';
+                $type = 'error';
+            }
+        }
+
+        $this->getApplication()->enqueueMessage($message, $type);
+
+        return true;
+        // Оригинальный старый код
+        /*$this->getApplication()->enqueueMessage('Мы на верном пути!');
+        if(!$amocrm_contact_id) {
+            AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id]);
+        } else {
+            // Возможно хотят привязать другой контакт Amo.
+            if($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
+                if(AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
+                    $message = 'Связь пользователя Joomla с контактом AmoCRM успешно изменена';
+                    $type='success';
+                } else {
+                    $message = 'Ошибка изменения связи пользователя Joomla с контактом AmoCRM';
+                    $type='success';
+                }
+                $this->getApplication()->enqueueMessage($message, $type);
+            } else {
+                // Старой ассоциации нет. В объекте данные есть - создаём новую ассоциацию.
+                AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
+            }
+        }*/
+    }
+
+    /**
+     * Очищение поля ссылки на профиль Joomla пользователя у заданного AmoCRM контакта
+     *
+     * @param   int  $amocrm_contact_id  AmoCRM contact ID
+     *
+     * @return  void
+     *
+     * @since   1.3.0-alpha2
+     */
+    private function clearJoomlaProfileLinkInAmoCRMContact(int $amocrm_contact_id): void
+    {
+        // Возможно стоит перенести / дублировать проверки опций
+        // - 'create_amocrm_contact'
+        // - 'update_amocrm_contact_data_by_joomla'
+        // внутри этой функции
+
+        if (!$amocrm_contact_id)
+        {
+            return;
+        }
+
+        if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1)) && $joomla_profile_link_amo_field_id > 0) {
+            $response = $this->amocrm->contacts()->editContact($amocrm_contact_id, [
+                'custom_fields_values' => [
+                    [
+                        'field_id' => $joomla_profile_link_amo_field_id,
+                        'values' => [
+                            [
+                                'value' => ''
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+            $this->getApplication()->enqueueMessage('Очищено поле ссылки на профиль Joomla пользователя у AmoCRM контакта ' . $amocrm_contact_id);
         }
     }
 
