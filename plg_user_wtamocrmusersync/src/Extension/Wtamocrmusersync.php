@@ -31,6 +31,7 @@ use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Filesystem\File;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 use RuntimeException;
@@ -335,7 +336,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 ]
             ];
         }
-        $this->getApplication()->enqueueMessage('Заполнили значения полей AmoCRM контакта');
 
         // We have a new user. Let's register he in AmoCRM
         if ($isnew) {
@@ -561,7 +561,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             'custom_fields_values' => $custom_fields_values
         ]);
 
-        $this->getApplication()->enqueueMessage(Text::sprintf('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_CLEARED', $amocrm_contact_id));
+        $this->getApplication()->enqueueMessage(Text::sprintf('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_FIELDS_CLEARED', $amocrm_contact_id));
     }
 
     /**
