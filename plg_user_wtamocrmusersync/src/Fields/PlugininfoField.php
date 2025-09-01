@@ -33,19 +33,21 @@ class PlugininfoField extends NoteField
 	 */
 	protected function getInput()
 	{
-        $data = $this->form->getData();
-        $element = $data->get('element');
-        $folder = $data->get('folder');
-        $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
-        $wa->addInlineStyle("
+			
+		$data    = $this->form->getData();
+		$element = $data->get('element');
+		$folder  = $data->get('folder');
+		$wa      = Factory::getApplication()->getDocument()->getWebAssetManager();
+		$wa->addInlineStyle("
 			.plugin-info-img-svg:hover * {
 				cursor:pointer;
 			}
 		");
 
-        $wt_plugin_info = simplexml_load_file(JPATH_SITE . "/plugins/" . $folder . "/" . $element . "/" . $element . ".xml");
+		$wt_plugin_info = simplexml_load_file(JPATH_SITE . "/plugins/" . $folder . "/" . $element . "/" . $element . ".xml");
 
-        return '<div class="d-flex shadow p-4">
+
+		return $html = '<div class="d-flex shadow p-4">
 			<div class="flex-shrink-0">
 				<a href="https://web-tolk.ru" target="_blank">
 					<svg class="plugin-info-img-svg" width="200" height="50" xmlns="http://www.w3.org/2000/svg">
@@ -77,7 +79,9 @@ class PlugininfoField extends NoteField
 	 */
 	protected function getLabel()
 	{
-        return '';
+
+		return '';
+
 	}
 
 	/**
@@ -93,3 +97,5 @@ class PlugininfoField extends NoteField
 	}
 
 }
+
+?>
