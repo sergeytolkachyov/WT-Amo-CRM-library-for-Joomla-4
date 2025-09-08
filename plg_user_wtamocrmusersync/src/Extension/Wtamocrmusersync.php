@@ -31,7 +31,6 @@ use Joomla\Database\ParameterType;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Uri\Uri;
-use Joomla\Filesystem\File;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 use RuntimeException;
@@ -54,8 +53,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * AmoCRM to Joomla fields mapping.
      * $mapping[$amocrm_contact_id] = ['type'=> '', 'custom_field_id','user_param_name'];
      *
-     * @var array
-     * @since 1.3.0
+     * @var    array
+     * @since  1.3.0
      */
     private static array $mapping = [];
     protected $autoloadLanguage = true;
@@ -63,18 +62,18 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     /**
      * AmoCRM library object
      *
-     * @var Amocrm
-     * @since 1.3.0
+     * @var    Amocrm
+     * @since  1.3.0
      */
     private Amocrm $amocrm;
 
     /**
      * Add Amocrm class and fill fields mapping
      *
-     * @param $subject
-     * @param $config
+     * @param  $subject
+     * @param  $config
      *
-     * @since 1.3.0
+     * @since  1.3.0
      */
     public function __construct($subject, $config)
     {
@@ -84,21 +83,24 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     }
 
     /**
+     * Fill Joomla to AmoCRM fields mapping
      *
-     * @return void
+     * @return  void
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    private function fillJoomlaToAmoFieldsMapping():void
+    private function fillJoomlaToAmoFieldsMapping(): void
     {
         $fields_mapping = (new Registry($this->params->get('fields_mapping', [])))->toArray();
 
-        if (!empty($fields_mapping)) {
-            foreach ($fields_mapping as $row) {
-                $amocrm_contact_field_id = $row['amocrm_contact_field_id'];
-                unset($row['amocrm_contact_field_id']);
-                self::$mapping[$amocrm_contact_field_id] = $row;
-            }
+        if (empty($fields_mapping)) {
+            return;
+        }
+
+        foreach ($fields_mapping as $row) {
+            $amocrm_contact_field_id = $row['amocrm_contact_field_id'];
+            unset($row['amocrm_contact_field_id']);
+            self::$mapping[$amocrm_contact_field_id] = $row;
         }
     }
 
@@ -139,10 +141,10 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     public function onUserAfterSave(Event $event): void
     {
         /**
-         * @var   array  $user    Holds the new user data.
-         * @var   bool   $isnew   True if a new user is stored.
-         * @var   bool   $success True if user was successfully stored in the database.
-         * @var   string $msg     Message.
+         * @var   array  $user     Holds the new user data.
+         * @var   bool   $isnew    True if a new user is stored.
+         * @var   bool   $success  True if user was successfully stored in the database.
+         * @var   string $msg      Message.
          */
         [$user, $isnew, $success, $msg] = array_values($event->getArguments());
 
@@ -252,10 +254,10 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
 
         $firstname = $user['name'];
-        $lastname  = $user['name'];
+        $lastname = $user['name'];
 
         if (trim($user['name']) && stripos($user['name'], ' ') !== false) {
-            $tmp_name  = explode(' ', $user['name']);
+            $tmp_name = explode(' ', $user['name']);
             $firstname = $tmp_name[0];
             unset($tmp_name[0]);
             // If name consist of more then 2 parts
@@ -275,14 +277,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $user_data['custom_fields_values'] = [
             [
                 'field_code' => 'EMAIL',
-                'values'     => [
+                'values' => [
                     [
                         'enum_code' => 'WORK',
-                        'value'     => $user['email']
+                        'value' => $user['email']
                     ]
                 ]
-            ],
+            ]
         ];
+
         // Link to Joomla user profile
         if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1)) && $joomla_profile_link_amo_field_id > 0) {
             $user_data['custom_fields_values'][] = [
@@ -294,6 +297,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 ]
             ];
         }
+
         // We have a new user. Let's register he in AmoCRM
         if ($isnew) {
             if (!empty($amocrm_contact_tags = $this->params->get('amocrm_contact_tags', []))) {
@@ -304,10 +308,11 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     ];
                 }
             }
-            // Если конакт Amo НЕ указан  вручную - создаём конакт
+            // Если контакт Amo НЕ указан  вручную - создаём контакт
             // и пытаемся получить его ID.
             if(!$amocrm_contact_id) {
                 $amocrm_users = $amocrm->contacts()->addContacts([$user_data]);
+
                 if (!property_exists($amocrm_users, 'error_code')) {
                     $amocrm_contact_id = $amocrm_users->_embedded->contacts[0]->id;
                 }
@@ -333,15 +338,26 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
              */
             $result = $this->processEditJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
 
-            // ИСПРАВЛЕНЫ БАГИ
-            // - если выходит ошибка о том, что привязываемый контакт уже занят другим joomla пользователем,
-            // контакт amoCrm все равно обновляется с данными пользователя, к которому мы неудачно пытались его привязать
-            // - в случае перепривязки аккаунта, т.е. когда в событие приходит не пустой amocrm_contact_id,
-            // ссылка на профиль joomla пользователя на прошлом аккаунте не удаляется.
-
             // Редактируем данные в AmoCRM из Joomla, если нет конфликта перепривязки
             if ($result && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
                 if ($amocrm_contact_id) {
+
+                    // заполнение полей joomla пользователя данными из контакта Amo
+                    $contactObj = $amocrm->contacts()->getContactById($amocrm_contact_id);
+
+                    $customFields = [];
+                    foreach ($contactObj->custom_fields_values as $contact_field) {
+                        if (array_key_exists($contact_field->field_id, self::$mapping) && self::$mapping[$contact_field->field_id]['joomla_field_type'] === 'user_custom_field') {
+                            $field_id = self::$mapping[$contact_field->field_id]['com_users_custom_field_id'];
+                            $field_value = implode(', ', array_column($contact_field->values, 'value'));
+
+                            $customFields[$field_id] = $field_value;
+                        }
+                    }
+
+                    $this->saveCustomFieldsData($joomla_user_id, $customFields);
+                    // ===== //
+
                     $amocrm->contacts()->editContact($amocrm_contact_id, $user_data);
 
                     $amocrm->saveToLog(
@@ -384,6 +400,10 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             return false;
         }
 
+        if (!$this->getApplication()->isClient('administrator')) {
+            return false;
+        }
+
         // Если в форме пользователя не выбран вручную контакт AmoCRM
         // - значит привязку хотят удалить
         if (!$amocrm_contact_id) {
@@ -391,21 +411,25 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             if ($this->params->get('create_amocrm_contact', false) && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
                 // находим связанный ID контакта AmoCRM
                 if ($finded_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
-                    $this->clearJoomlaProfileLinkInAmoCRMContact($finded_amocrm_contact_id);
+                    $this->clearFieldsInAmoCRMContact($finded_amocrm_contact_id, $joomla_user_id);
                 }
             }
             //
 
-            // удаляем связь Joomla пользователь - AmoCRM контакт
-            if (AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id])) {
-                $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_REMOVED';
-                $type = 'success';
-            } else {
-                $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_REMOVE_ERROR';
-                $type = 'error';
+            // если у пользователя существует привязка
+            if (AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
+                // удаляем связь Joomla пользователь - AmoCRM контакт
+                if (AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id])) {
+                    $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_REMOVED';
+                    $type = 'success';
+                } else {
+                    $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_REMOVE_ERROR';
+                    $type = 'error';
+                }
+
+                $this->getApplication()->enqueueMessage(Text::_($message), $type);
             }
 
-            $this->getApplication()->enqueueMessage(Text::_($message), $type);
             return true;
         }
 
@@ -424,7 +448,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if ($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
             // т.к. происходит перепривязка, необходимо удалить из старого AmoCRM контакта ссылку на профиль Joomla пользователя
             if ($this->params->get('create_amocrm_contact', false) && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
-                $this->clearJoomlaProfileLinkInAmoCRMContact($old_amocrm_contact_id);
+                $this->clearFieldsInAmoCRMContact($old_amocrm_contact_id, $joomla_user_id);
             }
 
             // Если есть, обновляем ассоциацию
@@ -449,30 +473,11 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $this->getApplication()->enqueueMessage(Text::_($message), $type);
 
         return true;
-        // Оригинальный старый код
-        /*$this->getApplication()->enqueueMessage('Мы на верном пути!');
-        if(!$amocrm_contact_id) {
-            AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id]);
-        } else {
-            // Возможно хотят привязать другой контакт Amo.
-            if($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
-                if(AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
-                    $message = 'Связь пользователя Joomla с контактом AmoCRM успешно изменена';
-                    $type='success';
-                } else {
-                    $message = 'Ошибка изменения связи пользователя Joomla с контактом AmoCRM';
-                    $type='success';
-                }
-                $this->getApplication()->enqueueMessage($message, $type);
-            } else {
-                // Старой ассоциации нет. В объекте данные есть - создаём новую ассоциацию.
-                AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id);
-            }
-        }*/
     }
 
     /**
-     * Очищение поля ссылки на профиль Joomla пользователя у заданного AmoCRM контакта
+     * Очищение пользовательских полей и поля ссылки на профиль Joomla пользователя
+     * у заданного AmoCRM контакта
      *
      * @param   int  $amocrm_contact_id  AmoCRM contact ID
      *
@@ -480,33 +485,59 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @since   1.3.0-alpha2
      */
-    private function clearJoomlaProfileLinkInAmoCRMContact(int $amocrm_contact_id): void
+    private function clearFieldsInAmoCRMContact(int $amocrm_contact_id, int $joomla_user_id): void
     {
         // Возможно стоит перенести / дублировать проверки опций
         // - 'create_amocrm_contact'
         // - 'update_amocrm_contact_data_by_joomla'
         // внутри этой функции
 
-        if (!$amocrm_contact_id)
-        {
+        if (!$amocrm_contact_id) {
             return;
         }
 
-        if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1)) && $joomla_profile_link_amo_field_id > 0) {
-            $response = $this->amocrm->contacts()->editContact($amocrm_contact_id, [
-                'custom_fields_values' => [
+        $custom_fields_values = [];
+
+        $joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1);
+
+        if ($joomla_profile_link_amo_field_id > 0) {
+            $custom_fields_values[] = [
+                'field_id' => $joomla_profile_link_amo_field_id,
+                'values' => [
                     [
-                        'field_id' => $joomla_profile_link_amo_field_id,
-                        'values' => [
-                            [
-                                'value' => ''
-                            ]
-                        ]
+                        'value' => ''
                     ]
                 ]
-            ]);
-            $this->getApplication()->enqueueMessage(Text::sprintf('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_CLEARED', $amocrm_contact_id));
+            ];
         }
+
+        // очищение кастомных полей joomla пользователя
+        $fieldsToClear = [];
+        foreach (self::$mapping as $field) {
+            if ($field['joomla_field_type'] === 'user_custom_field') {
+                $fieldsToClear[] = $field['com_users_custom_field_id'];
+            }
+        }
+
+        $db = $this->getDatabase();
+        $query = $db->getQuery(true);
+        $query->delete($db->quoteName('#__fields_values'))
+            ->where($db->quoteName('item_id') . ' = ' . $joomla_user_id)
+            ->where($db->quoteName('field_id') . ' IN (' . implode(',', $fieldsToClear) . ')');
+
+        $db->setQuery($query);
+        $db->execute();
+        //
+
+        if (empty($custom_fields_values)) {
+            return;
+        }
+
+        $response = $this->amocrm->contacts()->editContact($amocrm_contact_id, [
+            'custom_fields_values' => $custom_fields_values
+        ]);
+
+        $this->getApplication()->enqueueMessage(Text::sprintf('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_FIELDS_CLEARED', $amocrm_contact_id));
     }
 
     /**
@@ -523,9 +554,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     public function onUserAfterDelete($event): void
     {
         /**
-         * @var   array  $user    Holds the user data
-         * @var   bool   $success True if user was successfully stored in the database
-         * @var   string $msg     Message
+         * @var  array   $user     Holds the user data
+         * @var  bool    $success  True if user was successfully stored in the database
+         * @var  string  $msg      Message
          */
         [$user, $success, $msg] = array_values($event->getArguments());
 
@@ -535,42 +566,47 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         $joomla_user_id = ArrayHelper::getValue($user, 'id', 0, 'int');
 
-        if (!empty($joomla_user_id)) {
-            $amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id);
-
-            if ($amocrm_contact_id) {
-                if (empty($user['amocrm_delete_user_from_webhook'])) {
-                    // Если установлен этот флаг - удаление произошло на стороне AmoCRM.
-                    // Тогда мы просто молча удаляем, не отправляя уведомление в AmoCRM.
-                    $amocrm = $this->amocrm;
-                    $notes  = [
-                        [
-                            'created_by' => 0, // 0 - создал робот
-                            'note_type'  => 'common',
-                            'params'     => [
-                                'text' => Text::sprintf(
-                                    'PLG_WTAMOCRMUSERSYNC_JOOMLA_USER_HAS_BEEN_REMOVED',
-                                    HTMLHelper::date('now', Text::_('DATE_FORMAT_LC5'))
-                                )
-                            ],
-                        ]
-                    ];
-
-                    $amocrm->notes()->addNotes('contacts', $amocrm_contact_id, $notes);
-                }
-
-                // Remove from Joomla-to-AmoCRM user link in database
-                AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id]);
-            }
+        if (empty($joomla_user_id)) {
+            return;
         }
+
+        $amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id);
+
+        if (!$amocrm_contact_id) {
+            return;
+        }
+
+        if (empty($user['amocrm_delete_user_from_webhook'])) {
+            // Если установлен этот флаг - удаление произошло на стороне AmoCRM.
+            // Тогда мы просто молча удаляем, не отправляя уведомление в AmoCRM.
+            $amocrm = $this->amocrm;
+            $notes  = [
+                [
+                    'created_by' => 0, // 0 - создал робот
+                    'note_type'  => 'common',
+                    'params'     => [
+                        'text' => Text::sprintf(
+                            'PLG_WTAMOCRMUSERSYNC_JOOMLA_USER_HAS_BEEN_REMOVED',
+                            HTMLHelper::date('now', Text::_('DATE_FORMAT_LC5'))
+                        )
+                    ],
+                ]
+            ];
+
+            $amocrm->notes()->addNotes('contacts', $amocrm_contact_id, $notes);
+        }
+
+        // Remove from Joomla-to-AmoCRM user link in database
+        AmocrmUserHelper::removeJoomlaAmoCRMUserSync([$joomla_user_id]);
     }
 
     /**
      * @param   WebhookEvent  $event
      *
+     * @return  void
      *
-     * @since 1.3.0
-     * @see   WebhookEvent
+     * @since   1.3.0
+     * @see     WebhookEvent
      */
     public function onAmocrmIncomingWebhook($event): void
     {
@@ -608,202 +644,205 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @param   array  $contacts
      *
+     * @return  void
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    public function createUsers(array $contacts)
+    public function createUsers(array $contacts): void
     {
-        if (!empty($contacts && is_array($contacts))) {
-            $amocrm = $this->amocrm;
+        if (empty($contacts) || !is_array($contacts)) {
+            return;
+        }
 
-            foreach ($contacts as $contact) {
-                if ($contact['type'] == 'contact') {
-                    /** @var int|bool $joomla_user_id Joomla user id or false */
-                    $joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']);
+        $amocrm = $this->amocrm;
 
-                    /**
-                     * We try to create a NEW user in Joomla.
-                     * If we already have an association - skip following code
-                     */
-                    if ($joomla_user_id) {
-                        continue;
-                    }
-                    /** @var bool $isNew Is new Joomla user */
-                    $isNew = true;
+        foreach ($contacts as $contact) {
+            if ($contact['type'] !== 'contact') {
+                continue;
+            }
 
-                    $user_data = [
-                        'name'                                    => $contact['name'],
-                        'groups'                                  => [$this->params->get('default_user_group', 2)],
-                        'amocrm_new_user_from_webhook_contact_id' => $contact['id']
-                        // Для добавления ассоциации на триггере onUserAfterSave
-                    ];
+            /** @var int|bool $joomla_user_id Joomla user id or false */
+            $joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']);
 
-                    /** @var bool $temp_email Flag we haven't a real email for this contact */
-                    $temp_email = true;
+            /**
+             * We try to create a NEW user in Joomla.
+             * If we already have an association - skip following code
+             */
+            if ($joomla_user_id) {
+                continue;
+            }
+            /** @var bool $isNew Is new Joomla user */
+            $isNew = true;
 
-                    if (!empty($contact['custom_fields'])) {
+            $user_data = [
+                'name'                                    => $contact['name'],
+                'groups'                                  => [$this->params->get('default_user_group', 2)],
+                'amocrm_new_user_from_webhook_contact_id' => $contact['id']
+                // Для добавления ассоциации на триггере onUserAfterSave
+            ];
 
-                        $contact_emails = [];
-                        foreach ($contact['custom_fields'] as $custom_field) {
-                            if ($custom_field['code'] == 'EMAIL') {
-                                $contact_emails = array_column($custom_field['values'], 'value');
-                                if(!empty($contact_emails)) {
-                                    $user_data['email'] = PunycodeHelper::emailToPunycode($contact_emails[0]);
-                                    $temp_email         = false;
-                                }
-                            }
+            /** @var bool $temp_email Flag we haven't a real email for this contact */
+            $temp_email = true;
+
+            if (!empty($contact['custom_fields'])) {
+
+                $contact_emails = [];
+                foreach ($contact['custom_fields'] as $custom_field) {
+                    if ($custom_field['code'] == 'EMAIL') {
+                        $contact_emails = array_column($custom_field['values'], 'value');
+                        if(!empty($contact_emails)) {
+                            $user_data['email'] = PunycodeHelper::emailToPunycode($contact_emails[0]);
+                            $temp_email         = false;
                         }
-
-
-                        /**
-                         * We have not an association Joomla user <-> AmoCRM contact,
-                         * but we would have a Joomla user(s) with one or several emails from contact.
-                         *
-                         * - Try to find a user(s) with emails from contact.
-                         * - If a single Joomla user is found - link to it.
-                         * - if contact has several emails - try to find Joomla users by all of them
-                         * - If several Joomla users found - log this and skip. Solve this issue by manual
-                         */
-                        $joomla_user_ids = $this->findJoomlaUserByEmail($contact_emails);
-
-                        if (count($joomla_user_ids) > 1) {
-
-                            array_walk($joomla_user_ids, function(&$value, $key) {
-                                $value = 'Joomla user id: '. $value['id'].' (email: '.$value['email'].')';
-                            });
-
-                            $note_text = Text::sprintf(
-                                'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_DUPLICATES_FOUND',
-                                Uri::root(),
-                                implode(', ', $joomla_user_ids)
-                            );
-
-                            // пишем лог
-                            $amocrm->saveToLog($note_text,'WARNING');
-                            // Пишем в отдельный файл логов дублей
-                            $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
-
-                            // пишем уведомление в контакт, что найдено несколько
-                            // юзеров Joomla с емейлами этого контакта.
-                            $notes = [
-                                [
-                                    'created_by' => 0, // 0 - создал робот
-                                    'note_type'  => 'common',
-                                    'params'     => [
-                                        'text'    => $note_text,
-                                    ]
-                                ],
-                            ];
-
-                            $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
-                            // Пропускаем этот контакт
-                            continue;
-                        } elseif(count($joomla_user_ids) == 1) {
-                            // Найден один не ассоциированный пользователь.
-                            // 2 сценария:
-                            // 1. у юзера нет ассоциации вообще.
-                            // 2. данный e-mail оказался в нескольких контактах на стороне Amo.
-                            // Если не обнаружена ассоциация для другого юзера Joomla - связываем их по e-mail
-                            $exists_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_ids[0]['id']);
-                            if(!$exists_amocrm_contact_id) {
-                                $user_data['id'] = $joomla_user_ids[0]['id'];
-                                $user_data['need_to_link_to_existing_joomla_user'] = true;
-                                // Для добавления ассоциации к существующему пользователю
-                                // на триггере onUserAfterSave
-                                $isNew = false;
-                            } else {
-                                // Данный e-mail уже был в другом контакте AmoCRM
-                                // и ассоциация по нему уже раньше была выполнена.
-                                // Информируем.
-
-                                $note_text = Text::sprintf(
-                                    'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SINGLE_DUPLICATE_PREVIOUS_ASSOCIATION_FOUND',
-                                    Uri::root(),
-                                    $joomla_user_ids[0]['email'],
-                                    $contact['id'],
-                                    $joomla_user_ids[0]['id'],
-                                    $exists_amocrm_contact_id
-                                );
-
-                                // пишем лог
-                                $amocrm->saveToLog($note_text,'WARNING');
-                                // Пишем в отдельный файл логов дублей
-                                $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
-
-                                // пишем уведомление в контакт, что найдено несколько
-                                // юзеров Joomla с емейлами этого контакта.
-                                $notes = [
-                                    [
-                                        'created_by' => 0, // 0 - создал робот
-                                        'note_type'  => 'common',
-                                        'params'     => [
-                                            'text'    => $note_text,
-                                        ]
-                                    ],
-                                ];
-
-                                $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
-                                // пропускаем этот контакт
-                                continue;
-                            }
-
-
-                        }
-
-                        $this->preprocessUserParams($contact, $user_data);
-                    }
-
-                    /**
-                     * Если есть емейл - проблем нет.
-                     * Если емейла нет - создаём фейковые логин и емейл
-                     * ставим пользователю флаг, что у него фейковые данные
-                     * Далее отдельным плагином нужно обрабатывать ДО-заполнение данных
-                     */
-
-                    if ($temp_email) {
-                        $host                           = (new Uri(Uri::root()))->getHost();
-                        $temporary_user_email = 'change-this-fake-email-amocrm-' . $contact['id'] . '@' . $host;
-                        $user_data['email']             = $temporary_user_email;
-                        $user_data['username']          = $temporary_user_email;
-                        $user_data['is_temporary_user'] = true;
-                    } else {
-                        $user_data['username'] = $user_data['email'];
-                    }
-
-                    $user_data['block'] = $this->params->get('auto_enable_new_user', 0) ? 0 : 1;
-                    $comUsersParams     = ComponentHelper::getParams('com_users');
-                    $useractivation     = $comUsersParams->get('useractivation');
-                    if ($this->params->get('notify_new_user', 0) == 1) {
-                        // Check if the user needs to activate their account.
-                        if (($useractivation == 1) || ($useractivation == 2)) {
-                            $user_data['activation'] = ApplicationHelper::getHash(UserHelper::genRandomPassword());
-                            $user_data['block']      = 1;
-                        }
-                    }
-
-                    /** @var bool|User $savedUser false or successfully saved user object */
-                    $savedUser = $this->saveUser($user_data, $isNew);
-
-                    if (!$savedUser) {
-                        $amocrm->saveToLog(
-                            'Error create Joomla user for AmoCRM contact id:' . $contact['id'] . ', user data: ' . print_r(
-                                $user_data,
-                                true
-                            ),
-                            'error'
-                        );
-
-                        continue;
-                    }
-
-                    $this->processUserCustomFields($savedUser->id, $contact, $user_data);
-
-                    if (!$temp_email && $this->params->get('notify_new_user', 0) == 1) {
-                        // отправляем уведомления пользователю о создании аккаунта
-                        // с учётом параметров com_users.
-                        $this->userNotify($savedUser, $comUsersParams);
                     }
                 }
+
+
+                /**
+                 * We have not an association Joomla user <-> AmoCRM contact,
+                 * but we would have a Joomla user(s) with one or several emails from contact.
+                 *
+                 * - Try to find a user(s) with emails from contact.
+                 * - If a single Joomla user is found - link to it.
+                 * - if contact has several emails - try to find Joomla users by all of them
+                 * - If several Joomla users found - log this and skip. Solve this issue by manual
+                 */
+                $joomla_user_ids = $this->findJoomlaUserByEmail($contact_emails);
+
+                if (count($joomla_user_ids) > 1) {
+
+                    array_walk($joomla_user_ids, function(&$value, $key) {
+                        $value = 'Joomla user id: '. $value['id'].' (email: '.$value['email'].')';
+                    });
+
+                    $note_text = Text::sprintf(
+                        'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_DUPLICATES_FOUND',
+                        Uri::root(),
+                        implode(', ', $joomla_user_ids)
+                    );
+
+                    // пишем лог
+                    $amocrm->saveToLog($note_text,'WARNING');
+                    // Пишем в отдельный файл логов дублей
+                    $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
+
+                    // пишем уведомление в контакт, что найдено несколько
+                    // юзеров Joomla с емейлами этого контакта.
+                    $notes = [
+                        [
+                            'created_by' => 0, // 0 - создал робот
+                            'note_type'  => 'common',
+                            'params'     => [
+                                'text'    => $note_text,
+                            ]
+                        ],
+                    ];
+
+                    $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
+                    // Пропускаем этот контакт
+                    continue;
+                } elseif(count($joomla_user_ids) == 1) {
+                    // Найден один не ассоциированный пользователь.
+                    // 2 сценария:
+                    // 1. у юзера нет ассоциации вообще.
+                    // 2. данный e-mail оказался в нескольких контактах на стороне Amo.
+                    // Если не обнаружена ассоциация для другого юзера Joomla - связываем их по e-mail
+                    $exists_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_ids[0]['id']);
+                    if(!$exists_amocrm_contact_id) {
+                        $user_data['id'] = $joomla_user_ids[0]['id'];
+                        $user_data['need_to_link_to_existing_joomla_user'] = true;
+                        // Для добавления ассоциации к существующему пользователю
+                        // на триггере onUserAfterSave
+                        $isNew = false;
+                    } else {
+                        // Данный e-mail уже был в другом контакте AmoCRM
+                        // и ассоциация по нему уже раньше была выполнена.
+                        // Информируем.
+
+                        $note_text = Text::sprintf(
+                            'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SINGLE_DUPLICATE_PREVIOUS_ASSOCIATION_FOUND',
+                            Uri::root(),
+                            $joomla_user_ids[0]['email'],
+                            $contact['id'],
+                            $joomla_user_ids[0]['id'],
+                            $exists_amocrm_contact_id
+                        );
+
+                        // пишем лог
+                        $amocrm->saveToLog($note_text,'WARNING');
+                        // Пишем в отдельный файл логов дублей
+                        $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
+
+                        // пишем уведомление в контакт, что найдено несколько
+                        // юзеров Joomla с емейлами этого контакта.
+                        $notes = [
+                            [
+                                'created_by' => 0, // 0 - создал робот
+                                'note_type'  => 'common',
+                                'params'     => [
+                                    'text'    => $note_text,
+                                ]
+                            ],
+                        ];
+
+                        $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
+                        // пропускаем этот контакт
+                        continue;
+                    }
+                }
+
+                $this->preprocessUserParams($contact, $user_data);
+            }
+
+            /**
+             * Если есть емейл - проблем нет.
+             * Если емейла нет - создаём фейковые логин и емейл
+             * ставим пользователю флаг, что у него фейковые данные
+             * Далее отдельным плагином нужно обрабатывать ДО-заполнение данных
+             */
+
+            if ($temp_email) {
+                $host                           = (new Uri(Uri::root()))->getHost();
+                $temporary_user_email = 'change-this-fake-email-amocrm-' . $contact['id'] . '@' . $host;
+                $user_data['email']             = $temporary_user_email;
+                $user_data['username']          = $temporary_user_email;
+                $user_data['is_temporary_user'] = true;
+            } else {
+                $user_data['username'] = $user_data['email'];
+            }
+
+            $user_data['block'] = $this->params->get('auto_enable_new_user', 0) ? 0 : 1;
+            $comUsersParams     = ComponentHelper::getParams('com_users');
+            $useractivation     = $comUsersParams->get('useractivation');
+            if ($this->params->get('notify_new_user', 0) == 1) {
+                // Check if the user needs to activate their account.
+                if (($useractivation == 1) || ($useractivation == 2)) {
+                    $user_data['activation'] = ApplicationHelper::getHash(UserHelper::genRandomPassword());
+                    $user_data['block']      = 1;
+                }
+            }
+
+            /** @var bool|User $savedUser false or successfully saved user object */
+            $savedUser = $this->saveUser($user_data, $isNew);
+
+            if (!$savedUser) {
+                $amocrm->saveToLog(
+                    'Error create Joomla user for AmoCRM contact id:' . $contact['id'] . ', user data: ' . print_r(
+                        $user_data,
+                        true
+                    ),
+                    'error'
+                );
+
+                continue;
+            }
+
+            $this->processUserCustomFields($savedUser->id, $contact, $user_data);
+
+            if (!$temp_email && $this->params->get('notify_new_user', 0) == 1) {
+                // отправляем уведомления пользователю о создании аккаунта
+                // с учётом параметров com_users.
+                $this->userNotify($savedUser, $comUsersParams);
             }
         }
     }
@@ -814,11 +853,11 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   array  $user_data
      * @param   bool   $isNew  Create new user (true) or update existing one (false)?
      *
-     * @return bool|User false or saved $user object
+     * @return  bool|User  false or saved $user object
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    private function saveUser(array $user_data = [], bool $isNew = false)
+    private function saveUser(array $user_data = [], bool $isNew = false): bool|User
     {
         if (empty($user_data)) {
             return false;
@@ -848,26 +887,26 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   User      $user            Created user object
      * @param   Registry  $comUsersParams  Params of the `com_users` component
      *
-     * @return bool
+     * @return  bool
      *
-     * @throws Exception
-     * @since 1.3.0
+     * @throws  Exception
+     * @since   1.3.0
      */
     private function userNotify($user, $comUsersParams): bool
     {
         $app = $this->getApplication();
-        $db  = $this->getDatabase();
+        $db = $this->getDatabase();
         $app->getLanguage()->load('com_users');
-        $query          = $db->getQuery(true);
+        $query = $db->getQuery(true);
         $useractivation = $comUsersParams->get('useractivation');
-        $sendpassword   = $comUsersParams->get('sendpassword', 1);
+        $sendpassword = $comUsersParams->get('sendpassword', 1);
 
         // Compile the notification mail values.
-        $data             = get_object_vars($user);
+        $data = get_object_vars($user);
         $data['fromname'] = $app->get('fromname');
         $data['mailfrom'] = $app->get('mailfrom');
         $data['sitename'] = $app->get('sitename');
-        $data['siteurl']  = Uri::root();
+        $data['siteurl'] = Uri::root();
 
         $mailtemplate = 'com_users.registration.user.registration_mail';
 
@@ -899,7 +938,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
             $mailtemplate = 'com_users.registration.user.self_activation';
         }
-
 
         if ($sendpassword) {
             $mailtemplate .= '_w_pw';
@@ -1058,27 +1096,30 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @param   array  $contacts
      *
+     * @return  void
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    private function updateUsers(array $contacts)
+    private function updateUsers(array $contacts): void
     {
-        if (!empty($contacts && is_array($contacts))) {
-            foreach ($contacts as $contact) {
-                if ($contact['type'] == 'contact' && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser(
-                        $contact['id']
-                    ))) {
-                    $user_data = [
-                        'id'   => $joomla_user_id,
-                        'name' => $contact['name'],
-                        'amocrm_update_user_from_webhook' => true
-                        // Для триггера onUserAfterSave
-                    ];
+        if (empty($contacts) || !is_array($contacts)) {
+            return;
+        }
 
-                    $this->preprocessUserParams($contact, $user_data);
-                    $this->saveUser($user_data);
-                    $this->processUserCustomFields($joomla_user_id, $contact, $user_data);
-                }
+        foreach ($contacts as $contact) {
+            if ($contact['type'] == 'contact'
+                && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
+            ) {
+                $user_data = [
+                    'id'   => $joomla_user_id,
+                    'name' => $contact['name'],
+                    'amocrm_update_user_from_webhook' => true
+                    // Для триггера onUserAfterSave
+                ];
+
+                $this->preprocessUserParams($contact, $user_data);
+                $this->saveUser($user_data);
+                $this->processUserCustomFields($joomla_user_id, $contact, $user_data);
             }
         }
     }
@@ -1091,8 +1132,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   array  $contact
      * @param   array  $user_data
      *
-     * @return void
-     * @since 1.3.0
+     * @return  void
+     * @since   1.3.0
      */
     private function processUserCustomFields(int $joomla_user_id, array $contact, array $user_data): void
     {
@@ -1112,8 +1153,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     $amo_custom_field_value = $custom_field['values'][0]['value'];
                 }
 
-                if (!empty(
-                $field_id = trim(self::$mapping[$amo_custom_field_id]['com_users_custom_field_id']))) {
+                if (!empty($field_id = trim(self::$mapping[$amo_custom_field_id]['com_users_custom_field_id']))) {
                     $user_custom_fields[$field_id] = $amo_custom_field_value;
                 }
             }
@@ -1130,15 +1170,16 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   array  $contact AmoCRM contact data from webhook
      * @param   array  $user_data user data for bind
      *
+     * @return  void
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function preprocessUserParams(array $contact, array &$user_data): void
     {
         if(!array_key_exists('custom_fields', $contact)) {
             return;
         }
-        $user_params        = [];
+        $user_params = [];
         foreach ($contact['custom_fields'] as $custom_field) {
             // Update main user email on update webhook
             if ($custom_field['code'] == 'EMAIL' &&
@@ -1180,8 +1221,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   int    $joomla_user_id
      * @param   array  $user_custom_fields
      *
-     * @return void
-     * @since 1.3.0
+     * @return  void
+     *
+     * @since   1.3.0
      */
     private function saveCustomFieldsData($joomla_user_id, array $user_custom_fields): void
     {
@@ -1197,7 +1239,12 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             ->where($conditions);
         $db->setQuery($query);
 
-        $db->execute();
+        try {
+            $db->execute();
+        } catch (RuntimeException $e) {
+            $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
+            return;
+        }
 
         $query->clear();
         $query->insert($db->quoteName('#__fields_values'))
@@ -1208,11 +1255,17 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             ]);
 
         foreach ($user_custom_fields as $field_id => $field_value) {
-            $query->values(implode(',', [$db->quote($field_id), $db->quote($joomla_user_id), $db->quote($field_value)])
-            );
+            $query->values(implode(',', [$db->quote($field_id), $db->quote($joomla_user_id), $db->quote($field_value)]));
         }
 
-        $db->setQuery($query)->execute();
+        $db->setQuery($query);
+
+        try {
+            $db->execute();
+        } catch (RuntimeException $e) {
+            $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
+            return;
+        }
     }
 
     /**
@@ -1220,21 +1273,24 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @param   array  $contacts
      *
+     * @return  void
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    private function deleteUsers(array $contacts)
+    private function deleteUsers(array $contacts): void
     {
-        if (!empty($contacts && is_array($contacts))) {
-            foreach ($contacts as $contact) {
-                if ($contact['type'] == 'contact' && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser(
-                        $contact['id']
-                    ))) {
-                    $user = $this->getUserFactory()->loadUserById($joomla_user_id);
-                    $user->amocrm_delete_user_from_webhook = true;
-                    $user->delete();
-                    $this->getApplication()->logout($joomla_user_id);
-                }
+        if (empty($contacts) || !is_array($contacts)) {
+            return;
+        }
+
+        foreach ($contacts as $contact) {
+            if ($contact['type'] == 'contact'
+                && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
+            ) {
+                $user = $this->getUserFactory()->loadUserById($joomla_user_id);
+                $user->amocrm_delete_user_from_webhook = true;
+                $user->delete();
+                $this->getApplication()->logout($joomla_user_id);
             }
         }
     }
@@ -1245,9 +1301,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @param   Event  $event
      *
-     * @return void
+     * @return  void
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     public function onContentPrepareForm(Event $event): void
     {
@@ -1255,16 +1311,18 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $formName = $form->getName();
 
         // Проверяем имя формы, чтобы не добавить таб в материалы или ещё куда-нибудь
-        if ($formName === 'com_users.user') {
-            Form::addFormPath(JPATH_SITE . '/plugins/user/wtamocrmusersync/form');
-            // amocrm - это имя файла в указанной папке - amocrm.xml
-            $form->loadFile('amocrm', false);
-            // грузим языковые константы для формы
-            $lang = $this->getApplication()->getLanguage();
-            $extension = 'lib_webtolk_amocrm';
-            $base_dir = JPATH_SITE;
-            $lang->load($extension, $base_dir);
+        if ($formName !== 'com_users.user') {
+            return;
         }
+
+        Form::addFormPath(JPATH_SITE . '/plugins/user/wtamocrmusersync/form');
+        // amocrm - это имя файла в указанной папке - amocrm.xml
+        $form->loadFile('amocrm', false);
+        // грузим языковые константы для формы
+        $lang = $this->getApplication()->getLanguage();
+        $extension = 'lib_webtolk_amocrm';
+        $base_dir = JPATH_SITE;
+        $lang->load($extension, $base_dir);
     }
 
     /**
@@ -1272,16 +1330,20 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @param   Event  $event
      *
+     * @return  void
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    public function onContentPrepareData(Event $event)
+    public function onContentPrepareData(Event $event): void
     {
         [$context, $data, $form] = array_values($event->getArguments());
+
         if (!$this->getApplication()->isClient('administrator') || $context !== 'com_users.profile') {
             return;
         }
+
         $amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($data->id);
+
         if($amocrm_contact_id) {
             $data->amocrm_contact_id = $amocrm_contact_id;
         }
@@ -1292,21 +1354,32 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     /**
      * Find Joomla users by emails
      *
-     * @param array $emails AmoCRM contact emails array
+     * @param   array  $emails  AmoCRM contact emails array
      *
-     * @return array [ ['id' => 111, 'email' => 'user@email.ru'] ]
-     * @since 1.3.0
+     * @return  array  [ ['id' => 111, 'email' => 'user@email.ru'] ]
+     *
+     * @since   1.3.0
      */
-    private function findJoomlaUserByEmail(array $emails):array
+    private function findJoomlaUserByEmail(array $emails): array
     {
         $users_found = [];
-        if(!empty($emails)) {
-            $db = $this->getDatabase();
-            $query = $db->getQuery()->clear();
-            $query->select('*')
-                ->from('#__users')
-                ->whereIn('email', $emails, ParameterType::STRING);
-            $users_found = $db->setQuery($query)->loadAssocList();
+
+        if (empty($emails)) {
+            return $users_found;
+        }
+
+        $db = $this->getDatabase();
+        $query = $db->getQuery(true);
+        $query->select('*')
+            ->from('#__users')
+            ->whereIn('email', $emails, ParameterType::STRING);
+
+        $db->setQuery($query);
+
+        try {
+            $users_found = $db->loadAssocList();
+        } catch (RuntimeException $e) {
+            $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
         }
 
         return $users_found;
