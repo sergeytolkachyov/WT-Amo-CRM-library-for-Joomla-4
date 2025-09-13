@@ -171,6 +171,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
      * @since 1.3.0
      */
     private function handleWebhook(string $action)
+    private function handleWebhook(string $action): string
     {
         switch ($action) {
             case 'webhook':
@@ -197,6 +198,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
 
                 break;
         }
+        return 'success';
     }
 
     /**
