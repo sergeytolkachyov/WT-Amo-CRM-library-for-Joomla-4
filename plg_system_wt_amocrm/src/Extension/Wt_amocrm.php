@@ -54,20 +54,21 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
     /**
      * Will be removed. Minimum Joomla version has been rised to 4.2.7
      *
-     * @deprecated 1.3.0 Will be removed in 2.0.0
-     * @since      1.0.0
+     * @deprecated  1.3.0 Will be removed in 2.0.0
+     *
+     * @since       1.0.0
      */
     public function onAfterInitialise(): void
     {
         JLoader::registerNamespace('Webtolk\Amocrm', JPATH_LIBRARIES . '/Webtolk/Amocrm/src');
     }
 
-
     /**
-     * @param $event
+     * AJAX event
      *
+     * @param  $event
      *
-     * @since 1.0.0
+     * @since  1.0.0
      */
     public function onAjaxWt_amocrm($event): void
     {
@@ -77,9 +78,9 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
         $token_from_request = $app->getInput()->get->get('token', '', 'raw');
         /** @var string $webhook_token Token from plugin params */
         $webhook_token = $this->params->get('webhook_token', '');
-        $action        = $app->getInput()->getString('action','');
+        $action = $app->getInput()->getString('action','');
 
-        if(empty($action)) {
+        if (empty($action)) {
             return;
         }
 
@@ -94,7 +95,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
 
         } elseif ($action_type === 'external' &&
             $allow_amocrm_webhooks && // incoming webhooks are enabled
-            !empty($token_from_request) && // token is exists in incoming request
+            !empty($token_from_request) && // token exists in incoming request
             !empty($webhook_token) && // we have a token in plugin params
             $webhook_token == $token_from_request // check tokens match
         ) {
@@ -105,7 +106,6 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
         if (!empty($action_result_message)) {
             $event->addResult($action_result_message);
         }
-
     }
 
     /**
@@ -113,11 +113,11 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
      *
      * @param   string  $action
      *
-     * @return mixed
+     * @return  string
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    private function callJoomlaInternal(string $action)
+    private function callJoomlaInternal(string $action): string
     {
         if (!Session::checkToken('GET')) {
             return Text::_('JINVALID_TOKEN');
@@ -137,17 +137,14 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
     }
 
     /**
-     * Clear old refhresh token from database
+     * Clear old refresh token from database
      *
-     * @return string
+     * @return  string
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function clearRefreshToken(): string
     {
-        /**
-         * @param $lib_params Registry
-         */
         $lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
         $lib_params->set('refresh_token', '');
         $lib_params->set('refresh_token_date', '');
@@ -166,18 +163,17 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
      *
      * @param   string  $action
      *
-     * @return mixed
+     * @return  string
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    private function handleWebhook(string $action)
+    private function handleWebhook(string $action): string
     {
         switch ($action) {
             case 'webhook':
             default:
-
                 $remove = ['option', 'plugin', 'group', 'format', 'action', 'action_type', 'token'];
-                $data   = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
+                $data = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
 
                 $dispatcher = $this->getDispatcher();
                 PluginHelper::importPlugin('system', null, true, $dispatcher);
@@ -197,36 +193,39 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
 
                 break;
         }
+
+        return 'success';
     }
 
     /**
      * Select items list for modal select window
      *
-     * @since 1.3.0
+     * @return  string
+     *
+     * @since   1.3.0
      */
-    private function modalSelect()
+    private function modalSelect(): string
     {
         $entity = $this->getApplication()->getInput()->get('entity','');
-        if(empty($entity)) {
+        if (empty($entity)) {
             return 'There is no AmoCRM entity specified.';
         }
         $amocrm = new Amocrm();
         $remove = ['option', 'plugin', 'group', 'format', 'action', 'action_type', 'token', 'entity', 'entity_type', 'tmpl', Session::getFormToken()];
-        $data   = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
+        $data = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
 
         switch ($entity) {
             case 'leads':
-                    $displayData = $amocrm->leads()->getLeads($data);
+                $displayData = $amocrm->leads()->getLeads($data);
                 break;
             case 'contacts':
             default:
-                    $displayData = $amocrm->contacts()->getContacts($data);
+                $displayData = $amocrm->contacts()->getContacts($data);
                 break;
         }
 
         $displayData = (new Registry($displayData))->toArray();
 
         return LayoutHelper::render('libraries.webtolk.amocrm.fields.entitymodalselect', ['entity' => $entity, 'data' => $displayData]);
-
     }
 }
