@@ -642,12 +642,20 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         // Проверяем, есть ли у данного Joomla пользователя старая ассоциация с AmoCRM контактом
         if ($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
             // т.к. происходит перепривязка, необходимо удалить из старого AmoCRM контакта ссылку на профиль Joomla пользователя
-            if ($this->params->get('create_amocrm_contact', false) && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
-                $this->clearAmoCRMContactFields($mode, $old_amocrm_contact_id, $joomla_user_id);
-            }
+            $this->clearAmoCRMContactFields($mode, $old_amocrm_contact_id, $joomla_user_id);
+
+            // проверяем состояние флага is_temporary_user
+            $db = $this->getDatabase();
+            $query = $db->getQuery(true);
+            $query->select($db->quoteName('is_temporary_user'))
+                ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
+                ->where($db->quoteName('joomla_user_id') . ' = ' . $db->quote($joomla_user_id));
+
+            $db->setQuery($query);
+            $is_temporary_user = (bool) $db->loadResult();
 
             // Если есть, обновляем ассоциацию
-            if (AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
+            if (AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id, $is_temporary_user)) {
                 $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_UPDATED';
                 $type = 'success';
             } else {
