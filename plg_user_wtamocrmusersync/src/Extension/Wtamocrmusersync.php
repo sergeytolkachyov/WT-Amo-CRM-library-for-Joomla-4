@@ -424,6 +424,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     {
         if (!$this->params->get('create_amocrm_contact', false)
             || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+            $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_FILL_AMOCRM_CONTACT_ERROR'), 'warning');
             return;
         }
 
@@ -489,6 +490,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $this->fillAmoCRMContactFields($user_data, $joomla_user_id);
         } else if ($mode === 2) {
             if (!$this->params->get('allow_update_user_data', false)) {
+                $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_FILL_JOOMLA_USER_ERROR'), 'warning');
                 return;
             }
 
@@ -526,6 +528,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if ($mode === 1) {
             if (!$this->params->get('create_amocrm_contact', false)
                 || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+                $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_AMOCRM_CONTACT_ERROR'), 'warning');
                 return;
             }
 
@@ -543,6 +546,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             }
         } else if ($mode === 2) {
             if (!$this->params->get('allow_update_user_data', false)) {
+                $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_JOOMLA_USER_ERROR'), 'warning');
                 return;
             }
 
@@ -711,6 +715,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         if (!$this->params->get('create_amocrm_contact', false)
             || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+            $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_ERROR'), 'warning');
             return;
         }
 
