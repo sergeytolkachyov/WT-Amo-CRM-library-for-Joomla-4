@@ -2,25 +2,23 @@
 /**
  * AmoCRM contacts
  *
- * @see https://www.amocrm.ru/developers/content/crm_platform/contacts-api
+ * @see        https://www.amocrm.ru/developers/content/crm_platform/contacts-api
  *
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.3.0
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Entities;
 
 use Joomla\CMS\Language\Text;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interfaces\EntityInterface;
-
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -28,18 +26,20 @@ class Contacts implements EntityInterface
 {
     use LogTrait;
 
-    /** @param AmocrmRequest $request */
+    /** @var AmocrmRequest $request */
     private AmocrmRequest $request;
 
     /**
      * Account constructor.
-     * @param AmocrmRequest $request
-     * @since 1.3.0
+     *
+     * @param  AmocrmRequest  $request
+     * @since  1.3.0
      */
     public function __construct(AmocrmRequest $request)
     {
         $this->request = $request;
     }
+
     /**
      * Получение списка **контактов**
      * ## Метод
@@ -57,13 +57,14 @@ class Contacts implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/contacts-api
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/contacts-api
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/filters-api
+     * @since   1.3.0
      */
-
     public function getContacts(array $data = []): object
     {
         return $this->request->getResponse('/contacts', $data, 'GET', 'application/json');
@@ -80,20 +81,23 @@ class Contacts implements EntityInterface
      * ## Ограничения
      * Метод доступен в соответствии с правами пользователя
      *
-     * @param   int     $contact_id AmoCRM contact id
-     * @param   string  $with Данный параметр принимает строку, в том числе из нескольких значений, указанных через запятую.
-     *                        Данный метод поддерживает следующие параметры. См. ссылку
+     * @param   int     $contact_id  AmoCRM contact id
+     * @param   string  $with        Данный параметр принимает строку, в том числе из нескольких значений, указанных через запятую.
+     *                               Данный метод поддерживает следующие параметры. См. ссылку
      *
-     * @return object
-     * @link https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-03cd15fc-1b19-487c-93c5-99f959628f45-params
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-03cd15fc-1b19-487c-93c5-99f959628f45-params
+     * @since   1.3.0
      */
     public function getContactById(int $contact_id, string $with = ''): object
     {
         $data = [];
-        if(!empty($with)){
+        if (!empty($with)) {
             $data['with'] = $with;
         }
+
         return $this->request->getResponse('/contacts/'.$contact_id, $data, 'GET', 'application/json');
     }
 
@@ -117,26 +121,27 @@ class Contacts implements EntityInterface
      *
      * @param   array  $data  Array of arrays. Users data.
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/filters-api
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/filters-api
+     * @since   1.3.0
      */
     public function addContacts(array $data = []): object
     {
-        if(empty($data))
-        {
+        if (empty($data)) {
             $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
             $this->saveToLog($error_message,'warning');
-            return (object)[
+            return (object) [
                 'error_code' => 500,
                 'error_message' => $error_message
             ];
         }
+
         return $this->request->getResponse('/contacts', $data, 'POST', 'application/json');
     }
-
 
     /**
      * Редактирование контактов.
@@ -164,18 +169,20 @@ class Contacts implements EntityInterface
      * -- _embedded[tags][0][id] int ID тега, привязанного к контакту
      * -- _embedded[tags][0][name] string Название тега, привязанного к контакту
      *
-     * @param   array  $data Массив с массивами данных пользователей.
+     * @param   array  $data  Массив с массивами данных пользователей.
      *
-     * @link https://www.amocrm.ru/developers/content/crm_platform/contacts-api
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/contacts-api
+     * @since   1.3.0
      */
-    public function editContactsBatch(array $data):object
+    public function editContactsBatch(array $data): object
     {
-        if(empty($data))
-        {
+        if (empty($data)) {
             $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
             $this->saveToLog($error_message,'warning');
-            return (object)[
+            return (object) [
                 'error_code' => 500,
                 'error_message' => $error_message
             ];
@@ -210,19 +217,21 @@ class Contacts implements EntityInterface
      * -- _embedded[tags][0][id] int ID тега, привязанного к контакту
      * -- _embedded[tags][0][name] string Название тега, привязанного к контакту
      *
-     * @param   int  $contact_id id контакта в AmoCRM
-     * @param   array  $data Массив с данными пользователя.
+     * @param   int    $contact_id  id контакта в AmoCRM
+     * @param   array  $data        Массив с данными пользователя.
      *
-     * @link https://www.amocrm.ru/developers/content/crm_platform/contacts-api
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/contacts-api
+     * @since   1.3.0
      */
-    public function editContact(int $contact_id, array $data):object
+    public function editContact(int $contact_id, array $data): object
     {
-        if(empty($data))
-        {
+        if (empty($data)) {
             $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
             $this->saveToLog($error_message,'warning');
-            return (object)[
+            return (object) [
                 'error_code' => 500,
                 'error_message' => $error_message
             ];

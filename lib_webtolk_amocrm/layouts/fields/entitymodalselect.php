@@ -1,25 +1,23 @@
 <?php
 /**
- * @package        WT Amocrm Library
- * @version        1.3.0-alpha2
- * @Author         Sergey Tolkachyov, https://web-tolk.ru
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license        GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since          1.0.0
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Session\Session;
-use Joomla\CMS\Uri\Uri;
 
 defined('_JEXEC') or die;
 
 extract($displayData);
 /**
- * @var string $entity contacts, leads etc
- * @var array  $data   request result data
+ * @var  string  $entity  contacts, leads etc
+ * @var  array   $data    request result data
  */
 
 $hasData = !empty($data);
@@ -29,12 +27,12 @@ if ($hasData) {
     /**
      * Layout variables
      * -----------------
-     * @var   string $error_code
-     * @var   string $error_message
+     * @var  string  $error_code
+     * @var  string  $error_message
      *
-     * @var   int    $_page     A page of items list pagintation
-     * @var   array  $_links    AmoCRM error info
-     * @var   array  $_embedded Main AmoCRM data array
+     * @var  int    $_page           A page of items list pagintation
+     * @var  array  $_links          AmoCRM error info
+     * @var  array  $_embedded       Main AmoCRM data array
      *
      */
 
@@ -59,20 +57,17 @@ $doc->getWebAssetManager()
 <?php
 if (array_key_exists('error_code', $displayData)): ?>
     <div class="alert alert-danger">
-        <h4><?php
-            echo $displayData['error_code']; ?></h4>
-        <p><?php
-            echo $displayData['error_message']; ?></p>
+        <h4><?php echo $displayData['error_code']; ?></h4>
+        <p><?php echo $displayData['error_message']; ?></p>
     </div>
-
     <?php
     return;
 endif; ?>
 
 <form
-        action="index.php"
-        id="adminForm"
-        name="adminForm" class="container">
+    action="index.php"
+    id="adminForm"
+    name="adminForm" class="container">
     <input type="hidden" name="option" value="com_ajax"/>
     <input type="hidden" name="plugin" value="wt_amocrm"/>
     <input type="hidden" name="group" value="system"/>
@@ -107,7 +102,7 @@ endif; ?>
                        echo $app->getInput()->getInt('limit', 50); ?>"
                        class="form-control"/>
                 <button class="btn btn-primary" type="button" onclick="Joomla.submitform();return false;"><span
-                            class="filter-search-bar__button-icon icon-search" aria-hidden="true"></span></button>
+                        class="filter-search-bar__button-icon icon-search" aria-hidden="true"></span></button>
             </div>
         </div>
     </div>
@@ -149,7 +144,7 @@ endif; ?>
                     if (!$hasData || array_key_exists('first', $data['_links'])): ?>
                         <button class="btn btn-outline-secondary"
                                 onclick="document.adminForm.page.value=1; Joomla.submitform();return false;"><span
-                                    class="icon-angle-double-left" aria-hidden="true"></span> <?php
+                                class="icon-angle-double-left" aria-hidden="true"></span> <?php
                             echo Text::_('JLIB_HTML_START'); ?></button>
                     <?php
                     endif; ?>
@@ -158,7 +153,7 @@ endif; ?>
                     if (!$hasData || array_key_exists('prev', $data['_links'])): ?>
                         <button class="btn btn-outline-primary" onclick="document.adminForm.page.value=<?php
                         echo $hasData ? $_page - 1 : $page - 1; ?>; Joomla.submitform();return false;"><span class="icon-angle-left"
-                                                                                      aria-hidden="true"></span> <?php
+                                                                                                             aria-hidden="true"></span> <?php
                             echo Text::_('JPREV'); ?></button>
                     <?php
                     endif; ?>
@@ -176,6 +171,5 @@ endif; ?>
                 </div>
             </div>
         </div>
-
     </div>
 </form>

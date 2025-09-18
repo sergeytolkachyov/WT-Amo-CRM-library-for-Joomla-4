@@ -1,26 +1,20 @@
 <?php
-
 /**
- * @package       WT Amocrm Library
- * @version       1.3.0-alpha2
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.3.0
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
-defined('_JEXEC') or die;
 
 use Joomla\CMS\Application\AdministratorApplication;
-use Joomla\CMS\Cache\Cache;
-use Joomla\CMS\Cache\CacheControllerFactoryInterface;
 use Joomla\CMS\Factory;
-use Joomla\CMS\Helper\LibraryHelper;
 use Joomla\CMS\Installer\Installer;
 use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Installer\InstallerScriptInterface;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
-use Joomla\CMS\Version;
 use Joomla\Database\DatabaseDriver;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
@@ -28,8 +22,10 @@ use Joomla\Filesystem\File;
 use Joomla\Filesystem\Folder;
 use Joomla\Filesystem\Path;
 
+defined('_JEXEC') or die;
+
 return new class () implements ServiceProviderInterface {
-    public function register(Container $container)
+    public function register(Container $container): void
     {
         $container->set(
             InstallerScriptInterface::class,
@@ -38,7 +34,7 @@ return new class () implements ServiceProviderInterface {
                 /**
                  * The application object
                  *
-                 * @var  AdministratorApplication
+                 * @var AdministratorApplication $app
                  *
                  * @since  1.3.0
                  */
@@ -47,7 +43,7 @@ return new class () implements ServiceProviderInterface {
                 /**
                  * The Database object.
                  *
-                 * @var   DatabaseDriver
+                 * @var DatabaseDriver $db
                  *
                  * @since  1.3.0
                  */
@@ -56,23 +52,24 @@ return new class () implements ServiceProviderInterface {
                 /**
                  * Constructor.
                  *
-                 * @param   AdministratorApplication  $app  The application object.
+                 * @param  AdministratorApplication  $app  The application object.
                  *
-                 * @since 1.3.0
+                 * @since  1.3.0
                  */
                 public function __construct(AdministratorApplication $app)
                 {
                     $this->app = $app;
-                    $this->db  = Factory::getContainer()->get('DatabaseDriver');
+                    $this->db = Factory::getContainer()->get('DatabaseDriver');
                 }
 
                 /**
                  * This method is called after a component is installed.
                  *
-                 * @param   InstallerAdapter  $installer  - Parent object calling this method.
-                 * @since 1.3.0
-                 *                                        
-                 * @return bool
+                 * @param   InstallerAdapter  $adapter  - Parent object calling this method.
+                 *
+                 * @return  bool
+                 *
+                 * @since   1.3.0
                  */
                 public function install(InstallerAdapter $adapter): bool
                 {
@@ -121,10 +118,8 @@ return new class () implements ServiceProviderInterface {
                  */
                 public function preflight(string $type, InstallerAdapter $adapter): bool
                 {
-
                     return true;
                 }
-
 
                 /**
                  * Function called after extension installation/update/removal procedure commences.
@@ -138,9 +133,7 @@ return new class () implements ServiceProviderInterface {
                  */
                 public function postflight(string $type, InstallerAdapter $adapter): bool
                 {
-
-                    if ($type != 'uninstall')
-                    {
+                    if ($type != 'uninstall') {
                         $this->parseLayouts($adapter->getParent()->getManifest()->layouts, $adapter->getParent());
                     }
 
@@ -150,17 +143,16 @@ return new class () implements ServiceProviderInterface {
                 /**
                  * Method to parse through a layout element of the installation manifest and take appropriate action
                  *
-                 * @param \SimpleXMLElement $element The XML node to process
-                 * @param Installer $installer Installer calling object
+                 * @param   \SimpleXMLElement $element  The XML node to process
+                 * @param   Installer $installer        Installer calling object
                  *
-                 * @return boolean True on success
+                 * @return  bool  True on success
                  *
-                 * @since 1.3.0
+                 * @since   1.3.0
                  */
                 private function parseLayouts(\SimpleXMLElement $element, Installer $installer): bool
                 {
-                    if (!$element || !count($element->children()))
-                    {
+                    if (!$element || !count($element->children())) {
                         return false;
                     }
 
@@ -175,18 +167,15 @@ return new class () implements ServiceProviderInterface {
 
                     // Prepare files
                     $files = [];
-                    foreach ($element->children() as $file)
-                    {
+                    foreach ($element->children() as $file) {
                         $path['src'] = Path::clean($source . '/' . $file);
                         $path['dest'] = Path::clean($destination . '/' . $file);
 
                         // Is this path a file or folder?
                         $path['type'] = $file->getName() === 'folder' ? 'folder' : 'file';
-                        if (basename($path['dest']) !== $path['dest'])
-                        {
+                        if (basename($path['dest']) !== $path['dest']) {
                             $newdir = dirname($path['dest']);
-                            if (!Folder::create($newdir))
-                            {
+                            if (!Folder::create($newdir)) {
                                 Log::add(Text::sprintf('JLIB_INSTALLER_ABORT_CREATE_DIRECTORY', $installer->getManifest()->name, $newdir), Log::WARNING, 'jerror');
 
                                 return false;
@@ -202,16 +191,15 @@ return new class () implements ServiceProviderInterface {
                 /**
                  * Method to parse through a layouts element of the installation manifest and remove the files that were installed
                  *
-                 * @param \SimpleXMLElement $element The XML node to process
+                 * @param   \SimpleXMLElement  $element  The XML node to process
                  *
-                 * @return boolean True on success
+                 * @return  bool  True on success
                  *
-                 * @since 1.3.0
+                 * @since   1.3.0
                  */
                 private function removeLayouts(\SimpleXMLElement $element): bool
                 {
-                    if (!$element || !count($element->children()))
-                    {
+                    if (!$element || !count($element->children())) {
                         return false;
                     }
 
@@ -223,36 +211,29 @@ return new class () implements ServiceProviderInterface {
                     $source = Path::clean(JPATH_ROOT . '/layouts' . $folder);
 
                     // Process each file in the $files array (children of $tagName).
-                    foreach ($files as $file)
-                    {
+                    foreach ($files as $file) {
                         $path = Path::clean($source . '/' . $file);
 
                         // Actually delete the files/folders
-                        if (is_dir($path))
-                        {
+                        if (is_dir($path)) {
                             $val = Folder::delete($path);
-                        }
-                        else
-                        {
+                        } else {
                             $val = File::delete($path);
                         }
 
-                        if ($val === false)
-                        {
+                        if ($val === false) {
                             Log::add('Failed to delete ' . $path, Log::WARNING, 'jerror');
 
                             return false;
                         }
                     }
 
-                    if (!empty($folder))
-                    {
+                    if (!empty($folder)) {
                         Folder::delete($source);
                     }
 
                     return true;
                 }
-
             }
         );
     }

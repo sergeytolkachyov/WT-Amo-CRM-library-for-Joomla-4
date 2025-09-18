@@ -1,12 +1,11 @@
 <?php
-
 /**
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.0.0
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 namespace Webtolk\Amocrm;
@@ -23,11 +22,7 @@ use Joomla\Http\Response;
 use Joomla\Registry\Registry;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Log\Log;
-use Webtolk\Amocrm\AmocrmClientException;
-
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -36,23 +31,25 @@ class AmocrmRequest
     use LogTrait;
 
     /**
-     * @var int
+     * @var int $api_version
      * @since 1.3.0
      */
     public static int $api_version = 4;
+
     /**
-     * @var $token_type string Token type. Default 'Bearer'
+     * @var string $token_type Token type. Default 'Bearer'
      * @since 1.0.0
      */
     public string $token_type = 'Bearer';
+
     /**
-     * @var $expires_in int Token expires time
+     * @var int $expires_in Token expires time
      * @since 1.0.0
      */
     public int $expires_in = 0;
 
     /**
-     * @var $token string
+     * @var string $token
      * @since 1.0.0
      */
     protected string $token = '';
@@ -60,37 +57,40 @@ class AmocrmRequest
     /**
      * WT AmoCRM plugin params
      *
-     * @var array
+     * @var array $plugin_params
      * @since 1.3.0
      */
     private array $plugin_params = [];
+
     /**
-     * @var string
+     * @var string $client_id
      * @since 1.3.0
      */
     private string $client_id = '';
 
     /**
-     * @var string
+     * @var string $client_secret
      * @since 1.3.0
      */
     private string $client_secret = '';
 
     /**
-     * @var string
+     * @var string $amocrm_domain
      * @since 1.3.0
      */
     private string $amocrm_domain = '';
 
     /**
-     * @param   string  $endpoint        AmoCRM API endpoint
-     * @param ?array    $data            request data array
-     * @param   string  $request_method  GET, POST, PUT, DELETE etc
-     * @param   string  $content_type    application/x-www-form-urlencoded or application/json
+     * @param   string  $endpoint         AmoCRM API endpoint
+     * @param   ?array  $data             request data array
+     * @param   string  $request_method   GET, POST, PUT, DELETE etc
+     * @param   string  $content_type     application/x-www-form-urlencoded or application/json
+     * @param   bool    $custom_endpoint  custom endpoint flag
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.0.0
+     * @throws  AmocrmClientException
+     * @since   1.0.0
      */
     public function getResponse(
         string $endpoint,
@@ -104,38 +104,36 @@ class AmocrmRequest
          */
 
         if (!$this->canDoRequest()) {
-            return (object)[
-                'error_code'    => 400,
+            return (object) [
+                'error_code' => 400,
                 'error_message' => Text::_('LIB_WTAMOCRM_ERROR_GETRESPONSE_CANT_DO_REQUEST')
             ];
         }
 
         if (!$this->loadTokenData()) {
-            return (object)[
-                'error_code'    => 400,
+            return (object) [
+                'error_code' => 400,
                 'error_message' => Text::_('LIB_WTAMOCRM_ERROR_GETRESPONSE_NO_TOKEN_DATA')
             ];
         }
 
         $url = $this->getAmoCRMHost();
-        if($custom_endpoint) {
+        if ($custom_endpoint) {
             $url->setPath($endpoint);
         } else {
             $url->setPath('/api/v' . self::$api_version . $endpoint);
         }
 
-
-
         $headers = [
-            'Authorization'    => $this->token_type . ' ' . $this->token,
-            'Content-Type'     => $content_type,
-            'charset'          => 'UTF-8',
+            'Authorization' => $this->token_type . ' ' . $this->token,
+            'Content-Type' => $content_type,
+            'charset' => 'UTF-8',
             'X-Requested-With' => 'XMLHttpRequest'
         ];
 
         try {
             $http = (new HttpFactory())->getHttp([], ['curl', 'stream']);
-            if($this->getPluginParams()->get('avoid_rest_api_limits_exceeding', 0) == 1) {
+            if ($this->getPluginParams()->get('avoid_rest_api_limits_exceeding', 0) == 1) {
                 /**
                  * Избегаем превышения лимита обращений к REST API - 7 вызовов в секунду.
                  * @link https://www.amocrm.ru/developers/content/api/recommendations
@@ -155,13 +153,12 @@ class AmocrmRequest
 
                 // $url, $headers, $timeout
                 $response = $http->get($url, $headers);
-
             }
 
             return $this->responseHandler($response, $endpoint);
         } catch (AmocrmException $e) {
-            return (object)[
-                'error_code'    => $e->getCode(),
+            return (object) [
+                'error_code' => $e->getCode(),
                 'error_message' => $e->getMessage().'. File: '.$e->getFile().', line: '.$e->getLine()
             ];
         }
@@ -171,30 +168,32 @@ class AmocrmRequest
      * Check if AmoCRM credentials are filled in the plugin params
      * and not empty.
      *
-     * @return bool
+     * @return  bool
      *
-     * @since 1.0.0
+     * @since   1.0.0
      */
     public function canDoRequest(): bool
     {
         $plugin_params = $this->getPluginParams();
-        $token_type    = $plugin_params->get('token_type', 'normal');
-        $check         = [$this->amocrm_domain, $this->client_id, $this->client_secret, $this->token];
+        $token_type = $plugin_params->get('token_type', 'normal');
+        $check = [$this->amocrm_domain, $this->client_id, $this->client_secret, $this->token];
         if ($token_type == 'normal') {
             $check[] = $this->expires_in;
         }
         $required_checks = count($check);
-        $checked         = array_filter($check); // Check if !empty($value)
+        $checked = array_filter($check); // Check if !empty($value)
         if ($required_checks == count($checked)) {
             return true;
         }
 
-        if (empty($plugin_params->get('amocrm_client_id', '')) || empty($plugin_params->get('amocrm_client_secret',''))) {
+        if (empty($plugin_params->get('amocrm_client_id', '')) ||
+            empty($plugin_params->get('amocrm_client_secret',''))
+        ) {
             $this->saveToLog('There is no credentials found. Check theirs in plugin System - WT AmoCRM', 'WARNING');
 
             return false;
         }
-        $this->client_id     = trim($plugin_params->get('amocrm_client_id'));
+        $this->client_id = trim($plugin_params->get('amocrm_client_id'));
         $this->client_secret = trim($plugin_params->get('amocrm_client_secret'));
         $this->amocrm_domain = trim($plugin_params->get('amocrm_domain'));
 
@@ -204,7 +203,9 @@ class AmocrmRequest
     /**
      * Get plugin System - WT AmoCRM params
      *
-     * @since 1.3.0
+     * @return  Registry
+     *
+     * @since   1.3.0
      */
     public function getPluginParams(): Registry
     {
@@ -213,7 +214,7 @@ class AmocrmRequest
                 $this->saveToLog('Plugin System - WT AmoCRM is disabled', 'WARNING');
             }
 
-            $plugin              = PluginHelper::getPlugin('system', 'wt_amocrm');
+            $plugin = PluginHelper::getPlugin('system', 'wt_amocrm');
             $this->plugin_params = (new Registry())->loadString($plugin->params)->toArray();
         }
 
@@ -227,8 +228,9 @@ class AmocrmRequest
      * @param   string  $data      error message
      * @param   string  $priority  Joomla Log priority
      *
-     * @return void
-     * @since 1.3.2
+     * @return  void
+     *
+     * @since   1.3.2
      */
     public function saveToLog(string $data, string $priority = 'NOTICE'): void
     {
@@ -248,10 +250,11 @@ class AmocrmRequest
 
     /**
      * Грузим $token_data из кэша. Если просрочен - вызываем авторизацию заново.
-     * @return bool
      *
-     * @throws AmocrmClientException
-     * @since 1.0.0
+     * @return  bool
+     *
+     * @throws  AmocrmClientException
+     * @since   1.0.0
      */
     private function loadTokenData(): bool
     {
@@ -268,7 +271,7 @@ class AmocrmRequest
             return true;
         }
 
-        $cache      = $this->getCache();
+        $cache = $this->getCache();
         $token_data = $cache->get('wt_amo_crm');
 
         /**
@@ -305,7 +308,6 @@ class AmocrmRequest
 
             return true;
         }
-
         unset($token_data);
 
         return true;
@@ -316,9 +318,9 @@ class AmocrmRequest
      *
      * @param   string  $token  token from Amo CRM API reponse
      *
+     * @return  void
      *
-     * @since 1.0.0
-     * @retun void
+     * @since   1.0.0
      */
     public function setToken(string $token): void
     {
@@ -330,9 +332,9 @@ class AmocrmRequest
      *
      * @param   string  $token_type  Token type from Amo CRM API response
      *
+     * @return  void
      *
-     * @since 1.0.0
-     * @retun void
+     * @since   1.0.0
      */
     public function setTokenType(string $token_type): void
     {
@@ -341,18 +343,21 @@ class AmocrmRequest
 
     /**
      * Return the library pre-configured cache object
-     * @return OutputController
      *
-     * @since 1.3.0
+     * @param   array  $cache_options
+     *
+     * @return  OutputController
+     *
+     * @since   1.3.0
      */
     public function getCache(array $cache_options = []): OutputController
     {
         $config = Factory::getContainer()->get('config');
         $options = [
             'defaultgroup' => 'wt_amo_crm',
-            'caching'      => true,
-            'cachebase'    => $config->get('cache_path'),
-            'storage'      => $config->get('cache_handler'),
+            'caching' => true,
+            'cachebase' => $config->get('cache_path'),
+            'storage' => $config->get('cache_handler'),
         ];
         $options = array_merge($options, $cache_options);
 
@@ -375,23 +380,22 @@ class AmocrmRequest
      * По истечении этого времени или при получении HTTP ошибки с кодом 401,
      * вам нужно повторить процедуру получения access_token.
      * В ином случае API будет отвечать с HTTP кодом 401 (unauthorized).
-     * @return mixed
-     * @throws AmocrmClientException
-     * @since 1.0.0
+     *
+     * @return  mixed  объект Response или объект ошибки в виде ['error_code' => code, 'error_message' => message]
+     *
+     * @throws  AmocrmClientException
+     * @since   1.0.0
      */
-    private function authorize()
+    private function authorize(): mixed
     {
         $plugin_params = $this->getPluginParams();
         $amocrm_code = $plugin_params->get('amocrm_code', '');
         if (empty($amocrm_code)) {
             $error_message = Text::_('LIB_WTAMOCRM_ERROR_AUTHORIZE_EMPTY_CLIENT_OR_SECRET');
-            $this->saveToLog(
-                $error_message,
-                'ERROR'
-            );
+            $this->saveToLog($error_message, 'ERROR');
 
-            return (object)[
-                'error_code'    => 500,
+            return (object) [
+                'error_code' => 500,
                 'error_message' => $error_message
             ];
         }
@@ -399,34 +403,34 @@ class AmocrmRequest
         $redirect_uri->setPath('/index.php');
 
         $redirect_uri->setQuery([
-            'option'=>'com_ajax',
-            'plugin'=>'wt_amocrm',
-            'group'=>'system',
-            'format'=>'raw',
+            'option' => 'com_ajax',
+            'plugin' => 'wt_amocrm',
+            'group' => 'system',
+            'format' => 'raw',
         ]);
 
         $authorize_data = [
-            'client_id'     => $this->client_id,
+            'client_id' => $this->client_id,
             'client_secret' => $this->client_secret,
-            'redirect_uri'  => $redirect_uri->toString(),
+            'redirect_uri' => $redirect_uri->toString(),
         ];
 
-        $refresh_token  = $this->getRefreshToken();
+        $refresh_token = $this->getRefreshToken();
         /**
          * Если $refresh_token не получен, то скорее всего это первый запуск.
          * Подключаемся через код авторизации.
          */
         if (!$refresh_token) {
-            $authorize_data['code']       = $amocrm_code;
+            $authorize_data['code'] = $amocrm_code;
             $authorize_data['grant_type'] = 'authorization_code';
         } else {
             $authorize_data['refresh_token'] = $refresh_token;
-            $authorize_data['grant_type']    = 'refresh_token';
+            $authorize_data['grant_type'] = 'refresh_token';
         }
-        $http    = (new HttpFactory())->getHttp([], ['curl', 'stream']);
+        $http = (new HttpFactory())->getHttp([], ['curl', 'stream']);
         $headers = [
             'Content-Type' => 'application/json',
-            'charset'          => 'UTF-8',
+            'charset' => 'UTF-8',
             'X-Requested-With' => 'XMLHttpRequest'
         ];
 
@@ -434,34 +438,35 @@ class AmocrmRequest
         $endpoint = '/oauth2/access_token';
         $authUrl->setPath($endpoint);
 
-            try {
+        try {
             $response = $http->post(
                 $authUrl,
                 json_encode($authorize_data),
                 $headers
             );
-                $response_body = $this->responseHandler($response, $endpoint);
 
-            if(property_exists($response_body,'error_code')) {
+            $response_body = $this->responseHandler($response, $endpoint);
+
+            if (property_exists($response_body,'error_code')) {
                 return $response_body;
             }
 
             /**
              * Set access token
              */
-
             if (!$response_body->access_token) {
                 $error_message = Text::_('LIB_WTAMOCRM_ERROR_AUTHORIZE_NO_TOKEN');
                 $this->saveToLog($error_message, 'ERROR');
                 $error_array = [
-                    'error_code'    => 500,
+                    'error_code' => 500,
                     'error_message' => $error_message
                 ];
 
-                return (object)$error_array;
+                return (object) $error_array;
             } else {
                 $this->setToken($response_body->access_token);
             }
+
             /**
              * Set access token type. Bearer by default
              */
@@ -485,10 +490,11 @@ class AmocrmRequest
              * или же значение, равное $response_body->expires_in
              */
             $this->storeTokenData([
-                'token'      => $response_body->access_token,
+                'token' => $response_body->access_token,
                 'token_type' => $response_body->token_type,
                 'expires_in' => $response_body->expires_in,
             ]);
+
             /**
              * Сохраняем в базу refresh_token
              */
@@ -497,7 +503,6 @@ class AmocrmRequest
             }
 
             return $response;
-
         } catch (AmocrmClientException $e) {
             throw new AmocrmClientException('Error while trying to authorize to Amo CRM', 500, $e);
         }
@@ -506,11 +511,11 @@ class AmocrmRequest
     /**
      * Get refresh token from library params in database
      *
-     * @return string|bool $refresh_token on success or false if not
+     * @return  string|bool  $refresh_token on success or false if not
      *
-     * @since 1.0.0
+     * @since   1.0.0
      */
-    public function getRefreshToken()
+    public function getRefreshToken(): string|bool
     {
         /**
          * @var Registry $lib_params
@@ -528,9 +533,9 @@ class AmocrmRequest
      *
      * @param   int  $token_expires_in
      *
+     * @return  void
      *
-     * @since 1.0.0
-     * @retun void
+     * @since   1.0.0
      */
     public function setTokenExpiresIn(int $token_expires_in): void
     {
@@ -542,9 +547,9 @@ class AmocrmRequest
      *
      * @param   array  $tokenData  Access token, token type, token expires in (seconds), token start time in Unix format
      *
+     * @return  bool  true
      *
-     * @since 1.0.0
-     * @retun bool true
+     * @since   1.0.0
      */
     public function storeTokenData(array $tokenData): bool
     {
@@ -558,9 +563,9 @@ class AmocrmRequest
         /**
          * Указываем время окончания действия токена.
          */
-        $date                        = (new Date('now +' . $lifetime . ' minutes'))->toUnix();
+        $date = (new Date('now +' . $lifetime . ' minutes'))->toUnix();
         $tokenData['token_end_time'] = $date;
-        $cache                       = $this->getCache();
+        $cache = $this->getCache();
         $cache->store(json_encode($tokenData), 'wt_amo_crm');
 
         return true;
@@ -571,9 +576,9 @@ class AmocrmRequest
      *
      * @param   string  $refresh_token  Amo CRM Refresh token
      *
-     * @return void
+     * @return  void
      *
-     * @since 1.0.0
+     * @since   1.0.0
      */
     public function storeRefreshToken(string $refresh_token): void
     {
@@ -589,11 +594,11 @@ class AmocrmRequest
     /**
      * ОБработка ошибок из API Amo CRM, вывод ошибок.
      *
-     * @param $response_body
+     * @param   $response_body
      *
-     * @return string
+     * @return  string
      *
-     * @since 1.0.0
+     * @since   1.0.0
      */
     private function errorHandler($response_body): string
     {
@@ -613,18 +618,17 @@ class AmocrmRequest
      * @param   Response  $response
      * @param   string    $endpoint
      *
-     * @return object
+     * @return  object
      *
-     * @since      1.0.0
-     * @link       https://web-tolk.ru
+     * @since   1.0.0
+     * @link    https://web-tolk.ru
      */
     private function responseHandler(Response $response, string $endpoint = ''): object
     {
         $body = json_decode($response->getBody());
         $status_code = $response->getStatusCode();
         switch ($status_code) {
-            case ($status_code >= 400 && $status_code < 500) :
-
+            case ($status_code >= 400 && $status_code < 500):
                 $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_NO_ERROR_DESC');
                 if (is_object($body) && (
                     property_exists($body, 'title') ||
@@ -632,43 +636,41 @@ class AmocrmRequest
                     property_exists($body, 'validation-errors'))
                 ) {
                     $error_message = $this->errorHandler($body);
-                } elseif(empty($body) && strpos((string)$response->getBody(),'Forbidden') !== false) {
+                } else if (empty($body) && strpos((string)$response->getBody(),'Forbidden') !== false) {
                     $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_FORBIDDEN_DESC');
                 }
 
                 $this->saveToLog($error_message, 'ERROR');
 
-                return (object)[
-                    'error_code'    => $status_code,
+                return (object) [
+                    'error_code' => $status_code,
                     'error_message' => Text::sprintf(
                         'LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_400',
                         $endpoint,
                         $error_message
                     )
                 ];
-                break;
             case ($status_code >= 500):
                 $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_ERROR_500', print_r($body, true));
                 $this->saveToLog($error_message, 'ERROR');
 
-                return (object)[
-                    'error_code'    => $status_code,
+                return (object) [
+                    'error_code' => $status_code,
                     'error_message' => $error_message
                 ];
-                break;
             case 200:
+                // no break
             default:
-                return (object)$body;
-                break;
+                return (object) $body;
         }
     }
 
     /**
      * Get AmoCRM host Joomla\Uri\Uri object
      *
-     * @return Uri
+     * @return  Uri
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     public function getAmoCRMHost(): Uri
     {
