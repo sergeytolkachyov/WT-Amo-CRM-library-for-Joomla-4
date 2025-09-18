@@ -5,42 +5,36 @@
                name="data_sync_mode_none_desc"
                description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_NONE_DESC"
                class="alert alert-info col-12 fw-bold"
-               showon="data_sync_mode:0"
-        />
+               showon="data_sync_mode:0"/>
         <field type="note"
                name="data_sync_mode_fill_amocrm_contact_desc"
                description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_FILL_AMOCRM_CONTACT_DESC"
                class="alert alert-info col-12 fw-bold"
-               showon="amocrm_contact_id!:[AND]data_sync_mode:1"
-        />
+               showon="amocrm_contact_id!:[AND]data_sync_mode:1"/>
         <field type="note"
                name="data_sync_mode_clear_amocrm_contact_desc"
                description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_CLEAR_AMOCRM_CONTACT_DESC"
                class="alert alert-info col-12 fw-bold"
-               showon="amocrm_contact_id:[AND]data_sync_mode:1"
-        />
+               showon="amocrm_contact_id:[AND]data_sync_mode:1"/>
         <field type="note"
                name="data_sync_mode_fill_joomla_user_desc"
                description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_FILL_JOOMLA_USER_DESC"
                class="alert alert-info col-12 fw-bold"
-               showon="amocrm_contact_id!:[AND]data_sync_mode:2"
-        />
+               showon="amocrm_contact_id!:[AND]data_sync_mode:2"/>
         <field type="note"
                name="data_sync_mode_clear_joomla_user_desc"
                description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_CLEAR_JOOMLA_USER_DESC"
                class="alert alert-info col-12 fw-bold"
-               showon="amocrm_contact_id:[AND]data_sync_mode:2"
-        />
-        <field type="contactinfo"
-               addfieldprefix="Webtolk\Amocrm\Fields"
+               showon="amocrm_contact_id:[AND]data_sync_mode:2"/>
+        <field addfieldprefix="Webtolk\Amocrm\Fields"
+               type="contactinfo"
                name="amocrm_user_info"
                joomlauseridsource="id"
                showtags="true"
                with="catalog_elements,leads,customers"
-               label="PLG_WTAMOCRMUSERSYNC_USER_PROFILE_AMOCRM_INFO"
-        />
-        <field type="entitymodalselect"
-               addfieldprefix="Webtolk\Amocrm\Fields"
+               label="PLG_WTAMOCRMUSERSYNC_USER_PROFILE_AMOCRM_INFO"/>
+        <field addfieldprefix="Webtolk\Amocrm\Fields"
+               type="entitymodalselect"
                name="amocrm_contact_id"
                entity="contacts"
                label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_ID"
