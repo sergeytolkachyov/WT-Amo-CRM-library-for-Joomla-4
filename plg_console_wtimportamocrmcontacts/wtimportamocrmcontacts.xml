@@ -27,7 +27,9 @@
 				<field addfieldprefix="Joomla\Plugin\Console\Wtimportamocrmcontacts\Fields"
                        type="plugininfo"
                        name="plugininfo"/>
-				<field type="note" description="PLG_WTIMPORTAMOCRMCONTACTS_HOWTO" class="alert alert-info"/>
+				<field type="note"
+					   description="PLG_WTIMPORTAMOCRMCONTACTS_HOWTO"
+					   class="alert alert-info"/>
 			</fieldset>
         </fields>
     </config>

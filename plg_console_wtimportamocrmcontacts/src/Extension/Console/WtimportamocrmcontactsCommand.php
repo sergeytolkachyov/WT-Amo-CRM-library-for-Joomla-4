@@ -1,12 +1,12 @@
 <?php
 /**
- * @package       WT AmoCRM library
- * @subpackage    WT Import AmoCRM contacts
- * @version       1.0.0
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @copyright     Copyright (C) 2024 Sergey Tolkachyov
- * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package     WT AmoCRM library
+ * @subpackage  WT Import AmoCRM contacts
+ * @version     1.0.0
+ * @Author      Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright   Copyright (C) 2024 Sergey Tolkachyov
+ * @license     GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
+ * @since       1.0.0
  */
  
 namespace Joomla\Plugin\Console\Wtimportamocrmcontacts\Extension\Console;
@@ -22,12 +22,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Joomla\CMS\Component\ComponentHelper;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Webtolk\Amocrm\Amocrm;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -69,32 +65,28 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 		);
 	}
 
-
 	protected function doExecute(InputInterface $input, OutputInterface $output): int
 	{
-
 		$symfonyStyle = new SymfonyStyle($input, $output);
         $symfonyStyle->title('Starting contacts import from AmoCRM...');
 
-        if(!PluginHelper::isEnabled('user','wtamocrmusersync')) {
+        if (!PluginHelper::isEnabled('user','wtamocrmusersync')) {
             $symfonyStyle->caution('User - WT Amocrm user sync plugin is disabled. Process aborted.');
             return Command::FAILURE;
         }
         // Get the WT AmoCRM user sync plugin
         $wtamocrmusersync = Factory::getApplication()->bootPlugin('wtamocrmusersync','user');
-        $test_mode = $input->getArgument('test', false);
+        $test_mode = $input->getArgument('test');
 
-		$tags = $input->getOption('tags','');
-		if(!empty($tags))
-		{
-			$tags = array_map('intval', explode(',',$tags));
+		$tags = $input->getOption('tags');
+		if (!empty($tags)) {
+			$tags = array_map('intval', explode(',', $tags));
 		} else {
 			$tags = [];
 		}
 
-		$notags = $input->getOption('notags','');
-        if(!empty($notags))
-        {
+		$notags = $input->getOption('notags');
+        if (!empty($notags)) {
             $notags = array_map('intval', explode(',',$notags));
         } else {
             $notags = [];
@@ -103,8 +95,8 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 		$scriptStart = microtime(true);
 
         $amocrm = new Amocrm();
-        $total_contacts = $amocrm->getRequest()->getResponse('/ajax/contacts/list/contacts/',['only_count'=>'Y','skip_filter'=>'Y'],'GET','',true);
-        if(property_exists($total_contacts,'error_code')) {
+        $total_contacts = $amocrm->getRequest()->getResponse('/ajax/contacts/list/contacts/', ['only_count'=>'Y','skip_filter'=>'Y'], 'GET', '', true);
+        if (property_exists($total_contacts,'error_code')) {
             $symfonyStyle->error($total_contacts->error_code.' '.Text::_($total_contacts->error_message));
             return Command::FAILURE;
         }
@@ -125,7 +117,7 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
         $progressBar->setFormat('contactsProgress');
         $progressBar->start();
 
-        while(!$completed) {
+        while (!$completed) {
 
             $filter = [
                 'page' => $page,
@@ -133,12 +125,12 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
             ];
             $contacts = $amocrm->contacts()->getContacts($filter);
 
-            if(property_exists($contacts,'error_code')) {
+            if (property_exists($contacts,'error_code')) {
                 $symfonyStyle->error($contacts->error_code.' '.Text::_($contacts->error_message));
                 return Command::FAILURE;
             }
 
-            if(!property_exists($contacts, '_embedded')) {
+            if (!property_exists($contacts, '_embedded')) {
                 $completed = true;
                 break;
             }
@@ -149,25 +141,25 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
             foreach ($contacts as &$contact) {
                 // Get all tags
                 $contact_tags = [];
-                if(!empty($contact['_embedded']['tags'])) {
+                if (!empty($contact['_embedded']['tags'])) {
                     $contact_tags = array_column($contact['_embedded']['tags'],'id');
                 }
 
                 // Skip contacts with tags specified
-                if(!empty($contact_tags) && !empty($notags) && !empty(array_intersect($contact_tags, $notags))) {
+                if (!empty($contact_tags) && !empty($notags) && !empty(array_intersect($contact_tags, $notags))) {
                     $contactsExcludedCount++;
                     unset($contacts[$i]);
                     continue;
                 }
 
                 // Skip contact without tags specified
-                if(!empty($tags) && empty(array_values(array_intersect($contact_tags, $tags)))) {
+                if (!empty($tags) && empty(array_values(array_intersect($contact_tags, $tags)))) {
                     unset($contacts[$i]);
                     $contactsExcludedCount++;
                     continue;
                 }
 
-                if($test_mode) {
+                if ($test_mode) {
                     $data[] = [
                         $contact['id'],
                         $contact['name'],
@@ -176,7 +168,7 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 
                 // Set data structure like data from the webhook.
                 $contact['type'] = 'contact';
-                if($contact['custom_fields_values']) {
+                if ($contact['custom_fields_values']) {
                     $contact['custom_fields'] = $contact['custom_fields_values'];
                     foreach ($contact['custom_fields'] as &$custom_field) {
                         $custom_field['id'] = $custom_field['field_id'];
@@ -193,9 +185,8 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
                 $progressBar->advance();
             }
 
-
-            if($test_mode) {
-                $table        = $symfonyStyle->createTable();
+            if ($test_mode) {
+                $table = $symfonyStyle->createTable();
                 $table
                     ->setHeaderTitle('AmoCRM contacts list')
                     ->setHeaders(['Contact id', 'Name'])
@@ -228,11 +219,9 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 
             $page++;
 
-            if($limit < count($contacts)) {
+            if ($limit < count($contacts)) {
                 $completed = true;
             }
-
-
         }
         $progressBar->finish();
 
@@ -245,7 +234,5 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 		]);
 
 		return Command::SUCCESS;
-
 	}
-
 }

@@ -1,36 +1,27 @@
 <?php
 /**
- * @package       WT AmoCRM library
- * @subpackage    WT Import AmoCRM contacts
- * @version       1.0.0
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @copyright     Copyright (C) 2024 Sergey Tolkachyov
- * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package     WT AmoCRM library
+ * @subpackage  WT Import AmoCRM contacts
+ * @version     1.0.0
+ * @Author      Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright   Copyright (C) 2024 Sergey Tolkachyov
+ * @license     GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
+ * @since       1.0.0
  */
 
 namespace Joomla\Plugin\Console\Wtimportamocrmcontacts\Extension\Console;
 
 use Joomla\CMS\Application\ConsoleApplication;
-use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Uri\Uri;
 use Joomla\Console\Command\AbstractCommand;
 use Joomla\Registry\Registry;
 use Joomla\Uri\UriHelper;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Joomla\CMS\Component\ComponentHelper;
-use Symfony\Component\Console\Helper\ProgressBar;
-
 use Webtolk\Amocrm\Amocrm;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -69,12 +60,11 @@ class WtshowamocrmtagslistCommand extends AbstractCommand
         );
     }
 
-
     protected function doExecute(InputInterface $input, OutputInterface $output): int
     {
         $symfonyStyle = new SymfonyStyle($input, $output);
 
-        $entity_type = $input->getOption('entity', 'leads');
+        $entity_type = $input->getOption('entity');
         // Get live site parameter
         $live_site = $this->getApplication()->get('live_site');
 
@@ -97,23 +87,23 @@ class WtshowamocrmtagslistCommand extends AbstractCommand
         }
 
         /** @var ConsoleApplication $app */
-        $lang      = $this->getApplication()->getLanguage();
+        $lang = $this->getApplication()->getLanguage();
         $extension = 'lib_webtolk_amocrm';
-        $base_dir  = JPATH_SITE;
+        $base_dir = JPATH_SITE;
         $lang->load($extension, $base_dir);
 
         $amocrm = new Amocrm();
         $tagsList = $amocrm->tags()->getTags($entity_type);
 
-        if(property_exists($tagsList,'error_code')) {
+        if (property_exists($tagsList,'error_code')) {
             $symfonyStyle->error($tagsList->error_code.' '.Text::_($tagsList->error_message));
             return Command::FAILURE;
         }
-        $tags         = (new Registry($tagsList->_embedded->tags))->toArray();
+        $tags = (new Registry($tagsList->_embedded->tags))->toArray();
         $symfonyStyle->info('Count AmoCRM tags '.count($tags));
-        $headers      = ['Tag id', 'Tag name', 'Color'];
+        $headers = ['Tag id', 'Tag name', 'Color'];
 
-        $table        = $symfonyStyle->createTable();
+        $table = $symfonyStyle->createTable();
         $table
             ->setHeaderTitle('AmoCRM tags list')
             ->setHeaders($headers)

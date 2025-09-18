@@ -1,12 +1,12 @@
 <?php
 /**
- * @package       WT AmoCRM library
- * @subpackage    WT Import AmoCRM contacts
- * @version       1.0.0
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @copyright     Copyright (C) 2024 Sergey Tolkachyov
- * @license       GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package     WT AmoCRM library
+ * @subpackage  WT Import AmoCRM contacts
+ * @version     1.0.0
+ * @Author      Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright   Copyright (C) 2024 Sergey Tolkachyov
+ * @license     GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
+ * @since       1.0.0
  */
 
 namespace Joomla\Plugin\Console\Wtimportamocrmcontacts\Extension;
@@ -21,8 +21,6 @@ use Joomla\Event\SubscriberInterface;
 use Joomla\Plugin\Console\Wtimportamocrmcontacts\Extension\Console\WtimportamocrmcontactsCommand;
 use Joomla\Plugin\Console\Wtimportamocrmcontacts\Extension\Console\WtshowamocrmtagslistCommand;
 use Psr\Container\ContainerInterface;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -71,7 +69,6 @@ class Wtimportamocrmcontacts extends CMSPlugin implements SubscriberInterface
             },
             true
         );
-
         Factory::getContainer()->get(WritableLoaderInterface::class)->add(
             'amocrm:tags:show',
             'webtolk.amocrm.tags.show'
