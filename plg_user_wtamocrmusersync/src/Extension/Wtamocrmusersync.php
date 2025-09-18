@@ -424,6 +424,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     {
         if (!$this->params->get('create_amocrm_contact', false)
             || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+            $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_FILL_AMOCRM_CONTACT_ERROR'), 'warning');
             return;
         }
 
@@ -489,6 +490,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $this->fillAmoCRMContactFields($user_data, $joomla_user_id);
         } else if ($mode === 2) {
             if (!$this->params->get('allow_update_user_data', false)) {
+                $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_FILL_JOOMLA_USER_ERROR'), 'warning');
                 return;
             }
 
@@ -526,6 +528,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if ($mode === 1) {
             if (!$this->params->get('create_amocrm_contact', false)
                 || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+                $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_AMOCRM_CONTACT_ERROR'), 'warning');
                 return;
             }
 
@@ -543,6 +546,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             }
         } else if ($mode === 2) {
             if (!$this->params->get('allow_update_user_data', false)) {
+                $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_JOOMLA_USER_ERROR'), 'warning');
                 return;
             }
 
@@ -642,12 +646,20 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         // Проверяем, есть ли у данного Joomla пользователя старая ассоциация с AmoCRM контактом
         if ($old_amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id)) {
             // т.к. происходит перепривязка, необходимо удалить из старого AmoCRM контакта ссылку на профиль Joomla пользователя
-            if ($this->params->get('create_amocrm_contact', false) && $this->params->get('update_amocrm_contact_data_by_joomla', false)) {
-                $this->clearAmoCRMContactFields($mode, $old_amocrm_contact_id, $joomla_user_id);
-            }
+            $this->clearAmoCRMContactFields($mode, $old_amocrm_contact_id, $joomla_user_id);
+
+            // проверяем состояние флага is_temporary_user
+            $db = $this->getDatabase();
+            $query = $db->getQuery(true);
+            $query->select($db->quoteName('is_temporary_user'))
+                ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
+                ->where($db->quoteName('joomla_user_id') . ' = ' . $db->quote($joomla_user_id));
+
+            $db->setQuery($query);
+            $is_temporary_user = (bool) $db->loadResult();
 
             // Если есть, обновляем ассоциацию
-            if (AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
+            if (AmocrmUserHelper::updateJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id, $is_temporary_user)) {
                 $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_UPDATED';
                 $type = 'success';
             } else {
@@ -703,6 +715,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         if (!$this->params->get('create_amocrm_contact', false)
             || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+            $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_ERROR'), 'warning');
             return;
         }
 
