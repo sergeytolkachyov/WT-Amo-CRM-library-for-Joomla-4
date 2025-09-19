@@ -181,31 +181,31 @@ return new class () implements ServiceProviderInterface {
                 public function postflight(string $type, InstallerAdapter $adapter): bool
                 {
                     $smile = '';
-                    if ($type != 'uninstall') {
-                        $smiles = [
-                            '&#9786;',
-                            '&#128512;',
-                            '&#128521;',
-                            '&#128525;',
-                            '&#128526;',
-                            '&#128522;',
-                            '&#128591;'
-                        ];
+                    if ($type != 'uninstall')
+                    {
+                        $smiles = ['&#9786;', '&#128512;', '&#128521;', '&#128525;', '&#128526;', '&#128522;', '&#128591;'];
                         $smile_key = array_rand($smiles, 1);
                         $smile = $smiles[$smile_key];
                     }
+                    else
+                    {
+                        $smile = '&#128546';
+                    }
+
+                    $smile .= $smile . ' ';
 
                     $element = strtoupper($adapter->getElement());
                     $type = strtoupper($type);
+                    $header = Text::_($element . '_AFTER_' . $type) . ' <br/>' . Text::_($element);
+                    $message = Text::_($element . '_DESC');
+                    $message .= Text::_($element . '_WHATS_NEW');
+
                     $html = '
                     <div class="row m-0">
                         <div class="col-12 col-md-8 p-0 pe-2">
-                            <h2>' . $smile . ' ' . Text::_($element . '_AFTER_' . $type) . ' <br/>' . Text::_($element) . '</h2>
-                            ' . Text::_($element . '_DESC');
-
-                    $html .= Text::_($element . '_WHATS_NEW');
-
-                    $html .= '</div>
+                            <h2>' . $smile . $header .'</h2>
+                            ' . $message . '
+                        </div>
                         <div class="col-12 col-md-4 p-0 d-flex flex-column justify-content-start">
                             <img width="180" src="https://web-tolk.ru/web_tolk_logo_wide.png">
                             <p>Joomla Extensions</p>
@@ -214,16 +214,14 @@ return new class () implements ServiceProviderInterface {
                                 <a class="btn btn-sm btn-outline-primary" href="mailto:info@web-tolk.ru"><i class="icon-envelope"></i> info@web-tolk.ru</a>
                             </p>
                             <div class="btn-group-vertical mb-3 web-tolk-btn-links" role="group" aria-label="Joomla community links">
-                            <a class="btn btn-danger text-white w-100" href="https://t.me/joomlaru" target="_blank">'
-                            . Text::_($element . '_JOOMLARU_TELEGRAM_CHAT') .
-                            '</a>
-                            <a class="btn btn-primary text-white w-100" href="https://t.me/webtolkru" target="_blank">'
-                            . Text::_($element . '_WEBTOLK_TELEGRAM_CHANNEL') .
-                            '</a>
+                                <a class="btn btn-danger text-white w-100" href="https://t.me/joomlaru" target="_blank">' . Text::_($element . '_JOOMLARU_TELEGRAM_CHAT') . '</a>
+                                <a class="btn btn-primary text-white w-100" href="https://t.me/webtolkru" target="_blank">' . Text::_($element . '_WEBTOLK_TELEGRAM_CHANNEL') . '</a>
+                            </div>
+                            ' . Text::_($element . "_MAYBE_INTERESTING") . '
                         </div>
-                    ' . Text::_($element . "_MAYBE_INTERESTING") . '
                     </div>
                     ';
+
                     $this->app->enqueueMessage($html, 'info');
 
                     return true;

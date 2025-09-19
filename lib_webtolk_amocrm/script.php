@@ -177,7 +177,6 @@ return new class () implements ServiceProviderInterface {
                             $newdir = dirname($path['dest']);
                             if (!Folder::create($newdir)) {
                                 Log::add(Text::sprintf('JLIB_INSTALLER_ABORT_CREATE_DIRECTORY', $installer->getManifest()->name, $newdir), Log::WARNING, 'jerror');
-
                                 return false;
                             }
                         }
@@ -223,13 +222,25 @@ return new class () implements ServiceProviderInterface {
 
                         if ($val === false) {
                             Log::add('Failed to delete ' . $path, Log::WARNING, 'jerror');
-
                             return false;
                         }
                     }
 
                     if (!empty($folder)) {
                         Folder::delete($source);
+
+                        // В атрибуте destination значение "libraries/webtolk/amocrm",
+                        // поэтому удаляем родительский каталог если он пуст
+                        $sourceParts = explode('/', $folder);
+                        array_pop($sourceParts);
+                        $parentFolder = Path::clean(JPATH_ROOT . '/layouts' . implode('/', $sourceParts));
+
+                        if (is_dir($parentFolder)
+                            && empty(Folder::files($parentFolder))
+                            && empty(Folder::folders($parentFolder))
+                        ) {
+                            Folder::delete($parentFolder);
+                        }
                     }
 
                     return true;
