@@ -12,16 +12,17 @@
 	<authorUrl>https://web-tolk.ru</authorUrl>
 	<namespace path="src">Webtolk\Amocrm</namespace>
 	<scriptfile>script.php</scriptfile>
-	<layouts folder="layouts" destination="libraries/webtolk/amocrm">
-		<folder>fields</folder>
-	</layouts>
-	<languages>
-		<language tag="ru-RU">language/ru-RU/lib_webtolk_amocrm.ini</language>
-		<language tag="en-GB">language/en-GB/lib_webtolk_amocrm.ini</language>
-	</languages>
 	<files>
 		<folder>src</folder>
 		<folder>language</folder>
 		<filename>amocrm.xml</filename>
+		<filename>script.php</filename>
 	</files>
+	<languages folder="language">
+		<language tag="ru-RU">ru-RU/lib_webtolk_amocrm.ini</language>
+		<language tag="en-GB">en-GB/lib_webtolk_amocrm.ini</language>
+	</languages>
+	<layouts folder="layouts" destination="libraries/webtolk/amocrm">
+		<folder>fields</folder>
+	</layouts>
 </extension>
