@@ -57,10 +57,10 @@ class AmocrmRequest
     /**
      * WT AmoCRM plugin params
      *
-     * @var array $plugin_params
+     * @var Registry $plugin_params
      * @since 1.3.0
      */
-    private array $plugin_params = [];
+    private Registry $plugin_params;
 
     /**
      * @var string $client_id
@@ -79,6 +79,11 @@ class AmocrmRequest
      * @since 1.3.0
      */
     private string $amocrm_domain = '';
+
+    public function __construct()
+    {
+        $this->plugin_params = new Registry();
+    }
 
     /**
      * @param   string  $endpoint         AmoCRM API endpoint

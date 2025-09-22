@@ -33,7 +33,7 @@ class RedirecturlField extends FormField
 	protected function getInput()
 	{
 		$wa = Factory::getApplication()->getDocument()->getWebAssetManager();
-		$wa->useScript('plg_system_wt_amocrm.copytextfield');
+        $wa->registerAndUseScript('plg_system_wt_amocrm.copytextfield','plg_system_wt_amocrm/copytextfield.js', ['version'=>'auto'], ['defer' => true]);
 
 		return '<div class="input-group">
             <input
