@@ -1,11 +1,11 @@
 <?php
 /**
- * @package        WT Amocrm Library
- * @version        1.3.0-alpha2
- * @Author         Sergey Tolkachyov, https://web-tolk.ru
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license        GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since          1.0.0
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 namespace Joomla\Plugin\System\Wt_amocrm\Extension;
@@ -21,11 +21,9 @@ use Joomla\Event\DispatcherAwareInterface;
 use Joomla\Event\DispatcherAwareTrait;
 use Joomla\Event\SubscriberInterface;
 use Joomla\Registry\Registry;
-
 use Webtolk\Amocrm\Amocrm;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\Event\WebhookEvent;
-
-use function defined;
 
 // No direct access
 defined('_JEXEC') or die;
@@ -41,13 +39,13 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
      *
      * @return  array
      *
-     * @since   4.0.0
+     * @since   1.0.0
      */
     public static function getSubscribedEvents(): array
     {
         return [
             'onAfterInitialise' => 'onAfterInitialise',
-            'onAjaxWt_amocrm'   => 'onAjaxWt_amocrm',
+            'onAjaxWt_amocrm' => 'onAjaxWt_amocrm',
         ];
     }
 
@@ -128,6 +126,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
                 $result = $this->modalSelect();
                 break;
             case 'clear_refresh_token': // Clear AmoCRM refresh token from Joomla database
+                // no break
             default:
                 $result = $this->clearRefreshToken();
                 break;
@@ -171,6 +170,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
     {
         switch ($action) {
             case 'webhook':
+                // no break
             default:
                 $remove = ['option', 'plugin', 'group', 'format', 'action', 'action_type', 'token'];
                 $data = array_diff_key($this->getApplication()->getInput()->getArray(), array_flip($remove));
@@ -185,7 +185,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
                     'onAmocrmIncomingWebhook',
                     [
                         'eventClass' => WebhookEvent::class,
-                        'subject'    => $data,
+                        'subject' => $data,
                     ]
                 );
 
@@ -202,6 +202,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
      *
      * @return  string
      *
+     * @throws  AmocrmClientException
      * @since   1.3.0
      */
     private function modalSelect(): string
@@ -219,6 +220,7 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
                 $displayData = $amocrm->leads()->getLeads($data);
                 break;
             case 'contacts':
+                // no break
             default:
                 $displayData = $amocrm->contacts()->getContacts($data);
                 break;

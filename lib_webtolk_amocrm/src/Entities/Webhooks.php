@@ -2,27 +2,24 @@
 /**
  * AmoCRM users
  *
- * @see               https://www.amocrm.ru/developers/content/crm_platform/users-api
+ * @see        https://www.amocrm.ru/developers/content/crm_platform/users-api
  *
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.3.0
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Entities;
 
-use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interfaces\EntityInterface;
-
 use Webtolk\Amocrm\Traits\DataErrorTrait;
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -31,15 +28,15 @@ class Webhooks implements EntityInterface
     use LogTrait;
     use DataErrorTrait;
 
-    /** @param   AmocrmRequest  $request */
+    /** @var AmocrmRequest $request */
     private AmocrmRequest $request;
 
     /**
      * Account constructor.
      *
-     * @param   AmocrmRequest  $request
+     * @param  AmocrmRequest  $request
      *
-     * @since 1.3.0
+     * @since  1.3.0
      */
     public function __construct(AmocrmRequest $request)
     {
@@ -61,19 +58,20 @@ class Webhooks implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.3.0
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/webhooks-api
+     * @throws  AmocrmClientException
+     * @since   1.3.0
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/webhooks-api
      */
     public function getWebhooks(array $data = []): object
     {
-        if(isset($data['filter']['destination'])) {
+        if (isset($data['filter']['destination'])) {
             $data['filter']['destination'] = urlencode($data['filter']['destination']);
         }
+
         return $this->request->getResponse('/webhooks', $data, 'GET');
     }
-
 
     /**
      * Подписка на вебхук
@@ -90,14 +88,15 @@ class Webhooks implements EntityInterface
      * - destination string Валидный URL, на который необходимо присылать уведомления.
      * - settings array Действия, на которые подписан вебхук. Передается в виде массива cо списком возможных действий. Список доступных действий смотрите по ссылке к данному методу
      *
-     * @param   int  $data  Массив с массивами данных пользователей.
+     * @param   array  $data  Массив с массивами данных пользователей.
      *
-     * @return object
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/webhooks-api
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-available-actions
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/webhooks-api
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/webhooks-api#webhooks-available-actions
+     * @since   1.3.0
      */
-
     public function addWebhook(array $data): object
     {
         if (empty($data)) {
@@ -118,10 +117,11 @@ class Webhooks implements EntityInterface
      * ## Ограничения
      * Метод доступен только с правами администратора аккаунта.
      *
-     * @param   string  $destination Точный адрес вебхука, который необходимо удалить из списка. Например, https://example.test
+     * @param   string  $destination  Точный адрес вебхука, который необходимо удалить из списка. Например, https://example.test
      *
-     * @return object
+     * @return  object
      *
+     * @throws  AmocrmClientException
      * @since 1.3.0
      * @link  https://www.amocrm.ru/developers/content/crm_platform/webhooks-api
      */
@@ -132,27 +132,29 @@ class Webhooks implements EntityInterface
 
     /**
      * Получаем URL вебхука для указания на стороне AmoCRM
+     *
      * @return string
+     *
      * @since 1.3.0
      */
-    public function getJoomlaWebhookUrl():string
+    public function getJoomlaWebhookUrl(): string
     {
         $url = '';
         $webhook_token = $this->request->getPluginParams()->get('webhook_token','');
-        if(!empty($webhook_token)) {
+        if (!empty($webhook_token)) {
             $url = new Uri(Uri::root());
             $url->setPath('/index.php');
             $url->setQuery([
-                'option'      => 'com_ajax',
-                'plugin'      => 'wt_amocrm',
-                'group'       => 'system',
-                'format'      => 'raw',
-                'action'      => 'webhook',
+                'option' => 'com_ajax',
+                'plugin' => 'wt_amocrm',
+                'group' => 'system',
+                'format' => 'raw',
+                'action' => 'webhook',
                 'action_type' => 'external',
-                'token'       => $webhook_token,
+                'token' => $webhook_token,
             ]);
 
-                $url = $url->toString();
+            $url = $url->toString();
         }
 
         return $url;

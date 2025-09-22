@@ -1,20 +1,20 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.3.0-alpha2
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 namespace Joomla\Plugin\Console\Wtimportamocrmcontacts\Fields;
-defined('_JEXEC') or die;
 
 use Joomla\CMS\Form\Field\NoteField;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
 
+defined('_JEXEC') or die;
 
 class PlugininfoField extends NoteField
 {
@@ -31,11 +31,10 @@ class PlugininfoField extends NoteField
 	 */
 	protected function getInput()
 	{
-			
-		$data    = $this->form->getData();
+		$data = $this->form->getData();
 		$element = $data->get('element');
-		$folder  = $data->get('folder');
-		$wa      = Factory::getApplication()->getDocument()->getWebAssetManager();
+		$folder = $data->get('folder');
+		$wa = Factory::getApplication()->getDocument()->getWebAssetManager();
 		$wa->addInlineStyle("
 			.plugin-info-img-svg:hover * {
 				cursor:pointer;
@@ -44,8 +43,7 @@ class PlugininfoField extends NoteField
 
 		$wt_plugin_info = simplexml_load_file(JPATH_SITE . "/plugins/" . $folder . "/" . $element . "/" . $element . ".xml");
 
-
-		return $html = '<div class="d-flex shadow p-4">
+		return '<div class="d-flex shadow p-4">
 			<div class="flex-shrink-0">
 				<a href="https://web-tolk.ru" target="_blank">
 					<svg class="plugin-info-img-svg" width="200" height="50" xmlns="http://www.w3.org/2000/svg">
@@ -77,9 +75,7 @@ class PlugininfoField extends NoteField
 	 */
 	protected function getLabel()
 	{
-
 		return '';
-
 	}
 
 	/**
@@ -93,5 +89,4 @@ class PlugininfoField extends NoteField
 	{
 		return $this->getLabel();
 	}
-
 }

@@ -2,26 +2,23 @@
 /**
  * AmoCRM notes
  *
- * @see               https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-types
+ * @see        https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-types
  *
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.3.0
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Entities;
 
-use Joomla\CMS\Language\Text;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interfaces\EntityInterface;
-
 use Webtolk\Amocrm\Traits\DataErrorTrait;
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -31,12 +28,12 @@ class Notes implements EntityInterface
     use DataErrorTrait;
 
     /**
-     * @var array|string[]
+     * @var array|string[] $allowed_entites
      * @since 1.3.0
      */
     protected static array $allowed_entites = ['leads', 'contacts', 'companies', 'customers'];
 
-    /** @param   AmocrmRequest  $request */
+    /** @var AmocrmRequest $request */
     private AmocrmRequest $request;
 
     /**
@@ -44,7 +41,7 @@ class Notes implements EntityInterface
      *
      * @param   AmocrmRequest  $request
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     public function __construct(AmocrmRequest $request)
     {
@@ -114,11 +111,12 @@ class Notes implements EntityInterface
      *                                ]
      *
      *
-     * @return object
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-add
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-add
+     * @since   1.3.0
      */
-
     public function addNotes(string $entity_type = 'leads', int $entity_id = 0, array $notes = []): object
     {
         if (!$this->checkNotesEntity($entity_type)) {
@@ -141,9 +139,9 @@ class Notes implements EntityInterface
     /**
      * @param   string  $entity_type
      *
-     * @return bool
+     * @return  bool
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function checkNotesEntity(string $entity_type): bool
     {
@@ -176,11 +174,12 @@ class Notes implements EntityInterface
      *                                Доступные значения для сортировки: asc, desc.
      *                                Пример: /api/v4/leads/notes?order[updated_at]=asc
      *
-     * @return object
-     * @link       https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
-     * @since      1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
+     * @since   1.3.0
      */
-
     public function getNotes(string $entity_type, int $entity_id, array $params = []): object
     {
         if (!$this->checkNotesEntity($entity_type)) {
@@ -194,7 +193,6 @@ class Notes implements EntityInterface
             'application/json'
         );
     }
-
 
     /**
      * Редактирование примечаний.
@@ -212,11 +210,13 @@ class Notes implements EntityInterface
      * @param   string  $entity_type  Тип сущности, в которой редактируется примечание.
      * @param   array   $data         Массив с массивами примечаний.
      *
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-edit
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-types
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-params-info
+     * @return  object
      *
-     * @since 1.3.0
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-edit
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-types
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-params-info
+     * @since   1.3.0
      */
     public function editNotesBatch(string $entity_type, array $data): object
     {
@@ -230,7 +230,6 @@ class Notes implements EntityInterface
 
         return $this->request->getResponse('/' . $entity_type . '/notes', $data, 'PATCH', 'application/json');
     }
-
 
     /**
      * Редактирование **единичного примечания** к сущности.
@@ -246,12 +245,15 @@ class Notes implements EntityInterface
      * - params object Свойства примечания, зависят от типа примечания. Подробней о свойствах читайте по ссылке ниже.
      *
      * @param   string  $entity_type  тип сущности в AmoCRM
-     * @param   int     $contact_id   id контакта в AmoCRM
-     * @param   array   $data         Массив с данными пользователя.
-     * @param   ?int    $note_id      Массив с данными пользователя.
+     * @param   int     $entity_id    id сущности в AmoCRM
+     * @param   array   $data         Массив с данными пользователя
+     * @param   ?int    $note_id      id единичного примечания
      *
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/contacts-api
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/contacts-api
+     * @since   1.3.0
      */
     public function editNote(string $entity_type, int $entity_id, array $data, ?int $note_id = null): object
     {

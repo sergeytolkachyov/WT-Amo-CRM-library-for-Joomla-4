@@ -11,14 +11,10 @@ namespace Webtolk\Amocrm\Fields;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Form\Field\ModalSelectField;
-
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Session\Session;
 use Joomla\CMS\Uri\Uri;
-
 use Webtolk\Amocrm\Amocrm;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -29,10 +25,11 @@ class EntitymodalselectField extends ModalSelectField
     /**
      * Entity by default. Set it by `entity = "leads|contacts|tags"` in XML
      *
-     * @var string
+     * @var string $entity
      * @since 1.3.0
      */
     protected string $entity = 'contacts';
+
     /**
      * Method to attach a Form object to the field.
      *
@@ -40,7 +37,7 @@ class EntitymodalselectField extends ModalSelectField
      * @param   mixed              $value    The form field value to validate.
      * @param   string             $group    The field name group control value.
      *
-     * @return  boolean  True on success.
+     * @return  bool  True on success.
      *
      * @see     FormField::setup()
      * @since   5.0.0
@@ -49,8 +46,7 @@ class EntitymodalselectField extends ModalSelectField
     {
         $result = parent::setup($element, $value, $group);
 
-        if (!$result)
-        {
+        if (!$result) {
             return $result;
         }
         /** @var string $entity leads, contacts etc. */
@@ -58,14 +54,14 @@ class EntitymodalselectField extends ModalSelectField
 
         $urlSelect = (new Uri())->setPath(Uri::base(true) . '/index.php');
         $query_params = [
-            'option'                => 'com_ajax',
-            'plugin'                => 'wt_amocrm',
-            'group'                 => 'system',
-            'format'                => 'html',
-            'tmpl'                  => 'component',
-            'action'                => 'modalselect',
-            'entity'                => $entity,
-            'action_type'           => 'internal',
+            'option' => 'com_ajax',
+            'plugin' => 'wt_amocrm',
+            'group' => 'system',
+            'format' => 'html',
+            'tmpl' => 'component',
+            'action' => 'modalselect',
+            'entity' => $entity,
+            'action_type' => 'internal',
             Session::getFormToken() => '1'
         ];
 
@@ -85,7 +81,7 @@ class EntitymodalselectField extends ModalSelectField
     /**
      * Метод показывает название выбранного контакта в поле-плейсхолдере.
      *
-     * @return string
+     * @return  int|string
      *
      * @since   5.0.0
      */
@@ -95,29 +91,26 @@ class EntitymodalselectField extends ModalSelectField
 
         $title = '';
 
-        if ($value)
-        {
-            try
-            {
+        if ($value) {
+            try {
                 $amocrm = new Amocrm();
                 switch ($this->entity) {
                     case 'leads':
                         $entity = $amocrm->leads()->getLeadById($value);
                         break;
                     case 'contacts':
+                        // no break
                     default:
                         $entity = $amocrm->contacts()->getContactById($value);
                         break;
                 }
 
-                if(isset($contact->error_code)) {
+                if (isset($contact->error_code)) {
                     $title = $entity->error_code.' - '.$entity->error_message;
                 } else {
                     $title = $entity->name;
                 }
-            }
-            catch (\Throwable $e)
-            {
+            } catch (\Throwable $e) {
                 Factory::getApplication()->enqueueMessage($e->getMessage(), 'error');
             }
         }

@@ -1,11 +1,11 @@
 <?php
 /**
- * @package        WT Amocrm Library
- * @version        1.3.0-alpha2
- * @Author         Sergey Tolkachyov, https://web-tolk.ru
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license        GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since          1.0.0
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Joomla\Plugin\User\Wtamocrmusersync\Extension;
@@ -34,13 +34,10 @@ use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 use RuntimeException;
 use Webtolk\Amocrm\Amocrm;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\Event\WebhookEvent;
 use Webtolk\Amocrm\Helper\UserHelper as AmocrmUserHelper;
 
-use function count;
-use function defined;
-
-// No direct access
 defined('_JEXEC') or die;
 
 class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
@@ -48,23 +45,24 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     use DatabaseAwareTrait;
     use UserFactoryAwareTrait;
 
+    protected $autoloadLanguage = true;
+
     /**
      * AmoCRM to Joomla fields mapping.
      * $mapping[$amocrm_contact_id] = ['type'=> '', 'custom_field_id','user_param_name'];
      *
-     * @var    array
+     * @var array $mapping
      * 
-     * @since  1.3.0
+     * @since 1.3.0
      */
     private static array $mapping = [];
-    protected $autoloadLanguage = true;
 
     /**
      * AmoCRM library object
      *
-     * @var    Amocrm
+     * @var Amocrm $amocrm
      *
-     * @since  1.3.0
+     * @since 1.3.0
      */
     private Amocrm $amocrm;
 
@@ -72,7 +70,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * Add Amocrm class and fill fields mapping
      *
      * @param  $subject
-     *
      * @param  $config
      *
      * @since  1.3.0
@@ -111,7 +108,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @return  array
      *
-     * @since   4.0.0
+     * @since   1.3.0
      */
     public static function getSubscribedEvents(): array
     {
@@ -138,15 +135,16 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @return  void
      *
+     * @throws  AmocrmClientException
      * @since   1.3.0
      */
     public function onUserAfterSave(Event $event): void
     {
         /**
-         * @var   array  $user     Holds the new user data.
-         * @var   bool   $isnew    True if a new user is stored.
-         * @var   bool   $success  True if user was successfully stored in the database.
-         * @var   string $msg      Message.
+         * @var   array   $user     Holds the new user data.
+         * @var   bool    $isnew    True if a new user is stored.
+         * @var   bool    $success  True if user was successfully stored in the database.
+         * @var   string  $msg      Message.
          */
         [$user, $isnew, $success, $msg] = array_values($event->getArguments());
 
@@ -214,7 +212,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $amocrm->notes()->addNotes('contacts', $user['amocrm_new_user_from_webhook_contact_id'], $notes);
 
             // Link to Joomla user profile
-            if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1)) && $joomla_profile_link_amo_field_id > 0) {
+            if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1))
+                && $joomla_profile_link_amo_field_id > 0
+            ) {
                 $custom_fields_data = [
                     'custom_fields_values' => [
                         [
@@ -293,7 +293,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         ];
 
         // Link to Joomla user profile
-        if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1)) && $joomla_profile_link_amo_field_id > 0) {
+        if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1))
+            && $joomla_profile_link_amo_field_id > 0
+        ) {
             $user_data['custom_fields_values'][] = [
                 'field_id' => $joomla_profile_link_amo_field_id,
                 'values' => [
@@ -413,7 +415,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * Заполнение полей AmoCRM контакта значениями полей Joomla пользователя
      *
      * @param   array  $user_data       Ссылка на массив данных о AmoCRM контакте
-     *
      * @param   int    $joomla_user_id  Joomla user ID
      *
      * @return  void
@@ -423,7 +424,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
     private function fillAmoCRMContactFields(array &$user_data, int $joomla_user_id): void
     {
         if (!$this->params->get('create_amocrm_contact', false)
-            || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+            || !$this->params->get('update_amocrm_contact_data_by_joomla', false)
+        ) {
             $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_FILL_AMOCRM_CONTACT_ERROR'), 'warning');
             return;
         }
@@ -472,15 +474,13 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * Заполнение полей Joomla пользователя или AmoCRM контакта
      *
      * @param   int    $mode               Режим синхронизации пользовательских полей
-     *
      * @param   array  $user_data          Ссылка на массив данных о AmoCRM контакте
-     *
      * @param   int    $joomla_user_id     Joomla user ID
-     *
      * @param   int    $amocrm_contact_id  AmoCRM contact ID
      *
      * @return  void
      *
+     * @throws  AmocrmClientException
      * @since   1.3.0
      */
     private function processDataSync(int $mode, array &$user_data, int $joomla_user_id, int $amocrm_contact_id): void
@@ -516,18 +516,19 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * Очищение полей Joomla пользователя или AmoCRM контакта
      *
      * @param   int    $mode                  Режим синхронизации пользовательских полей
-     *
      * @param   array  $custom_fields_values  Ссылка на массив значений полей AmoCRM контакта
-     *
      * @param   int    $joomla_user_id        Joomla user ID
      *
      * @return  void
+     *
+     * @since   1.3.0
      */
     private function clearDataSync(int $mode, array &$custom_fields_values, int $joomla_user_id): void
     {
         if ($mode === 1) {
             if (!$this->params->get('create_amocrm_contact', false)
-                || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+                || !$this->params->get('update_amocrm_contact_data_by_joomla', false)
+            ) {
                 $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_AMOCRM_CONTACT_ERROR'), 'warning');
                 return;
             }
@@ -574,16 +575,14 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * Обработка ручного изменения привязки AmoCRM контакта у Joomla пользователя в панели администратора
      *
      * @param   int   $mode                             Режим синхронизации пользовательских полей
-     *
      * @param   bool  $amocrmUpdateUserFromWebhookFlag  Флаг обновления Joomla пользователя от входящего вебхука AmoCRM
-     *
      * @param   int   $joomla_user_id                   Joomla user ID
-     *
      * @param   int   $amocrm_contact_id                AmoCRM contact ID
      *
      * @return  bool  True в случае успешной привязки, False в случае ошибки
      *
-     * @since   1.3.0-alpha2
+     * @throws  AmocrmClientException
+     * @since   1.3.0
      */
     private function processEditJoomlaAmoCRMUserSync(int $mode, bool $amocrmUpdateUserFromWebhookFlag, int $joomla_user_id, int $amocrm_contact_id): bool
     {
@@ -687,14 +686,13 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * у заданного AmoCRM контакта
      *
      * @param   int  $mode               Режим синхронизации пользовательских полей
-     *
      * @param   int  $amocrm_contact_id  AmoCRM contact ID
-     *
      * @param   int  $joomla_user_id     Joomla user ID
      *
      * @return  void
      *
-     * @since   1.3.0-alpha2
+     * @throws  AmocrmClientException
+     * @since   1.3.0
      */
     private function clearAmoCRMContactFields(int $mode, int $amocrm_contact_id, int $joomla_user_id): void
     {
@@ -714,7 +712,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
 
         if (!$this->params->get('create_amocrm_contact', false)
-            || !$this->params->get('update_amocrm_contact_data_by_joomla', false)) {
+            || !$this->params->get('update_amocrm_contact_data_by_joomla', false)
+        ) {
             $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_CLEAR_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_ERROR'), 'warning');
             return;
         }
@@ -752,6 +751,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @return  void
      *
+     * @throws  AmocrmClientException
      * @since   1.3.0
      */
     public function onUserAfterDelete(Event $event): void
@@ -808,9 +808,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @return  void
      *
-     * @since   1.3.0
-     *
+     * @throws  AmocrmClientException
      * @see     WebhookEvent
+     * @since   1.3.0
      */
     public function onAmocrmIncomingWebhook(WebhookEvent $event): void
     {
@@ -850,9 +850,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @return  void
      *
+     * @throws  AmocrmClientException
      * @since   1.3.0
-     *
-     * @throws  Exception
      */
     public function createUsers(array $contacts): void
     {
@@ -902,7 +901,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                         }
                     }
                 }
-
 
                 /**
                  * We have not an association Joomla user <-> AmoCRM contact,
@@ -1006,7 +1004,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
              * ставим пользователю флаг, что у него фейковые данные
              * Далее отдельным плагином нужно обрабатывать ДО-заполнение данных
              */
-
             if ($temp_email) {
                 $host = (new Uri(Uri::root()))->getHost();
                 $temporary_user_email = 'change-this-fake-email-amocrm-' . $contact['id'] . '@' . $host;
@@ -1059,7 +1056,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   array  $user_data  User data array
      * @param   bool   $isNew      Create new user (true) or update existing one (false)?
      *
-     * @return  bool|User          False or saved $user object
+     * @return  bool|User  False or saved $user object
      *
      * @since   1.3.0
      */
@@ -1068,6 +1065,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (empty($user_data)) {
             return false;
         }
+
         if ($isNew) {
             $user = new User();
         } else {
@@ -1076,6 +1074,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $user_params->merge(new Registry($user_data['params']), true);
             $user_data['params'] = $user_params->toArray();
         }
+
         // Bind the data.
         if (!$user->bind($user_data)) {
             return false;
@@ -1093,9 +1092,8 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   User      $user            Created user object
      * @param   Registry  $comUsersParams  Params of the `com_users` component
      *
-     * @return  bool      True on success
+     * @return  bool  True on success
      *
-     * @throws  Exception
      * @since   1.3.0
      */
     private function userNotify(User $user, Registry $comUsersParams): bool
@@ -1193,10 +1191,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             foreach ($rows as $row) {
                 $usercreator = $this->getUserFactory()->loadUserById($row->id);
 
-                if (!$usercreator->authorise('core.create', 'com_users') || !$usercreator->authorise(
-                        'core.manage',
-                        'com_users'
-                    )) {
+                if (!$usercreator->authorise('core.create', 'com_users')
+                    || !$usercreator->authorise('core.manage', 'com_users')
+                ) {
                     continue;
                 }
 
@@ -1334,7 +1331,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * Fired BEFORE user created or updated
      *
      * @param   array  $contact    AmoCRM contact data from webhook
-     *
      * @param   array  $user_data  User data for bind
      *
      * @return  void
@@ -1384,9 +1380,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * Fired AFTER user created or updated.
      *
      * @param   int    $joomla_user_id  Joomla user ID
-     *
      * @param   array  $contact         AmoCRM contact data from webhook
-     *
      * @param   array  $user_data
      *
      * @return  void
@@ -1427,10 +1421,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * Not using the standart way with `$user['com_fields']['field_name'] = $value`
      * because FieldsHelper needs an active user session.
-     * But we have not it here
+     * But we don't have it here
      *
      * @param   int    $joomla_user_id      Joomla User ID
-     *
      * @param   array  $user_custom_fields  User custom fields data array. For example: ['field_id' => 'field_value']
      *
      * @return  void
@@ -1596,5 +1589,4 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         return $users_found;
     }
-
 }

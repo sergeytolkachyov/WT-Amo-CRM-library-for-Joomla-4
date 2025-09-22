@@ -2,26 +2,24 @@
 /**
  * AmoCRM custom fields
  *
- * @see https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+ * @see        https://www.amocrm.ru/developers/content/crm_platform/custom-fields
  *
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.3.0
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Entities;
 
 use Joomla\CMS\Language\Text;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interfaces\EntityInterface;
-
 use Webtolk\Amocrm\Traits\DataErrorTrait;
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -30,19 +28,21 @@ class Customfields implements EntityInterface
     use LogTrait;
     use DataErrorTrait;
 
-    /** @param AmocrmRequest $request */
+    /** @var AmocrmRequest $request */
     private AmocrmRequest $request;
 
     /**
-     * @var array|string[]
+     * @var array|string[] $allowed_entites
      * @since 1.3.0
      */
     protected static array $allowed_entites = ['leads', 'contacts', 'companies', 'customers'];
 
     /**
      * Account constructor.
-     * @param AmocrmRequest $request
-     * @since 1.3.0
+     *
+     * @param  AmocrmRequest  $request
+     *
+     * @since  1.3.0
      */
     public function __construct(AmocrmRequest $request)
     {
@@ -63,9 +63,10 @@ class Customfields implements EntityInterface
      * @param   string  $entity_type
      * @param   array   $data
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.3.0
+     * @throws  AmocrmClientException
+     * @since   1.3.0
      */
     public function getCustomFields(string $entity_type = 'leads', array $data = []): object
     {
@@ -75,14 +76,11 @@ class Customfields implements EntityInterface
             $error_message = Text::sprintf(
                 'LIB_WTAMOCRM_ERROR_GETCUSTOMFIELDS_WRONG_ENTITY_TYPE',
                 $entity_type,
-                implode(
-                    ', ',
-                    $allowed_entites
-                )
+                implode(', ', $allowed_entites)
             );
             $this->saveToLog($error_message, 500);
-            return (object)[
-                'error_code'    => 500,
+            return (object) [
+                'error_code' => 500,
                 'error_message' => $error_message
             ];
         }
@@ -91,6 +89,7 @@ class Customfields implements EntityInterface
 
         return $this->request->getResponse($endpoint, $data, 'GET', 'application/json');
     }
+
     /**
      * Получение списка полей для **сделок**. Прокси-метод.
      * ## Ограничения
@@ -101,11 +100,12 @@ class Customfields implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since   1.3.0
      */
-
     public function getLeadsCustomFields(array $data = []): object
     {
         return $this->getCustomFields('leads', $data);
@@ -121,11 +121,12 @@ class Customfields implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.0.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since   1.0.0
      */
-
     public function getContactsCustomFields(array $data = []): object
     {
         return $this->getCustomFields('contacts', $data);
@@ -141,11 +142,12 @@ class Customfields implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.0.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since   1.0.0
      */
-
     public function getCompaniesCustomFields(array $data = []): object
     {
         return $this->getCustomFields('companies', $data);
@@ -161,11 +163,12 @@ class Customfields implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since   1.3.0
      */
-
     public function getSegmentsCustomFields(array $data = []): object
     {
         return $this->getCustomFields('segments', $data);
@@ -182,11 +185,12 @@ class Customfields implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/custom-fields
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+     * @since   1.3.0
      */
-
     public function getCustomersCustomFields(array $data = []): object
     {
         return $this->getCustomFields('customers', $data);
@@ -249,10 +253,13 @@ class Customfields implements EntityInterface
      * @param   array   $data         Массив с массивами данных пользователей.
      * @param   ?int    $entity_id    id сущности (сделки, контакта etc.) для редактирования поля.
      *
-     * @link https://www.amocrm.ru/developers/content/crm_platform/custom-fields#%D0%A0%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%B4%D0%BE%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D1%85-%D0%BF%D0%BE%D0%BB%D0%B5%D0%B9-%D1%81%D1%83%D1%89%D0%BD%D0%BE%D1%81%D1%82%D0%B8
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/custom-fields#%D0%A0%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%B4%D0%BE%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D1%85-%D0%BF%D0%BE%D0%BB%D0%B5%D0%B9-%D1%81%D1%83%D1%89%D0%BD%D0%BE%D1%81%D1%82%D0%B8
+     * @since   1.3.0
      */
-    public function editCustomFieldsBatch(string $entity_type, array $data, ?int $entity_id = null):object
+    public function editCustomFieldsBatch(string $entity_type, array $data, ?int $entity_id = null): object
     {
         if (!$this->checkCustomFieldsEntity($entity_type)) {
             return $this->wrongEntityType(__METHOD__, $entity_type, self::$allowed_entites);
@@ -267,16 +274,16 @@ class Customfields implements EntityInterface
         } else {
             $endpoint = '/' . $entity_type . '/custom_fields';
         }
-file_put_contents(__DIR__.'/cf.txt', '$endpoint '.$endpoint.PHP_EOL.print_r($data, true), FILE_APPEND);
+
         return $this->request->getResponse($endpoint, $data, 'PATCH', 'application/json');
     }
 
     /**
      * @param   string  $entity_type
      *
-     * @return bool
+     * @return  bool
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function checkCustomFieldsEntity(string $entity_type): bool
     {

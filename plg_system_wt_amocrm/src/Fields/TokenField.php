@@ -1,21 +1,20 @@
 <?php
 /**
- * @package        WT Amocrm Library
- * @version        1.3.0-alpha2
- * @Author         Sergey Tolkachyov, https://web-tolk.ru
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license        GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since          1.0.0
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Joomla\Plugin\System\Wt_amocrm\Fields;
-
-defined('_JEXEC') or die;
 
 use Joomla\CMS\Form\FormField;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\User\UserHelper;
 
+defined('_JEXEC') or die;
 
 class TokenField extends FormField
 {
@@ -28,14 +27,14 @@ class TokenField extends FormField
      *
      * @return  string  The field input markup.
      *
-     * @since   1.7.0
+     * @since   1.3.0
      */
     protected function getInput()
     {
         if (empty($this->value)) {
             $this->value = UserHelper::genRandomPassword(64);
         }
-        $field_input   = [];
+        $field_input = [];
         $field_input[] = '<div class="input-group">';
         $field_input[] = '<input type="text" class="form-control" name="' . $this->__get('name') . '" id="' . $this->__get('id') . '" value="' . $this->value . '">';
 
@@ -56,7 +55,7 @@ class TokenField extends FormField
     /**
      * @return  string  The field label markup.
      *
-     * @since   1.7.0
+     * @since   1.3.0
      */
     protected function getTitle()
     {
@@ -66,7 +65,7 @@ class TokenField extends FormField
     /**
      * @return  string  The field label markup.
      *
-     * @since   1.7.0
+     * @since   1.3.0
      */
     protected function getLabel()
     {

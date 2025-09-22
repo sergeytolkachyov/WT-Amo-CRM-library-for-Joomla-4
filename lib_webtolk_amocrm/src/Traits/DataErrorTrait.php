@@ -1,17 +1,18 @@
 <?php
 /**
- * @package     Webtolk\Amocrm\Traits
- * @subpackage
- *
- * @copyright   A copyright
- * @license     A "Slug" license name e.g. GPL2
+ * @package    WT Amocrm Library
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Traits;
 
-use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Log\Log;
+
+defined('_JEXEC') or die;
 
 trait DataErrorTrait
 {
@@ -20,19 +21,19 @@ trait DataErrorTrait
      * Возвращаем типовую ошибку о пустых данных для методов класса.
      * Метод возвращает объект ошибки и пишет сообщение в логи.
      *
-     * @param   string  $method Класс и метод, где возникла ошибка
+     * @param   string  $method  Класс и метод, где возникла ошибка
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function receivedEmptyData(string $method): object
     {
         $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
         $this->saveToLog($error_message, 'warning');
 
-        return (object)[
-            'error_code'    => 500,
+        return (object) [
+            'error_code' => 500,
             'error_message' => $error_message
         ];
     }
@@ -43,10 +44,11 @@ trait DataErrorTrait
      *
      * @param   string  $method
      * @param   string  $entity_type
+     * @param   array   $allowed_entites
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function wrongEntityType(string $method, string $entity_type, array $allowed_entites): object
     {
@@ -54,15 +56,12 @@ trait DataErrorTrait
             'LIB_WTAMOCRM_ERROR_NOTES_WRONG_ENTITY_TYPE',
             __METHOD__,
             $entity_type,
-            implode(
-                ', ',
-                $allowed_entites
-            )
+            implode(', ', $allowed_entites)
         );
         $this->saveToLog($error_message, 'error');
 
-        return (object)[
-            'error_code'    => 500,
+        return (object) [
+            'error_code' => 500,
             'error_message' => $error_message
         ];
     }
