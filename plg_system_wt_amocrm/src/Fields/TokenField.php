@@ -31,17 +31,20 @@ class TokenField extends FormField
      */
     protected function getInput()
     {
+        $new_value = '';
         if (empty($this->value)) {
-            $this->value = UserHelper::genRandomPassword(64);
+            $new_value = UserHelper::genRandomPassword(64);
         }
+
         $field_input = [];
         $field_input[] = '<div class="input-group">';
-        $field_input[] = '<input type="text" class="form-control" name="' . $this->__get('name') . '" id="' . $this->__get('id') . '" value="' . $this->value . '">';
+        $field_input[] = '<input type="text" class="form-control" name="' . $this->__get('name') . '" id="' . $this->__get('id') . '" value="' . (!empty($this->value) ? $this->value : $new_value). '">';
 
         if (empty($this->value)) {
             $field_input[] = '<div class="invalid-feedback d-block">';
             $field_input[] = Text::_('PLG_WT_AMOCRM_FIELD_WEBHOOK_TOKEN_TOKEN_IS_EMPTY');
             $field_input[] = '</div>';
+            $this->value = $new_value;
         } else {
             $field_input[] = '<div class="valid-feedback d-block">';
             $field_input[] = Text::_('PLG_WT_AMOCRM_FIELD_WEBHOOK_TOKEN_TOKEN_IS_CREATED');
