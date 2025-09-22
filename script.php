@@ -181,14 +181,11 @@ return new class () implements ServiceProviderInterface {
                 public function postflight(string $type, InstallerAdapter $adapter): bool
                 {
                     $smile = '';
-                    if ($type != 'uninstall')
-                    {
+                    if ($type != 'uninstall') {
                         $smiles = ['&#9786;', '&#128512;', '&#128521;', '&#128525;', '&#128526;', '&#128522;', '&#128591;'];
                         $smile_key = array_rand($smiles, 1);
                         $smile = $smiles[$smile_key];
-                    }
-                    else
-                    {
+                    } else {
                         $smile = '&#128546';
                     }
 

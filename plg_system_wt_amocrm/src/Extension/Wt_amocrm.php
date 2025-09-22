@@ -27,7 +27,6 @@ use Webtolk\Amocrm\Amocrm;
 use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\Event\WebhookEvent;
 
-
 // No direct access
 defined('_JEXEC') or die;
 
@@ -47,9 +46,9 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
     public static function getSubscribedEvents(): array
     {
         return [
-            'onAfterInitialise'         => 'onAfterInitialise',
+            'onAfterInitialise' => 'onAfterInitialise',
             'onAfterInitialiseDocument' => 'addLibraryWebAssets',
-            'onAjaxWt_amocrm'           => 'onAjaxWt_amocrm',
+            'onAjaxWt_amocrm' => 'onAjaxWt_amocrm'
         ];
     }
 
@@ -235,12 +234,11 @@ class Wt_amocrm extends CMSPlugin implements SubscriberInterface, DispatcherAwar
         return LayoutHelper::render('libraries.webtolk.amocrm.fields.entitymodalselect', ['entity' => $entity, 'data' => $displayData]);
     }
 
-    public function addLibraryWebAssets():void
+    public function addLibraryWebAssets(): void
     {
         // Only trigger in frontend
-        if ($this->getApplication()->isClient('site'))
-        {
-            /** @var Joomla\CMS\WebAsset\WebAssetRegistry $wa */
+        if ($this->getApplication()->isClient('site')) {
+            /** @var \Joomla\CMS\WebAsset\WebAssetRegistry $wa */
             $wa = Factory::getContainer()->get(WebAssetRegistry::class);
             $wa->addRegistryFile('media/plg_system_wt_amocrm/joomla.assets.json');
         }
