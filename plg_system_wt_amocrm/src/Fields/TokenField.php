@@ -19,7 +19,7 @@ defined('_JEXEC') or die;
 class TokenField extends FormField
 {
 
-    protected $type = 'Redirecturl';
+    protected $type = 'Token';
 
     /**
      * Method to get the field input markup for a spacer.
