@@ -27,7 +27,7 @@ class AccountinfoField extends FormField
      *
      * @return  string  The field input markup.
      *
-     * @since   1.7.0
+     * @since   1.3.0
      */
 	protected function getInput()
 	{
@@ -39,7 +39,7 @@ class AccountinfoField extends FormField
      *
      * @return  string  The field label markup.
      *
-     * @since   1.7.0
+     * @since   1.3.0
      */
     protected function getLabel()
     {

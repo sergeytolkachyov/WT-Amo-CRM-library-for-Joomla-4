@@ -32,7 +32,7 @@ class LeadstagslistField extends ListField
 		$result_amo_crm = $amocrm->tags()->getTags('leads', $requset_options);
 		$options = [];
 		if (empty($result_amo_crm)) {
-			return $options[] = HTMLHelper::_('select.option', 0, 'there is no tags in Amo CRM');
+			return HTMLHelper::_('select.option', 0, 'there is no tags in Amo CRM');
 		}
 		if (isset($result_amo_crm->_embedded) && isset($result_amo_crm->_embedded->tags)) {
 			foreach ($result_amo_crm->_embedded->tags as $lead_tag) {
