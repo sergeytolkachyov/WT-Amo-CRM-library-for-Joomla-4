@@ -214,16 +214,18 @@ class AmocrmRequest
      */
     public function getPluginParams(): Registry
     {
-        if (!PluginHelper::isEnabled('system', 'wt_amocrm')) {
-            $this->saveToLog('Plugin System - WT AmoCRM is disabled', 'WARNING');
+        if(count($this->plugin_params) == 0) {
+            if (!PluginHelper::isEnabled('system', 'wt_amocrm')) {
+                $this->saveToLog('Plugin System - WT AmoCRM is disabled', 'WARNING');
 
-            return $this->plugin_params;
-        }
+                return $this->plugin_params;
+            }
 
-        $plugin = PluginHelper::getPlugin('system', 'wt_amocrm');
+            $plugin = PluginHelper::getPlugin('system', 'wt_amocrm');
 
-        if (!empty($plugin->params)) {
-            $this->plugin_params->merge((new Registry())->loadString($plugin->params));
+            if (!empty($plugin->params)) {
+                $this->plugin_params->loadString($plugin->params);
+            }
         }
 
         return $this->plugin_params;
