@@ -46,7 +46,6 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 	 */
 	protected function configure(): void
 	{
-//		$this->addOption('domain', 'd', InputOption::VALUE_REQUIRED, 'Domain for check without', '');
 		$this->addOption('tags', 't', InputOption::VALUE_OPTIONAL, 'Only contacts tagged with this tags ids will be handled. Separate its via commma without spaces. You can find tags ids in User - WT AmoCRM User sync plugin settings.', '');
 		$this->addOption('notags', 'nt', InputOption::VALUE_OPTIONAL, 'All contacts exclude specified tags ids. Separate its via commma without spaces.', '');
         $this->addArgument('test', InputArgument::OPTIONAL, 'Preview contacts list for import with specified params applied.', false);
@@ -111,12 +110,15 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
         if ($test_mode) {
             $limit = 5;
         }
-
-        ProgressBar::setFormatDefinition('contactsProgress', '[%bar%] %current%/%total% contacts in batch. Contacts excluded by tags: <info>%contactsexcludedcount%</info>. Contacts handled: <info>%total%</info>');
-        $progressBar = new ProgressBar($output);
-        $progressBar->setFormat('contactsProgress');
-        $progressBar->start();
-
+        if(!$test_mode) {
+            ProgressBar::setFormatDefinition(
+                'contactsProgress',
+                '[%bar%] %current%/%total% contacts in batch. Contacts excluded by tags: <info>%contactsexcludedcount%</info>. Contacts handled: <info>%total%</info>'
+            );
+            $progressBar = new ProgressBar($output);
+            $progressBar->setFormat('contactsProgress');
+            $progressBar->start();
+        }
         while (!$completed) {
 
             $filter = [
@@ -135,8 +137,10 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
                 break;
             }
             $contacts = (new Registry($contacts->_embedded->contacts))->toArray();
+            if(!$test_mode) {
+                $progressBar->setMessage($contactsCount,'total');
+            }
 
-            $progressBar->setMessage($contactsCount,'total');
             $i = 0;
             foreach ($contacts as &$contact) {
                 // Get all tags
@@ -180,9 +184,11 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
                 }
 
                 $i++;
-                $progressBar->setMessage($contactsByTagsCount, 'contactsbytagscount');
-                $progressBar->setMessage($contactsExcludedCount, 'contactsexcludedcount');
-                $progressBar->advance();
+                if(!$test_mode) {
+                    $progressBar->setMessage($contactsByTagsCount, 'contactsbytagscount');
+                    $progressBar->setMessage($contactsExcludedCount, 'contactsexcludedcount');
+                    $progressBar->advance();
+                }
             }
 
             if ($test_mode) {
@@ -223,8 +229,10 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
                 $completed = true;
             }
         }
-        $progressBar->finish();
 
+        if(!$test_mode) {
+            $progressBar->finish();
+        }
 		$time = number_format(microtime(true) - $scriptStart, 2, '.', '');
 		$symfonyStyle->newLine();
 		$symfonyStyle->writeln(
