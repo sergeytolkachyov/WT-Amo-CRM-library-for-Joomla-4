@@ -4,10 +4,10 @@
  *
  * @see        https://www.amocrm.ru/developers/content/crm_platform/custom-fields
  *
- * @package    WT Amocrm Library
+ * @package    WT Amo CRM library package
  * @version    1.3.0
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since      1.3.0
  */
@@ -256,7 +256,7 @@ class Customfields implements EntityInterface
      * @return  object
      *
      * @throws  AmocrmClientException
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/custom-fields#%D0%A0%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%B4%D0%BE%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D1%85-%D0%BF%D0%BE%D0%BB%D0%B5%D0%B9-%D1%81%D1%83%D1%89%D0%BD%D0%BE%D1%81%D1%82%D0%B8
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/custom-fields#%D0%A0%D0%B5%D0%B4%D0%B0%D0%BA%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5-%D0%B4%D0%BE%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D1%85-%D0%BF%D0%BE%D0%BB%D0%B5%D0%B9-%D1%81%D1%83%D1%89%D0%BD%D0%BE%D1%81%D1%82%D0%B8
      * @since   1.3.0
      */
     public function editCustomFieldsBatch(string $entity_type, array $data, ?int $entity_id = null): object

@@ -4,10 +4,10 @@
  *
  * @see        https://www.amocrm.ru/developers/content/crm_platform/users-api
  *
- * @package    WT Amocrm Library
+ * @package    WT Amo CRM library package
  * @version    1.3.0
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since      1.3.0
  */
@@ -122,8 +122,8 @@ class Webhooks implements EntityInterface
      * @return  object
      *
      * @throws  AmocrmClientException
-     * @since 1.3.0
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/webhooks-api
+     * @since   1.3.0
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/webhooks-api
      */
     public function deleteWebhook(string $destination): object
     {

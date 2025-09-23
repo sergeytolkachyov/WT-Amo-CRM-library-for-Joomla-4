@@ -2,8 +2,8 @@
 <extension type="plugin" group="console" method="upgrade">
 	<name>PLG_WTIMPORTAMOCRMCONTACTS</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>Apr 2024</creationDate>
-	<copyright>Copyright © 2024 Sergey Tolkachyov. All rights reserved.</copyright>
+	<creationDate>23.09.2025</creationDate>
+	<copyright>Copyright (c) 2022 - 2025 Sergey Tolkachyov. All rights reserved.</copyright>
 	<license>https://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<authorEmail>info@web-tolk.ru</authorEmail>
 	<authorUrl>https://web-tolk.ru</authorUrl>

@@ -1,10 +1,10 @@
 <?php
 /**
- * @package     WT AmoCRM library
+ * @package    WT Amo CRM library package
  * @subpackage  WT Import AmoCRM contacts
- * @version     1.0.0
+ * @version     1.3.0
  * @Author      Sergey Tolkachyov, https://web-tolk.ru
- * @copyright   Copyright (C) 2024 Sergey Tolkachyov
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license     GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
  * @since       1.0.0
  */

@@ -1,9 +1,9 @@
 <?php
 /**
- * @package     Webtolk\Amocrm\Fields
+ * @package    WT Amo CRM library package
  * @subpackage
  *
- * @copyright   A copyright
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license     A "Slug" license name e.g. GPL2
  */
 

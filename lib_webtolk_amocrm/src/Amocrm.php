@@ -1,9 +1,9 @@
 <?php
 /**
- * @package    WT Amocrm Library
+ * @package    WT Amo CRM library package
  * @version    1.3.0
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since      1.0.0
  */
@@ -1049,8 +1049,8 @@ class Amocrm
      *
      * @throws  AmocrmClientException
      * @see     https://www.amocrm.ru/developers/content/crm_platform/contacts-api
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/contacts-api#with-88398e14-be90-44b7-91e0-6371e268833b-params
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/filters-api
+     * @link       https://web-tolk.ru
+     * @link       https://web-tolk.ru
      * @since   1.0.0
      * @deprecated 1.3.0 Will be removed in 2.0.0
      */
@@ -1083,8 +1083,8 @@ class Amocrm
      *
      * @throws  AmocrmException
      * @see     https://www.amocrm.ru/developers/content/crm_platform/contacts-api#contacts-add
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/filters-api
+     * @link       https://web-tolk.ru
+     * @link       https://web-tolk.ru
      * @since   1.0.0
      * @deprecated 1.3.0 Will be removed in 2.0.0
      */
@@ -1106,7 +1106,7 @@ class Amocrm
      *
      * @return  object
      *
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
+     * @link       https://web-tolk.ru
      * @since   1.0.0
      * @deprecated 1.3.0 Will be removed in 2.0.0
      */
@@ -1143,7 +1143,7 @@ class Amocrm
      *
      * @return  object
      *
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
+     * @link       https://web-tolk.ru
      * @since   1.1.0
      * @deprecated 1.3.0 Will be removed in 2.0.0
      */
@@ -1203,7 +1203,7 @@ class Amocrm
      *
      * @return  object
      *
-     * @link    https://www.amocrm.ru/developers/content/crm_platform/events-and-notes#notes-list
+     * @link       https://web-tolk.ru
      * @since   1.1.0
      * @deprecated 1.3.0 Will be removed in 2.0.0
      */

@@ -3,9 +3,9 @@
     <name>PLG_WT_AMOCRM</name>
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
-    <authorUrl>https://web-tolk.ru/</authorUrl>
-	<creationDate>September 2025</creationDate>
-    <copyright>2022-2025 Sergey Tolkachyov</copyright>
+    <authorUrl>https://web-tolk.ru</authorUrl>
+	<creationDate>23.09.2025</creationDate>
+    <copyright>Copyright (c) 2022 - 2025 Sergey Tolkachyov. All rights reserved.</copyright>
     <license>GNU General Public License v3.0</license>
     <version>1.3.0</version>
     <description>PLG_WT_AMOCRM_DESC</description>

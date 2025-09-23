@@ -1,9 +1,9 @@
 <?php
 /**
- * @package    WT Amocrm Library
+ * @package    WT Amo CRM library package
  * @version    1.3.0
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
  * @since      1.0.0
  */
@@ -141,7 +141,7 @@ class AmocrmRequest
             if ($this->getPluginParams()->get('avoid_rest_api_limits_exceeding', 0) == 1) {
                 /**
                  * Избегаем превышения лимита обращений к REST API - 7 вызовов в секунду.
-                 * @link https://www.amocrm.ru/developers/content/api/recommendations
+                 * @link  https://www.amocrm.ru/developers/content/api/recommendations
                  */
                 usleep(150000);
             }
@@ -631,7 +631,6 @@ class AmocrmRequest
      * @return  object
      *
      * @since   1.0.0
-     * @link    https://web-tolk.ru
      */
     private function responseHandler(Response $response, string $endpoint = ''): object
     {
