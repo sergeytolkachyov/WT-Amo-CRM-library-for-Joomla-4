@@ -19,7 +19,7 @@ defined('_JEXEC') or die;
 class WebhookslistField extends FormField
 {
 
-	protected $type = 'webhookslist';
+	protected $type = 'Webhookslist';
 
     protected $layout = 'libraries.webtolk.amocrm.fields.webhookslist';
 
@@ -29,14 +29,14 @@ class WebhookslistField extends FormField
      * @return  array
      *
      * @throws  AmocrmClientException
-     * @since 1.3.0
+     * @since   1.3.0
      */
     protected function getLayoutData(): array
     {
         $layoutData = parent::getLayoutData();
 
         $webhooks = (new Amocrm())->webhooks();
-        $onlycurrentsite = (!empty($this->element['onlycurrentsite']) && (string)$this->element['onlycurrentsite'] == 'true') ? true : false;
+        $onlycurrentsite = !empty($this->element['onlycurrentsite']) && (string) $this->element['onlycurrentsite'] == 'true';
         $filter = [];
 
         if ($onlycurrentsite && !empty($url = $webhooks->getJoomlaWebhookUrl())) {

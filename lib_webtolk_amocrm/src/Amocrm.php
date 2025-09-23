@@ -81,11 +81,11 @@ class Amocrm
     /**
      * WT AmoCRM plugin params
      *
-     * @var array $plugin_params
+     * @var Registry $plugin_params
      * @since 1.3.0
      * @deprecated 1.3.0 Will be removed in 2.0.0
      */
-    private array $plugin_params = [];
+    private Registry $plugin_params;
 
     /**
      * @var string $client_id
@@ -122,6 +122,8 @@ class Amocrm
 
     public function __construct()
     {
+        $this->plugin_params = new Registry();
+
         $lang = Factory::getApplication()->getLanguage();
         $extension = 'lib_webtolk_amocrm';
         $base_dir = JPATH_SITE;
@@ -252,16 +254,19 @@ class Amocrm
      */
     private function getPluginParams(): Registry
     {
-        if (!$this->plugin_params) {
-            if (!PluginHelper::isEnabled('system', 'wt_amocrm')) {
-                $this->saveToLog('Plugin System - WT AmoCRM is disabled', 'WARNING');
-            }
+        if (!PluginHelper::isEnabled('system', 'wt_amocrm')) {
+            $this->saveToLog('Plugin System - WT AmoCRM is disabled', 'WARNING');
 
-            $plugin = PluginHelper::getPlugin('system', 'wt_amocrm');
-            $this->plugin_params = (new Registry())->loadString($plugin->params)->toArray();
+            return $this->plugin_params;
         }
 
-        return new Registry($this->plugin_params);
+        $plugin = PluginHelper::getPlugin('system', 'wt_amocrm');
+
+        if (!empty($plugin->params)) {
+            $this->plugin_params->merge((new Registry())->loadString($plugin->params));
+        }
+
+        return $this->plugin_params;
     }
 
     /**

@@ -32,6 +32,7 @@ class RedirecturlField extends FormField
 	 */
 	protected function getInput()
 	{
+        /** @var \Joomla\CMS\WebAsset\WebAssetManager $wa */
 		$wa = Factory::getApplication()->getDocument()->getWebAssetManager();
         $wa->registerAndUseScript('plg_system_wt_amocrm.copytextfield','plg_system_wt_amocrm/copytextfield.js', ['version'=>'auto'], ['defer' => true]);
 
