@@ -2,25 +2,23 @@
 /**
  * AmoCRM leads
  *
- * @see               https://www.amocrm.ru/developers/content/crm_platform/leads-api
+ * @see        https://www.amocrm.ru/developers/content/crm_platform/leads-api
  *
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.3.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Entities;
 
 use Joomla\CMS\Language\Text;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interfaces\EntityInterface;
-
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -28,15 +26,15 @@ class Leads implements EntityInterface
 {
     use LogTrait;
 
-    /** @param   AmocrmRequest  $request */
+    /** @var AmocrmRequest $request */
     private AmocrmRequest $request;
 
     /**
      * Account constructor.
      *
-     * @param   AmocrmRequest  $request
+     * @param  AmocrmRequest  $request
      *
-     * @since 1.3.0
+     * @since  1.3.0
      */
     public function __construct(AmocrmRequest $request)
     {
@@ -51,11 +49,13 @@ class Leads implements EntityInterface
      * -    В одной воронке может быть не более 100 статусов, включая системные.
      * ## Метод
      * GET  /api/v4/leads/pipelines
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines
-     * @since 1.3.0
+     *
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/leads_pipelines
+     * @since   1.3.0
      */
-
     public function getLeadsPiplines(): object
     {
         return $this->request->getResponse('/leads/pipelines', null, 'GET', 'application/json');
@@ -120,9 +120,11 @@ class Leads implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see    https://www.amocrm.ru/developers/content/crm_platform/leads-api
-     * @since  1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/leads-api
+     * @since   1.3.0
      */
     public function createLeadsComplex(array $data = []): object
     {
@@ -130,8 +132,8 @@ class Leads implements EntityInterface
             $error_message = Text::_('LIB_WTAMOCRM_ERROR_CREATELEADSCOMPLEX_EMPTY_DATA');
             $this->saveToLog($error_message, 'error');
 
-            return (object)[
-                'error_code'    => 500,
+            return (object) [
+                'error_code' => 500,
                 'error_message' => $error_message
             ];
         }
@@ -179,9 +181,11 @@ class Leads implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/leads-api
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/leads-api
+     * @since   1.3.0
      */
     public function createLeads(array $data): object
     {
@@ -189,8 +193,8 @@ class Leads implements EntityInterface
             $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
             $this->saveToLog($error_message, 'error');
 
-            return (object)[
-                'error_code'    => 500,
+            return (object) [
+                'error_code' => 500,
                 'error_message' => $error_message
             ];
         }
@@ -204,28 +208,47 @@ class Leads implements EntityInterface
      * ## Метод
      * GET /api/v4/leads/{id}
      *
-     * @param   int  $id AmoCRM lead id
-     * @param   string  $with Данный параметр принимает строку, в том числе из нескольких значений, указанных через запятую.
+     * @param   int     $id    AmoCRM lead id
+     * @param   string  $with  Данный параметр принимает строку, в том числе из нескольких значений, указанных через запятую.
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.3.0
-     * @see https://www.amocrm.ru/developers/content/crm_platform/leads-api#with-4ddbc99f-7fb3-4c0c-83f5-c58ec7b924be-params
+     * @throws  AmocrmClientException
+     * @since   1.3.0
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/leads-api#with-4ddbc99f-7fb3-4c0c-83f5-c58ec7b924be-params
      */
-
     public function getLeadById(int $id, string $with = ''): object
     {
         if (empty($id) || $id < 1) {
             $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
             $this->saveToLog($error_message, 'error');
 
-            return (object)[
-                'error_code'    => 500,
+            return (object) [
+                'error_code' => 500,
                 'error_message' => $error_message
             ];
         }
 
         return $this->request->getResponse('/leads/' . $id, [$with], 'GET');
+    }
+
+    /**
+     * Метод позволяет получить список сделок.
+     *
+     * ## Метод
+     * GET /api/v4/leads
+     *
+     * @param   array  $data  request data array
+     *
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @since   1.3.0
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/leads-api
+     */
+    public function getLeads(array $data = []): object
+    {
+        return $this->request->getResponse('/leads', $data, 'GET');
     }
 
     /**
@@ -257,19 +280,21 @@ class Leads implements EntityInterface
      * -- _embedded[tags][0][id] int ID тега, привязанного к контакту
      * -- _embedded[tags][0][name] string Название тега, привязанного к контакту
      *
-     * @param   array  $data     Массив с массивами с данными сделки.
+     * @param   array  $data  Массив с массивами с данными сделки.
      *
-     * @link https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
-     * @link https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
+     * @since   1.3.0
      */
-    public function editLeadsBatch(array $data):object
+    public function editLeadsBatch(array $data): object
     {
-        if(empty($data))
-        {
+        if (empty($data)) {
             $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
             $this->saveToLog($error_message,'error');
-            return (object)[
+            return (object) [
                 'error_code' => 500,
                 'error_message' => $error_message
             ];
@@ -310,17 +335,19 @@ class Leads implements EntityInterface
      * @param   int    $lead_id  id сделки в AmoCRM
      * @param   array  $data     Массив с данными сделки.
      *
-     * @link https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
-     * @link https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/leads-api#leads-edit
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-fill-examples
+     * @since   1.3.0
      */
-    public function editLead(int $lead_id, array $data):object
+    public function editLead(int $lead_id, array $data): object
     {
-        if(empty($data))
-        {
+        if (empty($data)) {
             $error_message = Text::sprintf('LIB_WTAMOCRM_ERROR_METHOD_RECEIVED_EMPTY_DATA', __METHOD__);
             $this->saveToLog($error_message,'warning');
-            return (object)[
+            return (object) [
                 'error_code' => 500,
                 'error_message' => $error_message
             ];

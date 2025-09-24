@@ -2,32 +2,48 @@
 <extension type="plugin" group="console" method="upgrade">
 	<name>PLG_WTIMPORTAMOCRMCONTACTS</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>Apr 2024</creationDate>
-	<copyright>Copyright © 2024 Sergey Tolkachyov. All rights reserved.</copyright>
+	<creationDate>23.09.2025</creationDate>
+	<copyright>Copyright (c) 2022 - 2025 Sergey Tolkachyov. All rights reserved.</copyright>
 	<license>https://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<authorEmail>info@web-tolk.ru</authorEmail>
 	<authorUrl>https://web-tolk.ru</authorUrl>
 	<version>1.3.0</version>
 	<description>PLG_WTIMPORTAMOCRMCONTACTS_DESC</description>
 	<namespace path="src">Joomla\Plugin\Console\Wtimportamocrmcontacts</namespace>
-	<scriptfile>script.php</scriptfile>
+	<files>
+		<folder plugin="wtimportamocrmcontacts">src</folder>
+		<folder>services</folder>
+		<folder>language</folder>
+	</files>
 	<languages folder="language">
-		<language tag="en-GB">en-GB/plg_console_wtimportamocrmcontacts.ini</language>
-		<language tag="en-GB">en-GB/plg_console_wtimportamocrmcontacts.sys.ini</language>
 		<language tag="ru-RU">ru-RU/plg_console_wtimportamocrmcontacts.ini</language>
 		<language tag="ru-RU">ru-RU/plg_console_wtimportamocrmcontacts.sys.ini</language>
+		<language tag="en-GB">en-GB/plg_console_wtimportamocrmcontacts.ini</language>
+		<language tag="en-GB">en-GB/plg_console_wtimportamocrmcontacts.sys.ini</language>
 	</languages>
-	<files>
-		<folder>services</folder>
-		<folder plugin="wtimportamocrmcontacts">src</folder>
-	</files>
 	<config>
         <fields name="params">
             <fieldset name="basic">
 				<field addfieldprefix="Joomla\Plugin\Console\Wtimportamocrmcontacts\Fields"
                        type="plugininfo"
                        name="plugininfo"/>
-				<field type="note" description="PLG_WTIMPORTAMOCRMCONTACTS_HOWTO" class="alert alert-info"/>
+				<field type="note"
+					   description="PLG_WTIMPORTAMOCRMCONTACTS_HOWTO"
+					   class="alert alert-info"/>
+				<field type="spacer"
+					   label="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND"
+					   class="h3"
+					   />
+				<field type="note"
+					   label="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_TAGS_SHOW"
+					   description="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_TAGS_SHOW_DESC"
+					   class="border p-3"
+					   />
+				<field type="note"
+					   label="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_CONTACTS_IMPORT"
+					   description="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_CONTACTS_IMPORT_DESC"
+					   class="border p-3"
+					   />
 			</fieldset>
         </fields>
     </config>

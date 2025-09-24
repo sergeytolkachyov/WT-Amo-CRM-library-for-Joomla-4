@@ -1,11 +1,11 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.3.0-alpha2
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Joomla\Plugin\User\Wtamocrmusersync\Fields;
@@ -13,8 +13,6 @@ namespace Joomla\Plugin\User\Wtamocrmusersync\Fields;
 use Joomla\CMS\Form\Field\NoteField;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Factory;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -25,29 +23,27 @@ class PlugininfoField extends NoteField
 
 	/**
 	 * Method to get the field input markup for a spacer.
-	 * The spacer does not have accept input.
+	 * The spacer does not accept input.
 	 *
 	 * @return  string  The field input markup.
 	 *
-	 * @since   1.7.0
+	 * @since   1.3.0
 	 */
 	protected function getInput()
 	{
-			
-		$data    = $this->form->getData();
-		$element = $data->get('element');
-		$folder  = $data->get('folder');
-		$wa      = Factory::getApplication()->getDocument()->getWebAssetManager();
-		$wa->addInlineStyle("
+        $data = $this->form->getData();
+        $element = $data->get('element');
+        $folder = $data->get('folder');
+        $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
+        $wa->addInlineStyle("
 			.plugin-info-img-svg:hover * {
 				cursor:pointer;
 			}
 		");
 
-		$wt_plugin_info = simplexml_load_file(JPATH_SITE . "/plugins/" . $folder . "/" . $element . "/" . $element . ".xml");
+        $wt_plugin_info = simplexml_load_file(JPATH_SITE . "/plugins/" . $folder . "/" . $element . "/" . $element . ".xml");
 
-
-		return $html = '<div class="d-flex shadow p-4">
+        return '<div class="d-flex shadow p-4">
 			<div class="flex-shrink-0">
 				<a href="https://web-tolk.ru" target="_blank">
 					<svg class="plugin-info-img-svg" width="200" height="50" xmlns="http://www.w3.org/2000/svg">
@@ -75,13 +71,11 @@ class PlugininfoField extends NoteField
 	/**
 	 * @return  string  The field label markup.
 	 *
-	 * @since   1.7.0
+	 * @since   1.3.0
 	 */
 	protected function getLabel()
 	{
-
-		return '';
-
+        return '';
 	}
 
 	/**
@@ -89,13 +83,10 @@ class PlugininfoField extends NoteField
 	 *
 	 * @return  string  The field title.
 	 *
-	 * @since   1.7.0
+	 * @since   1.3.0
 	 */
 	protected function getTitle()
 	{
 		return $this->getLabel();
 	}
-
 }
-
-?>

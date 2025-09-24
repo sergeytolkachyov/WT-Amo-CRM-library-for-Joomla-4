@@ -1,23 +1,20 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.3.0-alpha2
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.3.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Helper;
 
 use Joomla\CMS\Factory;
-
 use Joomla\CMS\Language\Text;
 use Joomla\Database\DatabaseInterface;
 use Webtolk\Amocrm\Amocrm;
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -30,13 +27,13 @@ class UserHelper
      *
      * @param   int  $joomla_user_id
      *
-     * @return mixed (bool) false or (int) AmoCRM user id
+     * @return  bool|int  (bool) false or (int) AmoCRM user id
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    public static function checkIsAmoCRMUser(int $joomla_user_id): mixed
+    public static function checkIsAmoCRMUser(int $joomla_user_id): bool|int
     {
-        $db    = Factory::getContainer()->get(DatabaseInterface::class);
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true)
             ->select($db->quoteName('amocrm_contact_id'))
             ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
@@ -56,13 +53,13 @@ class UserHelper
      *
      * @param   int  $amocrm_user_id
      *
-     * @return mixed (bool) false or (int) joomla user id
+     * @return  bool|int  (bool) false or (int) joomla user id
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
-    public static function checkIsJoomlaUser(int $amocrm_user_id): mixed
+    public static function checkIsJoomlaUser(int $amocrm_user_id): bool|int
     {
-        $db    = Factory::getContainer()->get(DatabaseInterface::class);
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
         $query = $db->getQuery(true)
             ->select($db->quoteName('joomla_user_id'))
             ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
@@ -80,18 +77,18 @@ class UserHelper
     /**
      * Add new joomla user id to AmoCRM user id mapping
      *
-     * @param   int  $joomla_user_id
-     * @param   int  $amocrm_contact_id
-     * @param   bool $is_temporary_user Is this user has temporary userdata?
+     * @param   int   $joomla_user_id
+     * @param   int   $amocrm_contact_id
+     * @param   bool  $is_temporary_user  Is this user has temporary userdata?
      *
-     * @return bool True or false
+     * @return  bool  True or false
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     public static function addJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id, bool $is_temporary_user = false): bool
     {
-        $db    = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true)
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $query = $db->getQuery()->clear()
             ->insert($db->quoteName('#__lib_wt_amocrm_users_sync'))
             ->columns([
                 $db->quoteName('joomla_user_id'),
@@ -109,6 +106,31 @@ class UserHelper
     }
 
     /**
+     * Update joomla user id to AmoCRM user id mapping
+     * BY JOOMLA USER ID
+     *
+     * @param   int   $joomla_user_id
+     * @param   int   $amocrm_contact_id
+     * @param   bool  $is_temporary_user  Is this user has temporary userdata?
+     *
+     * @return  bool  True or false
+     *
+     * @since   1.3.0
+     */
+    public static function updateJoomlaAmoCRMUserSync(int $joomla_user_id, int $amocrm_contact_id, bool $is_temporary_user = false): bool
+    {
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+
+        $data = new \stdClass();
+        $data->joomla_user_id = $joomla_user_id;
+        $data->amocrm_contact_id = $amocrm_contact_id;
+        $data->is_temporary_user = $is_temporary_user ? 1 : 0;
+        $db->updateObject('#__lib_wt_amocrm_users_sync', $data, 'joomla_user_id');
+
+        return $db->execute();
+    }
+
+    /**
      * Delete Joomla & AmoCRM user ids mapping. Batch method.
      *
      * **Specify Joomla users ids OR AmoCRM users ids**
@@ -116,13 +138,12 @@ class UserHelper
      * - If AmoCRM user id specified - delete by AmoCRM user id.
      * - If both user ids specified - Reuqest will not be executed
      *
-     *
      * @param   array  $joomla_user_ids  Plain array of Joomla users ids like [1, 2, 3, 4...]
      * @param   array  $amocrm_user_ids  Plain array of AmoCRM users ids like [1, 2, 3, 4...]
      *
-     * @return bool True or false
+     * @return  bool  True or false
      *
-     * @since 1.0.0
+     * @since   1.0.0
      */
     public static function removeJoomlaAmoCRMUserSync(array $joomla_user_ids = [], array $amocrm_user_ids = []): bool
     {
@@ -135,8 +156,8 @@ class UserHelper
             return false;
         }
 
-        $db    = Factory::getContainer()->get(DatabaseInterface::class);
-        $query = $db->getQuery(true);
+        $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $query = $db->getQuery()->clear();
         $query->delete($db->quoteName('#__lib_wt_amocrm_users_sync'));
 
         // delete by Joomla user id
@@ -144,8 +165,7 @@ class UserHelper
             $conditions = [
                 $db->quoteName('joomla_user_id') . ' IN (' . implode(',', $joomla_user_ids) . ')'
             ];
-        } elseif (count($amocrm_user_ids) > 0 && count($joomla_user_ids) < 1)    // delete by AmoCRM user id
-        {
+        } elseif (count($amocrm_user_ids) > 0 && count($joomla_user_ids) < 1) {  // delete by AmoCRM user id
             $conditions = [
                 $db->quoteName('amocrm_contact_id') . ' IN (' . implode(',', $amocrm_user_ids) . ')'
             ];

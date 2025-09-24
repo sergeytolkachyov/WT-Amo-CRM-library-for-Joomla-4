@@ -2,26 +2,24 @@
 /**
  * AmoCRM users
  *
- * @see               https://www.amocrm.ru/developers/content/crm_platform/users-api
+ * @see        https://www.amocrm.ru/developers/content/crm_platform/users-api
  *
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.3.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Entities;
 
 use Joomla\CMS\Language\Text;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interfaces\EntityInterface;
-
 use Webtolk\Amocrm\Traits\DataErrorTrait;
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -30,15 +28,15 @@ class Users implements EntityInterface
     use LogTrait;
     use DataErrorTrait;
 
-    /** @param   AmocrmRequest  $request */
+    /** @var AmocrmRequest $request */
     private AmocrmRequest $request;
 
     /**
      * Account constructor.
      *
-     * @param   AmocrmRequest  $request
+     * @param  AmocrmRequest  $request
      *
-     * @since 1.3.0
+     * @since  1.3.0
      */
     public function __construct(AmocrmRequest $request)
     {
@@ -64,10 +62,11 @@ class Users implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.3.0
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/users-api#with-3b4e201a-ba14-4f06-880e-987e2c091855-params
+     * @throws  AmocrmClientException
+     * @since   1.3.0
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/users-api#with-3b4e201a-ba14-4f06-880e-987e2c091855-params
      */
     public function getUsers(array $data = []): object
     {
@@ -84,16 +83,17 @@ class Users implements EntityInterface
      * @param   int     $user_id  Amo CRM user id
      * @param   string  $with     Данный параметр принимает строку, в том числе из нескольких значений, указанных через запятую.
      *
-     * @return object
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/users-api#user-detail
+     * @since   1.3.0
      */
-
     public function getUserById(int $user_id, string $with = ''): object
     {
         if (empty($user_id)) {
-            return (object)[
-                'error_code'    => 500,
+            return (object) [
+                'error_code' => 500,
                 'error_message' => Text::_('LIB_WTAMOCRM_ERROR_GETUSERBYID_EMPTY_USER_ID')
             ];
         }
@@ -121,13 +121,14 @@ class Users implements EntityInterface
      * - lang string Язык пользователя. Выбор из вариантов: en, ru, es. Поле не является обязательным, по умолчанию – язык аккаунта (ru или en)
      * - rights object Права пользователя. Поле не является обязательным, по умолчанию все доступы запрещены. Список доступных прав подробнее в документации.
      *
-     * @param   int     $data  Массив с массивами данных пользователей.
+     * @param   array  $data  Массив с массивами данных пользователей.
      *
-     * @return object
-     * @link  https://www.amocrm.ru/developers/content/crm_platform/users-api#with-29e6f481-152c-48d0-8523-bc4f3874753e-params
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/users-api#with-29e6f481-152c-48d0-8523-bc4f3874753e-params
+     * @since   1.3.0
      */
-
     public function addUsers(array $data): object
     {
         if (empty($data)) {
@@ -153,12 +154,13 @@ class Users implements EntityInterface
      *
      * @param   array  $data
      *
-     * @return object
+     * @return  object
      *
-     * @since 1.3.0
-     * @link https://www.amocrm.ru/developers/content/crm_platform/users-api#roles-list
+     * @throws  AmocrmClientException
+     * @since   1.3.0
+     * @link    https://www.amocrm.ru/developers/content/crm_platform/users-api#roles-list
      */
-    public function getRoles(array $data = []):object
+    public function getRoles(array $data = []): object
     {
         return $this->request->getResponse('/roles', $data, 'GET', 'application/json');
     }

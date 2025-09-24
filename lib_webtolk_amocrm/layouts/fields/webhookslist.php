@@ -1,11 +1,11 @@
 <?php
 /**
- * @package        WT Amocrm Library
- * @version        1.3.0-alpha2
- * @Author         Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license        GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since          1.0.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 use Joomla\CMS\HTML\HTMLHelper;
@@ -18,14 +18,14 @@ extract($displayData);
 /**
  * Layout variables
  * -----------------
- * @var   bool  $onlycurrentsite A list of webhooks for the current site or a complete one
- * @var   array $amocrm_webhooks List of AmoCRM webhooks. if $onlycurrentsite is true then
- *                               the $amocrm_webhooks array contains webhooks only for
- *                               the current site.
+ * @var  bool    $onlycurrentsite  A list of webhooks for the current site or a complete one
+ * @var  object  $amocrm_webhooks  List of AmoCRM webhooks. if $onlycurrentsite is true then
+ *                                 the $amocrm_webhooks array contains webhooks only for
+ *                                 the current site.
  */
 
-$total_webhooks = $amocrm_webhooks->_total_items;
-$webhooks       = $amocrm_webhooks->_embedded->webhooks;
+$total_webhooks = $amocrm_webhooks->_total_items ?? 0;
+$webhooks = $amocrm_webhooks->_embedded->webhooks ?? null;
 
 ?>
 

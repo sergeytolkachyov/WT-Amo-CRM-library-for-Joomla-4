@@ -1,11 +1,11 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.3.0-alpha2
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c) 2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 namespace Webtolk\Amocrm\Fields;
@@ -13,10 +13,8 @@ namespace Webtolk\Amocrm\Fields;
 use Joomla\CMS\Factory;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Form\Field\ListField;
 use Webtolk\Amocrm\Amocrm;
-use  function defined;
 
 defined('_JEXEC') or die;
 
@@ -26,7 +24,7 @@ class ContactcustomfieldslistField extends ListField
 	protected $type = 'Contactcustomfieldslist';
     
     /**
-     * @var false
+     * @var bool $hidenone
      * @since 1.3.0
      */
     private bool $hidenone = false;
@@ -40,7 +38,7 @@ class ContactcustomfieldslistField extends ListField
      *                                       For example if the field has name="foo" and the group value is set to "bar" then the
      *                                       full field name would end up being "bar[foo]".
      *
-     * @return  boolean  True on success.
+     * @return  bool  True on success.
      *
      * @see     FormField::setup()
      * @since   5.1.0
@@ -59,12 +57,10 @@ class ContactcustomfieldslistField extends ListField
     
 	protected function getOptions()
 	{
-
-		$amocrm         = new Amocrm();
+		$amocrm = new Amocrm();
 		$result_amo_crm = $amocrm->customfields()->getContactsCustomFields();
-		$options        = [];
-		if (empty($result_amo_crm))
-		{
+		$options = [];
+		if (empty($result_amo_crm)) {
 			return $options[] = HTMLHelper::_('select.option', 0, 'there is no custom_fields in Amo CRM for contacts');
         }
 
@@ -72,21 +68,19 @@ class ContactcustomfieldslistField extends ListField
             $options[] = HTMLHelper::_('select.option', '-1', Text::alt('JOPTION_DO_NOT_USE', preg_replace('/[^a-zA-Z0-9_\-]/', '_', $this->fieldname)));
         }
         
-		if (isset($result_amo_crm->_embedded) && isset($result_amo_crm->_embedded->custom_fields))
-		{
-			foreach ($result_amo_crm->_embedded->custom_fields as $contact_custom_field)
-			{
+		if (isset($result_amo_crm->_embedded) && isset($result_amo_crm->_embedded->custom_fields)) {
+			foreach ($result_amo_crm->_embedded->custom_fields as $contact_custom_field) {
 				$options[] = HTMLHelper::_('select.option', $contact_custom_field->id, $contact_custom_field->name . ' (type: ' . $contact_custom_field->type . ')');
 			}
 
 			return $options;
 
-		}
-		elseif (isset($result_amo_crm->error_code))
-		{
+		} else if (isset($result_amo_crm->error_code)) {
 			Factory::getApplication()->enqueueMessage($result_amo_crm->error_code . ' ' . $result_amo_crm->error_message, 'error');
 
 			return $options;
 		}
+
+        return $options;
 	}
 }

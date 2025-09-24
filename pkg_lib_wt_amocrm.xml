@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension type="package" method="upgrade">
-	<name>WT Amo CRM library package</name>
+	<name>PKG_LIB_WT_AMOCRM</name>
 	<author>Sergey Tolkachyov</author>
-	<creationDate>May 2025</creationDate>
+	<creationDate>23.09.2025</creationDate>
 	<packagename>lib_wt_amocrm</packagename>
-	<version>1.3.0-alpha2</version>
+	<version>1.3.0</version>
 	<url>https://web-tolk.ru</url>
 	<packager>Sergey Tolkachyov</packager>
 	<packagerurl>https://web-tolk.ru/dev/biblioteki/wt-amo-crm-library</packagerurl>
-	<description>Amo CRM library with plugin for library settings. For Joomla 4 and higher.</description>
+	<description>PKG_LIB_WT_AMOCRM_DESC</description>
 	<license>GNU GPL 3.0</license>
 	<scriptfile>script.php</scriptfile>
-	<languages>
-		<language tag="ru-RU">language/ru-RU/pkg_lib_wt_amocrm.sys.ini</language>
-		<language tag="en-GB">language/ru-RU/pkg_lib_wt_amocrm.sys.ini</language>
+	<languages folder="language">
+		<language tag="ru-RU">ru-RU/pkg_lib_wt_amocrm.sys.ini</language>
+		<language tag="en-GB">en-GB/pkg_lib_wt_amocrm.sys.ini</language>
 	</languages>
 	<files>
-	   <folder type="library" id="Webtolk/Amocrm">lib_webtolk_amocrm</folder>
-	   <folder type="plugin" id="wt_amocrm" group="system">plg_system_wt_amocrm</folder>
-	   <folder type="plugin" id="wtamocrmusersync" group="user">plg_user_wtamocrmusersync</folder>
+		<folder type="library" id="Webtolk/Amocrm">lib_webtolk_amocrm</folder>
+		<folder type="plugin" id="wtimportamocrmcontacts" group="console">plg_console_wtimportamocrmcontacts</folder>
+	   	<folder type="plugin" id="wt_amocrm" group="system">plg_system_wt_amocrm</folder>
+	   	<folder type="plugin" id="wtamocrmusersync" group="user">plg_user_wtamocrmusersync</folder>
 	</files>
 	<updateservers>
-			<server type="extension" name="WebTolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate?element=pkg_lib_wt_amocrm</server>
+		<server type="extension" name="WebTolk - WT Amo CRM package">https://web-tolk.ru/component/swjprojects/jupdate?element=pkg_lib_wt_amocrm</server>
 	</updateservers>
 	<changelogurl>https://web-tolk.ru/jchangelog?element=pkg_lib_wt_amocrm</changelogurl>
 </extension>

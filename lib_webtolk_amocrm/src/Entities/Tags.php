@@ -2,25 +2,23 @@
 /**
  * AmoCRM tags
  *
- * @see               https://www.amocrm.ru/developers/content/crm_platform/tags-api
+ * @see        https://www.amocrm.ru/developers/content/crm_platform/tags-api
  *
- * @package           WT Amocrm Library
- * @version           1.3.0-alpha2
- * @Author            Sergey Tolkachyov, https://web-tolk.ru
- * @copyright  (c)    2022 - May 2025 Sergey Tolkachyov. All rights reserved.
- * @license           GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since             1.3.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.3.0
  */
 
 namespace Webtolk\Amocrm\Entities;
 
 use Joomla\CMS\Language\Text;
+use Webtolk\Amocrm\AmocrmClientException;
 use Webtolk\Amocrm\AmocrmRequest;
 use Webtolk\Amocrm\Interfaces\EntityInterface;
-
 use Webtolk\Amocrm\Traits\LogTrait;
-
-use function defined;
 
 defined('_JEXEC') or die;
 
@@ -28,18 +26,20 @@ class Tags implements EntityInterface
 {
     use LogTrait;
 
-    /** @param AmocrmRequest $request */
+    /** @var AmocrmRequest $request */
     private AmocrmRequest $request;
 
     /**
-     * @var array|string[]
+     * @var array|string[] $allowed_entites
      * @since 1.3.0
      */
     protected static array $allowed_entites = ['leads', 'contacts', 'companies', 'customers'];
 
     /**
      * Account constructor.
+     *
      * @param AmocrmRequest $request
+     *
      * @since 1.3.0
      */
     public function __construct(AmocrmRequest $request)
@@ -50,9 +50,9 @@ class Tags implements EntityInterface
     /**
      * @param   string  $entity_type
      *
-     * @return bool
+     * @return  bool
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function checkTagEntity(string $entity_type): bool
     {
@@ -79,27 +79,23 @@ class Tags implements EntityInterface
      * @param   string  $entity_type
      * @param   array   $data
      *
-     * @return object
-     * @see   https://www.amocrm.ru/developers/content/crm_platform/tags-api
-     * @since 1.3.0
+     * @return  object
+     *
+     * @throws  AmocrmClientException
+     * @see     https://www.amocrm.ru/developers/content/crm_platform/tags-api
+     * @since   1.3.0
      */
-
     public function getTags(string $entity_type = 'leads', array $data = []): object
     {
-
         if (!$this->checkTagEntity($entity_type)) {
-
             $error_message = Text::sprintf(
                 'LIB_WTAMOCRM_ERROR_GETTAGS_WRONG_ENTITY_TYPE',
                 $entity_type,
-                implode(
-                    ', ',
-                    self::$allowed_entites
-                )
+                implode(', ', self::$allowed_entites)
             );
             $this->saveToLog($error_message, 'error');
-            return (object)[
-                'error_code'    => 500,
+            return (object) [
+                'error_code' => 500,
                 'error_message' => $error_message
             ];
         }

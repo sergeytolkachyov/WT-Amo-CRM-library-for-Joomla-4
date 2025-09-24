@@ -26,7 +26,6 @@ extract($displayData);
 
 // we need a `</div>` for a full width without standard Joomla field label
 ?>
-</div>
 <?php
 // Uncomment it to see all the field data.
 // dump($displayData);
@@ -79,4 +78,3 @@ endif; ?>
 <?php
 // we need an unclosed `<div>` here for a full width without standard Joomla field label
 ?>
-<div>
