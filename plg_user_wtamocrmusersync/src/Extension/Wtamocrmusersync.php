@@ -191,25 +191,27 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 $is_temporary_user
             );
 
-            // Информируем AmoCRM, что всё хорошо
-            $note_text = $isnew ? 'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SUCCESSFULLY_CREATED' : 'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SUCCESSFULLY_LINKED';
+            if($this->params->get('send_notes_to_amocrm', 1) == 1) {
+                // Информируем AmoCRM, что всё хорошо
+                $note_text = $isnew ? 'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SUCCESSFULLY_CREATED' : 'PLG_WTAMOCRMUSERSYNC_WEBHOOK_NOTIFY_AMOCRM_NEW_USER_FROM_WEBHOOK_SUCCESSFULLY_LINKED';
 
-            $notes = [
-                [
-                    'created_by' => 0, // 0 - создал робот
-                    'note_type' => 'service_message',
-                    'params' => [
-                        'text' => Text::sprintf(
-                            $note_text,
-                            $user['id'],
-                            Uri::root()
-                        ),
-                        'service' => 'WT AmoCRM for Joomla'
-                    ]
-                ],
-            ];
+                $notes = [
+                    [
+                        'created_by' => 0, // 0 - создал робот
+                        'note_type'  => 'service_message',
+                        'params'     => [
+                            'text'    => Text::sprintf(
+                                $note_text,
+                                $user['id'],
+                                Uri::root()
+                            ),
+                            'service' => 'WT AmoCRM for Joomla'
+                        ]
+                    ],
+                ];
 
-            $amocrm->notes()->addNotes('contacts', $user['amocrm_new_user_from_webhook_contact_id'], $notes);
+                $amocrm->notes()->addNotes('contacts', $user['amocrm_new_user_from_webhook_contact_id'], $notes);
+            }
 
             // Link to Joomla user profile
             if (!empty($joomla_profile_link_amo_field_id = (int)$this->params->get('amocrm_contact_joomla_profile_link_field_id', -1))
@@ -779,7 +781,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             return;
         }
 
-        if (empty($user['amocrm_delete_user_from_webhook'])) {
+        if (empty($user['amocrm_delete_user_from_webhook']) && $this->params->get('send_notes_to_amocrm', 1) == 1) {
             // Если установлен этот флаг - удаление произошло на стороне AmoCRM.
             // Тогда мы просто молча удаляем, не отправляя уведомление в AmoCRM.
             $amocrm = $this->amocrm;
@@ -929,20 +931,21 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     $amocrm->saveToLog($note_text,'WARNING');
                     // Пишем в отдельный файл логов дублей
                     $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
+                    if($this->params->get('send_notes_to_amocrm', 1) == 1) {
+                        // пишем уведомление в контакт, что найдено несколько
+                        // юзеров Joomla с емейлами этого контакта.
+                        $notes = [
+                            [
+                                'created_by' => 0, // 0 - создал робот
+                                'note_type'  => 'common',
+                                'params'     => [
+                                    'text' => $note_text,
+                                ]
+                            ],
+                        ];
 
-                    // пишем уведомление в контакт, что найдено несколько
-                    // юзеров Joomla с емейлами этого контакта.
-                    $notes = [
-                        [
-                            'created_by' => 0, // 0 - создал робот
-                            'note_type' => 'common',
-                            'params' => [
-                                'text' => $note_text,
-                            ]
-                        ],
-                    ];
-
-                    $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
+                        $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
+                    }
                     // Пропускаем этот контакт
                     continue;
                 } elseif (count($joomla_user_ids) == 1) {
@@ -976,20 +979,21 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                         $amocrm->saveToLog($note_text,'WARNING');
                         // Пишем в отдельный файл логов дублей
                         $amocrm->saveToLog($note_text,'NOTICE', 'amocrm_to_joomla_contacts_doubles');
+                        if($this->params->get('send_notes_to_amocrm', 1) == 1) {
+                            // пишем уведомление в контакт, что найдено несколько
+                            // юзеров Joomla с емейлами этого контакта.
+                            $notes = [
+                                [
+                                    'created_by' => 0, // 0 - создал робот
+                                    'note_type' => 'common',
+                                    'params' => [
+                                        'text' => $note_text,
+                                    ]
+                                ],
+                            ];
 
-                        // пишем уведомление в контакт, что найдено несколько
-                        // юзеров Joomla с емейлами этого контакта.
-                        $notes = [
-                            [
-                                'created_by' => 0, // 0 - создал робот
-                                'note_type' => 'common',
-                                'params' => [
-                                    'text' => $note_text,
-                                ]
-                            ],
-                        ];
-
-                        $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
+                            $amocrm->notes()->addNotes('contacts', $contact['id'], $notes);
+                        }
                         // пропускаем этот контакт
                         continue;
                     }

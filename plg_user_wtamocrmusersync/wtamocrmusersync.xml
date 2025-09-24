@@ -245,6 +245,18 @@
                     </form>
                 </field>
             </fieldset>
+            <fieldset name="misc" label="PLG_WTAMOCRMUSERSYNC_MISC_FIELDSET_LABEL">
+                <field type="radio"
+                       name="send_notes_to_amocrm"
+                       label="PLG_WTAMOCRMUSERSYNC_SEND_NOTES_TO_AMOCRM"
+                       description="PLG_WTAMOCRMUSERSYNC_SEND_NOTES_TO_AMOCRM_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
         </fields>
     </config>
 </extension>
