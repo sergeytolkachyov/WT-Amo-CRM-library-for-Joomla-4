@@ -436,7 +436,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         $joomla_fields = array_column(self::$mapping, 'com_users_custom_field_id');
         $db = $this->getDatabase();
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
 
         $query->select('*')
             ->from($db->quoteName('#__fields_values'))
@@ -470,6 +470,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 ]
             ];
         }
+        $db->disconnect();
     }
 
     /**
@@ -563,13 +564,14 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             }
 
             $db = $this->getDatabase();
-            $query = $db->getQuery(true);
+            $query = $db->getQuery()->clear();
             $query->delete($db->quoteName('#__fields_values'))
                 ->where($db->quoteName('item_id') . ' = ' . $joomla_user_id)
                 ->where($db->quoteName('field_id') . ' IN (' . implode(',', $fieldsToClear) . ')');
 
             $db->setQuery($query);
             $db->execute();
+            $db->disconnect();
         }
     }
 
@@ -651,7 +653,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
             // проверяем состояние флага is_temporary_user
             $db = $this->getDatabase();
-            $query = $db->getQuery(true);
+            $query = $db->getQuery()->clear();
             $query->select($db->quoteName('is_temporary_user'))
                 ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
                 ->where($db->quoteName('joomla_user_id') . ' = ' . $db->quote($joomla_user_id));
@@ -667,6 +669,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_UPDATE_ERROR';
                 $type = 'error';
             }
+            $db->disconnect();
         } else {
             // Старой ассоциации нет. В объекте данные есть - создаём новую ассоциацию.
             if (AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
@@ -1105,7 +1108,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $app = $this->getApplication();
         $db = $this->getDatabase();
         $app->getLanguage()->load('com_users');
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
         $useractivation = $comUsersParams->get('useractivation');
         $sendpassword = $comUsersParams->get('sendpassword', 1);
 
@@ -1187,7 +1190,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 $rows = $db->loadObjectList();
             } catch (RuntimeException $e) {
                 $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
-
+                $db->disconnect();
                 return false;
             }
 
@@ -1228,7 +1231,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                         Text::_('COM_USERS_REGISTRATION_ACTIVATION_NOTIFY_SEND_MAIL_FAILED'),
                         'warning'
                     );
-
+                    $db->disconnect();
                     return false;
                 }
             }
@@ -1239,7 +1242,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $this->amocrm->saveToLog(Text::_('COM_USERS_REGISTRATION_SEND_MAIL_FAILED'), 'error');
 
             // Send a system message to administrators receiving system mails
-            $db = $this->getDatabase();
             $query->clear()
                 ->select($db->quoteName('id'))
                 ->from($db->quoteName('#__users'))
@@ -1251,7 +1253,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 $userids = $db->loadColumn();
             } catch (RuntimeException $e) {
                 $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
-
+                $db->disconnect();
                 return false;
             }
 
@@ -1286,15 +1288,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                         $db->execute();
                     } catch (RuntimeException $e) {
                         $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
-
+                        $db->disconnect();
                         return false;
                     }
                 }
             }
-
+            $db->disconnect();
             return false;
         }
-
+        $db->disconnect();
         return $return;
     }
 
@@ -1443,7 +1445,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $db->quoteName('item_id') . ' = ' . $db->quote($joomla_user_id),
         ];
 
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
         $query->delete($db->quoteName('#__fields_values'))
             ->where($conditions);
         $db->setQuery($query);
@@ -1471,6 +1473,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         try {
             $db->execute();
+            $db->disconnect();
         } catch (RuntimeException $e) {
             $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
             return;
@@ -1578,7 +1581,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
 
         $db = $this->getDatabase();
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
         $query->select('*')
             ->from('#__users')
             ->whereIn('email', $emails, ParameterType::STRING);
@@ -1590,7 +1593,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         } catch (RuntimeException $e) {
             $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
         }
-
+        $db->disconnect();
         return $users_found;
     }
 }
