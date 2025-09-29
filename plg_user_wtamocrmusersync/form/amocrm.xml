@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+    <fieldset name="wtamocrm" label="PLG_WTAMOCRMUSERSYNC_WTAMOCRM_FIELDSET_LABEL">
+        <field type="note"
+               name="data_sync_mode_none_desc"
+               description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_NONE_DESC"
+               class="alert alert-info col-12 fw-bold"
+               showon="data_sync_mode:0"/>
+        <field type="note"
+               name="data_sync_mode_fill_amocrm_contact_desc"
+               description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_FILL_AMOCRM_CONTACT_DESC"
+               class="alert alert-info col-12 fw-bold"
+               showon="amocrm_contact_id!:[AND]data_sync_mode:1"/>
+        <field type="note"
+               name="data_sync_mode_clear_amocrm_contact_desc"
+               description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_CLEAR_AMOCRM_CONTACT_DESC"
+               class="alert alert-info col-12 fw-bold"
+               showon="amocrm_contact_id:[AND]data_sync_mode:1"/>
+        <field type="note"
+               name="data_sync_mode_fill_joomla_user_desc"
+               description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_FILL_JOOMLA_USER_DESC"
+               class="alert alert-info col-12 fw-bold"
+               showon="amocrm_contact_id!:[AND]data_sync_mode:2"/>
+        <field type="note"
+               name="data_sync_mode_clear_joomla_user_desc"
+               description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_CLEAR_JOOMLA_USER_DESC"
+               class="alert alert-info col-12 fw-bold"
+               showon="amocrm_contact_id:[AND]data_sync_mode:2"/>
+        <field addfieldprefix="Webtolk\Amocrm\Fields"
+               type="contactinfo"
+               name="amocrm_user_info"
+               joomlauseridsource="id"
+               showtags="true"
+               with="catalog_elements,leads,customers"
+               label="PLG_WTAMOCRMUSERSYNC_USER_PROFILE_AMOCRM_INFO"/>
+        <field addfieldprefix="Webtolk\Amocrm\Fields"
+               type="entitymodalselect"
+               name="amocrm_contact_id"
+               entity="contacts"
+               label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_ID"
+               description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_ID_DESC"/>
+        <field type="radio"
+               name="data_sync_mode"
+               default="0"
+               label="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE"
+               description="PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_DESC"
+               showon="amocrm_contact_id:">
+            <option value="0">PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_NONE</option>
+            <option value="1">PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_FILL_AMOCRM_CONTACT</option>
+            <option value="2">PLG_WTAMOCRMUSERSYNC_DATA_SYNC_MODE_FILL_JOOMLA_USER</option>
+        </field>
+    </fieldset>
+</form>

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "plg_system_wt_amocrm",
+  "version": "1.3.0",
+  "description": "Copy value from input text field js script",
+  "license": "GPL-2.0-or-later",
+  "assets": [
+    {
+      "name": "plg_system_wt_amocrm.copytextfield",
+      "type": "script",
+      "uri": "plg_system_wt_amocrm/copytextfield.js",
+      "attributes": {
+        "defer": true
+      },
+      "package": "plg_system_wt_amocrm",
+      "version": "1.3.0"
+    },{
+      "name": "plg_system_wt_amocrm.entitymodalselect",
+      "type": "script",
+      "uri": "plg_system_wt_amocrm/entitymodalselect.js",
+      "attributes": {
+        "defer": true
+      },
+      "package": "plg_system_wt_amocrm",
+      "version": "1.3.0"
+    }
+  ]
+}

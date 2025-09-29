@@ -1,83 +1,87 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.2.1
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @сopyright (c) 2022 - October 2023 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 namespace Webtolk\Amocrm\Fields;
+
+use Joomla\CMS\Form\FormField;
+use Webtolk\Amocrm\Amocrm;
+use Webtolk\Amocrm\AmocrmClientException;
+
 defined('_JEXEC') or die;
 
-use Joomla\CMS\Date\Date;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Form\Field\NoteField;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Plugin\PluginHelper;
-use Webtolk\Amocrm\Amocrm;
-use Webtolk\Amocrm\Chat;
-
-class AccountinfoField extends NoteField
+class AccountinfoField extends FormField
 {
 
 	protected $type = 'Accountinfo';
+    protected $layout = 'libraries.webtolk.amocrm.fields.accountinfo';
 
+    /**
+     * Method to get the field input markup.
+     *
+     * @return  string  The field input markup.
+     *
+     * @since   1.3.0
+     */
 	protected function getInput()
 	{
-
-		$amocrm         = new Amocrm();
-		$result_amo_crm = $amocrm->getAccountInfo();
-		if (isset($result_amo_crm->error_code) && !empty($result_amo_crm->error_code))
-		{
-			return '<div class="alert alert-danger row">
-						<div class="col-2 h1">' . $result_amo_crm->error_code . '</div>
-						<div class="col-10">' . $result_amo_crm->error_message . '</div>
-					</div>';
-		}
-
-		if (!empty($result_amo_crm))
-		{
-
-			$user_info     = $amocrm->getUserById($result_amo_crm->current_user_id);
-			$created_at    = (new Date($result_amo_crm->created_at));
-			$updated_at    = (new Date($result_amo_crm->updated_at));
-			$user_name     = $user_info->name;
-			$user_email    = $user_info->email;
-			$user_is_admin = $user_info->rights->is_admin;
-		}
-		else
-		{
-			$created_at    = 'no data';
-			$updated_at    = 'no data';
-			$user_name     = 'no data';
-			$user_email    = 'no data';
-			$user_is_admin = 'no data';
-		}
-
-		return $html = '<div class="d-flex shadow p-4">
-			<div class="flex-shrink-0">
-				<h3>' . (!empty($result_amo_crm->name) ? $result_amo_crm->name : 'no data') . '</h3>
-			</div>
-			<div class="flex-grow-1 ms-3">
-				<span class="badge bg-success text-white">Created: ' . $created_at . '</span>
-				<span class="badge bg-success text-white">Updated: ' . $updated_at . '</span>
-			</div>
-			<div class="flex-shrink-0">
-				<h3>User info</h3>
-			</div>
-			<div class="flex-grow-1 ms-3">
-				<span class="badge bg-primary text-white">Name: ' . $user_name . '</span>
-				<span class="badge bg-secondary text-white">Email: ' . $user_email . '</span>
-				<span class="badge bg-warning text-white">Is admin: ' . (($user_is_admin == '1') ? Text::_('JYES') : Text::_('JNO')) . '</span>
-
-			</div>
-		</div>';
-
-
+        return ' ';
 	}
-}
 
-?>
+    /**
+     * Method to get the field label markup.
+     *
+     * @return  string  The field label markup.
+     *
+     * @since   1.3.0
+     */
+    protected function getLabel()
+    {
+        if (empty($this->layout)) {
+            throw new \UnexpectedValueException(\sprintf('%s has no layout assigned.', $this->name));
+        }
+
+        return $this->getRenderer($this->layout)->render($this->collectLayoutData());
+    }
+
+    /**
+     * Method to get the data to be passed to the layout for rendering.
+     *
+     * @return  array
+     *
+     * @throws  AmocrmClientException
+     * @since   1.3.0
+     */
+    protected function getLayoutData(): array
+    {
+        $layoutData = parent::getLayoutData();
+
+        $layoutData['has_error'] = false;
+        $layoutData['amocrm_error'] = false;
+        $layoutData['amocrm_account_info'] = false;
+        $layoutData['user_info'] = false;
+
+        $amocrm = new Amocrm();
+
+        $result_amo_crm = $amocrm->account()->getAccountInfo();
+        if (!empty($result_amo_crm->error_code)) {
+            $layoutData['has_error'] = true;
+            $layoutData['amocrm_error'] = $result_amo_crm;
+
+        } else {
+            $layoutData['amocrm_account_info'] = $result_amo_crm;
+        }
+
+        if (!$layoutData['has_error']) {
+            $layoutData['user_info'] = $amocrm->users()->getUserById($result_amo_crm->current_user_id);
+        }
+
+        return $layoutData;
+    }
+}

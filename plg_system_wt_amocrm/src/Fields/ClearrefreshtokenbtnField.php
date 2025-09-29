@@ -1,17 +1,15 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.2.1
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @сopyright (c) 2022 - October 2023 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
 namespace Joomla\Plugin\System\Wt_amocrm\Fields;
-defined('_JEXEC') or die;
 
-//use Joomla\CMS\Form\Field\NoteField;
 use Joomla\CMS\Form\FormField;
 use Joomla\CMS\Helper\LibraryHelper;
 use Joomla\CMS\Language\Text;
@@ -19,6 +17,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Session\Session;
 use Joomla\CMS\Uri\Uri;
 
+defined('_JEXEC') or die;
 
 class ClearrefreshtokenbtnField extends FormField
 {
@@ -31,47 +30,47 @@ class ClearrefreshtokenbtnField extends FormField
 	 *
 	 * @return  string  The field input markup.
 	 *
-	 * @since   1.7.0
+	 * @since   1.0.0
 	 */
 	protected function getInput()
 	{
-
 		$url = new Uri(Uri::root());
 		$url->setScheme('https');
 		$url->setPath('/administrator/index.php');
-		$url->setVar('option','com_ajax');
-		$url->setVar('plugin','wt_amocrm');
-		$url->setVar('group','system');
-		$url->setVar('format','json');
-		$url->setVar('action','clear_refresh_token');
-		$url->setVar(Session::getFormToken(),'1');
+		$url->setQuery([
+			'option' => 'com_ajax',
+			'plugin' => 'wt_amocrm',
+			'group' => 'system',
+			'format' => 'json',
+			'action' => 'clear_refresh_token',
+			'action_type' => 'internal',
+			Session::getFormToken() => '1'
+		]);
 
-		$wa      = Factory::getApplication()->getDocument()->getWebAssetManager();
-		$wa->addInlineScript(
-			"
-				document.addEventListener('DOMContentLoaded', () => {
+		$wa = Factory::getApplication()->getDocument()->getWebAssetManager();
+		$wa->addInlineScript("
+            document.addEventListener('DOMContentLoaded', () => {
                 let clearBtn = document.getElementById('clear_refresh_token_btn');
                 clearBtn.addEventListener('click', () => {
                     Joomla.request({
                         url: '".$url->toString()."',
                         method: 'POST',
-                        onSuccess: function (response, xhr){
-                            if (response !== ''){
+                        onSuccess: function (response, xhr) {
+                            if (response !== '') {
                                 let responseData = JSON.parse(response);
                                 let answerContainer = document.getElementById('clear_refresh_token_response_container');
                                 answerContainer.innerText = responseData.data;
                             }
-                        },
-                    })
+                        }
+                    });
                 });
             });
-				"
-		);
+        ");
 		$lib_params = LibraryHelper::getParams('Webtolk/Amocrm');
 		$refresh_token_date = $lib_params->get('refresh_token_date','');
 		$html = ['<div class="d-flex align-items-center">'];
 
-		if(property_exists($refresh_token_date,'date') && !empty($refresh_token_date->date)){
+		if (property_exists($refresh_token_date,'date') && !empty($refresh_token_date->date)) {
 			$html[] = '<span class="badge bg-success">'.Text::_('PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_DATE').':</span> <span class="badge bg-info text-white">'.$refresh_token_date->date.'</span><br/>';
 		}
 
@@ -81,13 +80,13 @@ class ClearrefreshtokenbtnField extends FormField
 		$html[] = '</div><div class="text-muted fs-6">'.Text::_('PLG_WT_AMOCRM_CLEAR_REFRESH_TOKEN_BTN_DESC').'</div>';
 
 
-		return implode('',$html);
+		return implode('', $html);
 	}
 
 	/**
 	 * @return  string  The field label markup.
 	 *
-	 * @since   1.7.0
+	 * @since   1.0.0
 	 */
 	protected function getLabel()
 	{
@@ -97,16 +96,10 @@ class ClearrefreshtokenbtnField extends FormField
 	/**
 	 * @return  string  The field label markup.
 	 *
-	 * @since   1.7.0
+	 * @since   1.0.0
 	 */
 	protected function getTitle()
 	{
 		return $this->getLabel();
 	}
 }
-
-
-?>
-
-
-

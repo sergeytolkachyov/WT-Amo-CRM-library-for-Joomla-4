@@ -1,21 +1,22 @@
 <?php
 /**
- * @package       WT Amocrm Library
- * @version       1.2.1
- * @Author        Sergey Tolkachyov, https://web-tolk.ru
- * @сopyright (c) 2022 - October 2023 Sergey Tolkachyov. All rights reserved.
- * @license       GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
- * @since         1.0.0
+ * @package    WT Amo CRM library package
+ * @version    1.3.0
+ * @Author     Sergey Tolkachyov, https://web-tolk.ru
+ * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
+ * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @since      1.0.0
  */
 
-defined('_JEXEC') || die;
-
 use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use Joomla\Event\DispatcherInterface;
 use Joomla\Plugin\System\Wt_amocrm\Extension\Wt_amocrm;
+
+defined('_JEXEC') or die;
 
 return new class implements ServiceProviderInterface {
 	/**
@@ -25,16 +26,22 @@ return new class implements ServiceProviderInterface {
 	 *
 	 * @return  void
 	 *
-	 * @since   4.0.0
+	 * @since   1.0.0
 	 */
-	public function register(Container $container)
+	public function register(Container $container): void
 	{
 		$container->set(
 			PluginInterface::class,
 			function (Container $container) {
 				$subject = $container->get(DispatcherInterface::class);
-				$config  = (array) PluginHelper::getPlugin('system', 'wt_amocrm');
-				return new Wt_amocrm($subject, $config);
+				$config = (array) PluginHelper::getPlugin('system', 'wt_amocrm');
+				$plugin = new Wt_amocrm($subject, $config);
+				$plugin->setApplication(Factory::getApplication());
+
+                $registry = $container->get(Joomla\CMS\WebAsset\WebAssetRegistry::class);
+                $registry->addRegistryFile('media/plg_system_wt_amocrm/joomla.asset.json');
+
+				return $plugin;
 			}
 		);
 	}

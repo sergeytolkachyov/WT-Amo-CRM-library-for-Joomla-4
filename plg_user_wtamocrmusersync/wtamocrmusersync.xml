@@ -1,0 +1,261 @@
+<?xml version="1.0"?>
+<extension type="plugin" method="upgrade" group="user">
+    <name>PLG_WTAMOCRMUSERSYNC</name>
+    <author>Sergey Tolkachyov</author>
+    <authorEmail>info@web-tolk.ru</authorEmail>
+    <authorUrl>https://web-tolk.ru</authorUrl>
+    <creationDate>29.09.2025</creationDate>
+    <copyright>Copyright (c) 2022 - 2025 Sergey Tolkachyov. All rights reserved.</copyright>
+    <license>GNU General Public License v3.0</license>
+    <version>1.3.0</version>
+    <description>PLG_WTAMOCRMUSERSYNC_DESC</description>
+    <namespace path="src">Joomla\Plugin\User\Wtamocrmusersync</namespace>
+    <files>
+        <folder plugin="wtamocrmusersync">src</folder>
+        <folder>services</folder>
+        <folder>language</folder>
+        <folder>form</folder>
+    </files>
+    <languages folder="language">
+        <language tag="ru-RU">ru-RU/plg_user_wtamocrmusersync.ini</language>
+        <language tag="ru-RU">ru-RU/plg_user_wtamocrmusersync.sys.ini</language>
+        <language tag="en-GB">en-GB/plg_user_wtamocrmusersync.ini</language>
+        <language tag="en-GB">en-GB/plg_user_wtamocrmusersync.sys.ini</language>
+    </languages>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field addfieldprefix="Joomla\Plugin\User\Wtamocrmusersync\Fields"
+                       type="plugininfo"
+                       name="plugininfo"/>
+                <field type="note"
+                       name="joomla_to_amocrm_note"
+                       label="PLG_WTAMOCRMUSERSYNC_JOOMLA_TO_AMOCRM_NOTE"
+                       class="my-4 alert alert-info w-100"
+                       heading="h3"/>
+                <field type="radio"
+                       name="create_amocrm_contact"
+                       label="PLG_WTAMOCRMUSERSYNC_CREATE_AMOCRM_CONTACT"
+                       description="PLG_WTAMOCRMUSERSYNC_CREATE_AMOCRM_CONTACT_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field addfieldprefix="Webtolk\Amocrm\Fields"
+                       type="contactstagslist"
+                       name="amocrm_contact_tags"
+                       label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_LABEL"
+                       description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_TAGS_DESC"
+                       layout="joomla.form.field.list-fancy-select"
+                       multiple="true"
+                       showon="create_amocrm_contact:1"/>
+                <field type="radio"
+                       name="update_amocrm_contact_data_by_joomla"
+                       label="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA"
+                       description="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="note"
+                       label="PLG_WTAMOCRMUSERSYNC_CYCLICAL_REQUESTS_RISK"
+                       description="PLG_WTAMOCRMUSERSYNC_CYCLICAL_REQUESTS_RISK_DESC"
+                       class="alert alert-danger w-100"
+                       showon="update_amocrm_contact_data_by_joomla:1[AND]allow_webhook_actions:1[AND]allow_update_user_data:1"/>
+                <field addfieldprefix="Webtolk\Amocrm\Fields"
+                       type="contactcustomfieldslist"
+                       name="amocrm_contact_joomla_profile_link_field_id"
+                       label="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_FIELD_ID"
+                       description="PLG_WTAMOCRMUSERSYNC_AMOCRM_CONTACT_JOOMLA_PROFILE_LINK_FIELD_ID_DESC"/>
+            </fieldset>
+            <fieldset name="webhook" label="PLG_WTAMOCRMUSERSYNC_WEBHOOK_FIELDSET_LABEL"
+                      description="PLG_WTAMOCRMUSERSYNC_WEBHOOK_FIELDSET_DESC">
+                <field type="note"
+                       name="amocrm_to_joomla_note"
+                       label="PLG_WTAMOCRMUSERSYNC_AMOCRM_TO_JOOMLA_NOTE"
+                       class="my-4 alert alert-info w-100"
+                       heading="h3"/>
+                <field type="radio"
+                       name="allow_webhook_actions"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_WEBHOOK_ACTIONS"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_WEBHOOK_ACTIONS_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="allow_create_user"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_CREATE_USER"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_CREATE_USER_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="allow_delete_user_data"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_DELETE_USER_DATA"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_DELETE_USER_DATA_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="allow_update_user_data"
+                       label="PLG_WTAMOCRMUSERSYNC_ALLOW_UPDATE_USER_DATA"
+                       description="PLG_WTAMOCRMUSERSYNC_ALLOW_UPDATE_USER_DATA_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="note"
+                       label="PLG_WTAMOCRMUSERSYNC_CYCLICAL_REQUESTS_RISK"
+                       description="PLG_WTAMOCRMUSERSYNC_CYCLICAL_REQUESTS_RISK_DESC"
+                       class="alert alert-danger w-100"
+                       showon="update_amocrm_contact_data_by_joomla:1[AND]allow_webhook_actions:1[AND]allow_update_user_data:1"/>
+                <field type="radio"
+                       name="update_user_email"
+                       label="PLG_WTAMOCRMUSERSYNC_UPDATE_USER_EMAIL"
+                       description="PLG_WTAMOCRMUSERSYNC_UPDATE_USER_EMAIL_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="bool"
+                       default="0"
+                       showon="allow_webhook_actions:1[AND]allow_update_user_data:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+            <fieldset name="create_users_rules" label="PLG_WTAMOCRMUSERSYNC_CREATE_USERS_RULES_FIELDSET_LABEL" description="PLG_WTAMOCRMUSERSYNC_CREATE_USERS_RULES_FIELDSET_DESC">
+                <field type="usergrouplist"
+                       name="default_user_group"
+                       label="PLG_WTAMOCRMUSERSYNC_DEFAULT_USER_GROUP"
+                       description="PLG_WTAMOCRMUSERSYNC_DEFAULT_USER_GROUP_DESC"
+                       default="2"
+                       filter="integer"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1"/>
+                <field type="radio"
+                       name="auto_enable_new_user"
+                       label="PLG_WTAMOCRMUSERSYNC_AUTO_ENABLE_NEW_USER"
+                       description="PLG_WTAMOCRMUSERSYNC_AUTO_ENABLE_NEW_USER_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="0"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="notify_new_user"
+                       label="PLG_WTAMOCRMUSERSYNC_NOTIFY_NEW_USER"
+                       description="PLG_WTAMOCRMUSERSYNC_NOTIFY_NEW_USER_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="0"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="note"
+                       name="process_contacts_duplicates"
+                       label="PLG_WTAMOCRMUSERSYNC_PROCESS_CONTACTS_DUPLICATES"
+                       description="PLG_WTAMOCRMUSERSYNC_PROCESS_CONTACTS_DUPLICATES_DESC"
+                       class="alert alert-info"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="note"
+                       name="temporary_users_description"
+                       label="PLG_WTAMOCRMUSERSYNC_TEMPORARY_USERS_DESCRIPTION_LABEL"
+                       description="PLG_WTAMOCRMUSERSYNC_TEMPORARY_USERS_DESCRIPTION_DESC"
+                       class="alert alert-info"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field type="radio"
+                       name="force_temporary_user_status_when_create"
+                       label="PLG_WTAMOCRMUSERSYNC_FORCE_TEMPORARY_USER_STATUS_WHEN_CREATE"
+                       description="PLG_WTAMOCRMUSERSYNC_FORCE_TEMPORARY_USER_STATUS_WHEN_CREATE_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="0"
+                       showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+            <fieldset name="fields_mapping" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDSET_LABEL" description="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDSET_DESC">
+                <field type="subform"
+                       name="fields_mapping"
+                       label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING"
+                       multiple="true"
+                       groupByFieldset="true"
+                       layout="joomla.form.field.subform.repeatable-table"
+                       parentclass="stack">
+                    <form>
+                        <fieldset name="fields_mapping_joomla_field" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_MAPPING_JOOMLA_FIELD">
+                            <field type="radio"
+                                   name="joomla_field_type"
+                                   label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE"
+                                   description="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE_DESC"
+                                   default="user_params"
+                                   showon="allow_webhook_actions:1[AND]allow_create_user:1">
+                                <option value="user_params">PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE_USER_PARAMS</option>
+                                <option value="user_custom_field">PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_JOOMLA_FIELD_TYPE_USER_CUSTOM_FIELD</option>
+                            </field>
+                        </fieldset>
+                        <fieldset name="joomla_side" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE">
+                            <field type="text"
+                                   name="user_params_param_name"
+                                   label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE_USER_PARAMS_PARAM_NAME"
+                                   description="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE_USER_PARAMS_PARAM_NAME_DESC"
+                                   hint="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_JOOMLA_SIDE_USER_PARAMS_PARAM_NAME_HINT"
+                                   showon="joomla_field_type:user_params"/>
+                            <field type="sql"
+                                   name="com_users_custom_field_id"
+                                   label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_MAPPING_JOOMLA_FIELD_CUSTOM_FIELD"
+                                   default="0"
+                                   query="SELECT id, title FROM #__fields WHERE state = 1 AND context = 'com_users.user'"
+                                   key_field="id"
+                                   value_field="title"
+                                   showon="joomla_field_type:user_custom_field"/>
+                        </fieldset>
+                        <fieldset name="fields_mapping_amocrm_field" label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_AMOCRM_SIDE">
+                            <field addfieldprefix="Webtolk\Amocrm\Fields"
+                                   type="contactcustomfieldslist"
+                                   name="amocrm_contact_field_id"
+                                   label="PLG_WTAMOCRMUSERSYNC_FIELDS_MAPPING_FIELDS_AMOCRM_SIDE_AMOCRM_CONTACT_FIELD_ID"/>
+                        </fieldset>
+                    </form>
+                </field>
+            </fieldset>
+            <fieldset name="misc" label="PLG_WTAMOCRMUSERSYNC_MISC_FIELDSET_LABEL">
+                <field type="radio"
+                       name="send_notes_to_amocrm"
+                       label="PLG_WTAMOCRMUSERSYNC_SEND_NOTES_TO_AMOCRM"
+                       description="PLG_WTAMOCRMUSERSYNC_SEND_NOTES_TO_AMOCRM_DESC"
+                       layout="joomla.form.field.radio.switcher"
+                       filter="integer"
+                       default="1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+</extension>

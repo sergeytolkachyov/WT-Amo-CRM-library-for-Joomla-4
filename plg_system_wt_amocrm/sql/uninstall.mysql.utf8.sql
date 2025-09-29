@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS `#__lib_wt_amocrm_users_sync`;
