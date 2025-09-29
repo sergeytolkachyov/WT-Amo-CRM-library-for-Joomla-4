@@ -20,6 +20,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\Mail\MailTemplate;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\String\PunycodeHelper;
 use Joomla\CMS\User\User;
@@ -27,9 +28,12 @@ use Joomla\CMS\User\UserFactoryAwareTrait;
 use Joomla\CMS\User\UserHelper;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\ParameterType;
+use Joomla\CMS\Event\AbstractEvent;
+use Joomla\Event\Dispatcher;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Filter\OutputFilter;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 use RuntimeException;
@@ -849,7 +853,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
     /**
      * Вызывается при вебхуке на создании пользователя
-     * на стороне AmoCRM.
+     * на стороне AmoCRM
+     * ИЛИ
+     * при CLI-импорте из плагина группы Console
      *
      * @param   array  $contacts  AmoCRM contacts data from webhook
      *
@@ -865,7 +871,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
 
         $amocrm = $this->amocrm;
-
+        $contacts = $this->preprocessData('createUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] !== 'contact') {
                 continue;
@@ -885,7 +891,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $isNew = true;
 
             $user_data = [
-                'name' => $contact['name'],
+                'name' => OutputFilter::stringUrlSafe($contact['name']),
                 'groups' => [$this->params->get('default_user_group', 2)],
                 'amocrm_new_user_from_webhook_contact_id' => $contact['id']
                 // Для добавления ассоциации на триггере onUserAfterSave
@@ -901,8 +907,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     if ($custom_field['code'] == 'EMAIL') {
                         $contact_emails = array_column($custom_field['values'], 'value');
                         if (!empty($contact_emails)) {
-                            $user_data['email'] = PunycodeHelper::emailToPunycode($contact_emails[0]);
-                            $temp_email = false;
+                            try {
+                                $user_data['email'] = PunycodeHelper::emailToPunycode($contact_emails[0]);
+                                $temp_email = false;
+                            } catch (Exception $e) {
+                                $error_contact_email_message = 'createUsers: Error with email for AmoCRM contact id '.$contact['id'].', email: '.$contact_emails[0]
+                                    .'. code: '.$e->getCode().' message: '. $e->getMessage().' in '.$e->getFile().': '.$e->getLine();
+                                $amocrm->saveToLog($error_contact_email_message,'WARNING','amo_contacts_failed_emails_due_import');
+                            }
+
                         }
                     }
                 }
@@ -1314,7 +1327,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (empty($contacts)) {
             return;
         }
-
+        $contacts = $this->preprocessData('updateUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] == 'contact'
                 && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
@@ -1355,9 +1368,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 && $this->params->get('update_user_email', false)
                 && !empty($custom_field['values'][0]['value'])
             ) {
-                $user_data['email'] = PunycodeHelper::emailToPunycode(
-                    $custom_field['values'][0]['value']
-                );
+                try {
+                    $user_data['email'] = PunycodeHelper::emailToPunycode(
+                        $custom_field['values'][0]['value']
+                    );
+                } catch (Exception $e) {
+                    $error_contact_email_message = 'preprocessUserParams: Error with email for AmoCRM contact id '.$contact['id'].', email: '.$custom_field['values'][0]['value']
+                        .'. code: '.$e->getCode().' message: '. $e->getMessage().' in '.$e->getFile().': '.$e->getLine();
+                    $this->amocrm->saveToLog($error_contact_email_message,'WARNING','amo_contacts_failed_emails_due_import');
+                }
             }
 
             $amo_custom_field_id = $custom_field['id'];
@@ -1494,7 +1513,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (empty($contacts)) {
             return;
         }
-
+        $contacts = $this->preprocessData('deleteUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] == 'contact'
                 && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
@@ -1595,5 +1614,34 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
         $db->disconnect();
         return $users_found;
+    }
+
+
+    /**
+     * Preprocess data on create, update and delete users
+     *
+     * @param   string  $context
+     * @param   array   $data
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    private function preprocessData(string $context, array $data): array
+    {
+        $dispatcher = new Dispatcher();
+        PluginHelper::importPlugin('amocrm', null, true, $dispatcher);
+        $event = AbstractEvent::create(
+            'preprocessAmocrmWebhookData',
+            [
+                'subject' => $this,
+                'context' => $context,
+                'data'    => $data
+            ]
+        );
+
+        $eventResult = $dispatcher->dispatch($event->getName(), $event);
+
+        return $eventResult->getArgument('result');
     }
 }
