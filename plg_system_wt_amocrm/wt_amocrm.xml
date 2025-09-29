@@ -4,7 +4,7 @@
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
     <authorUrl>https://web-tolk.ru</authorUrl>
-	<creationDate>23.09.2025</creationDate>
+	<creationDate>29.09.2025</creationDate>
     <copyright>Copyright (c) 2022 - 2025 Sergey Tolkachyov. All rights reserved.</copyright>
     <license>GNU General Public License v3.0</license>
     <version>1.3.0</version>
@@ -32,11 +32,6 @@
             <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
         </sql>
     </uninstall>
-    <update>
-        <schemas>
-            <schemapath type="mysql">sql/updates/mysql</schemapath>
-        </schemas>
-    </update>
     <media folder="media" destination="plg_system_wt_amocrm">
         <folder>js</folder>
         <filename>joomla.asset.json</filename>

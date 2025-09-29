@@ -20,6 +20,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Log\Log;
 use Joomla\CMS\Mail\MailTemplate;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\String\PunycodeHelper;
 use Joomla\CMS\User\User;
@@ -27,9 +28,12 @@ use Joomla\CMS\User\UserFactoryAwareTrait;
 use Joomla\CMS\User\UserHelper;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Database\ParameterType;
+use Joomla\CMS\Event\AbstractEvent;
+use Joomla\Event\Dispatcher;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Filter\OutputFilter;
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
 use RuntimeException;
@@ -436,7 +440,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         $joomla_fields = array_column(self::$mapping, 'com_users_custom_field_id');
         $db = $this->getDatabase();
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
 
         $query->select('*')
             ->from($db->quoteName('#__fields_values'))
@@ -470,6 +474,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 ]
             ];
         }
+        $db->disconnect();
     }
 
     /**
@@ -563,13 +568,14 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             }
 
             $db = $this->getDatabase();
-            $query = $db->getQuery(true);
+            $query = $db->getQuery()->clear();
             $query->delete($db->quoteName('#__fields_values'))
                 ->where($db->quoteName('item_id') . ' = ' . $joomla_user_id)
                 ->where($db->quoteName('field_id') . ' IN (' . implode(',', $fieldsToClear) . ')');
 
             $db->setQuery($query);
             $db->execute();
+            $db->disconnect();
         }
     }
 
@@ -651,7 +657,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
             // проверяем состояние флага is_temporary_user
             $db = $this->getDatabase();
-            $query = $db->getQuery(true);
+            $query = $db->getQuery()->clear();
             $query->select($db->quoteName('is_temporary_user'))
                 ->from($db->quoteName('#__lib_wt_amocrm_users_sync'))
                 ->where($db->quoteName('joomla_user_id') . ' = ' . $db->quote($joomla_user_id));
@@ -667,6 +673,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 $message = 'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_JOOMLA_AMOCRM_USER_SYNC_UPDATE_ERROR';
                 $type = 'error';
             }
+            $db->disconnect();
         } else {
             // Старой ассоциации нет. В объекте данные есть - создаём новую ассоциацию.
             if (AmocrmUserHelper::addJoomlaAmoCRMUserSync($joomla_user_id, $amocrm_contact_id)) {
@@ -846,7 +853,9 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
     /**
      * Вызывается при вебхуке на создании пользователя
-     * на стороне AmoCRM.
+     * на стороне AmoCRM
+     * ИЛИ
+     * при CLI-импорте из плагина группы Console
      *
      * @param   array  $contacts  AmoCRM contacts data from webhook
      *
@@ -862,7 +871,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
 
         $amocrm = $this->amocrm;
-
+        $contacts = $this->preprocessAmoData('createUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] !== 'contact') {
                 continue;
@@ -882,7 +891,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $isNew = true;
 
             $user_data = [
-                'name' => $contact['name'],
+                'name' => OutputFilter::stringUrlSafe($contact['name']),
                 'groups' => [$this->params->get('default_user_group', 2)],
                 'amocrm_new_user_from_webhook_contact_id' => $contact['id']
                 // Для добавления ассоциации на триггере onUserAfterSave
@@ -898,8 +907,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     if ($custom_field['code'] == 'EMAIL') {
                         $contact_emails = array_column($custom_field['values'], 'value');
                         if (!empty($contact_emails)) {
-                            $user_data['email'] = PunycodeHelper::emailToPunycode($contact_emails[0]);
-                            $temp_email = false;
+                            try {
+                                $user_data['email'] = PunycodeHelper::emailToPunycode($contact_emails[0]);
+                                $temp_email = false;
+                            } catch (Exception $e) {
+                                $error_contact_email_message = 'createUsers: Error with email for AmoCRM contact id '.$contact['id'].', email: '.$contact_emails[0]
+                                    .'. code: '.$e->getCode().' message: '. $e->getMessage().' in '.$e->getFile().': '.$e->getLine();
+                                $amocrm->saveToLog($error_contact_email_message,'WARNING','amo_contacts_failed_emails_due_import');
+                            }
+
                         }
                     }
                 }
@@ -1105,7 +1121,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $app = $this->getApplication();
         $db = $this->getDatabase();
         $app->getLanguage()->load('com_users');
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
         $useractivation = $comUsersParams->get('useractivation');
         $sendpassword = $comUsersParams->get('sendpassword', 1);
 
@@ -1187,7 +1203,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 $rows = $db->loadObjectList();
             } catch (RuntimeException $e) {
                 $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
-
+                $db->disconnect();
                 return false;
             }
 
@@ -1228,7 +1244,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                         Text::_('COM_USERS_REGISTRATION_ACTIVATION_NOTIFY_SEND_MAIL_FAILED'),
                         'warning'
                     );
-
+                    $db->disconnect();
                     return false;
                 }
             }
@@ -1239,7 +1255,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $this->amocrm->saveToLog(Text::_('COM_USERS_REGISTRATION_SEND_MAIL_FAILED'), 'error');
 
             // Send a system message to administrators receiving system mails
-            $db = $this->getDatabase();
             $query->clear()
                 ->select($db->quoteName('id'))
                 ->from($db->quoteName('#__users'))
@@ -1251,7 +1266,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 $userids = $db->loadColumn();
             } catch (RuntimeException $e) {
                 $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
-
+                $db->disconnect();
                 return false;
             }
 
@@ -1286,15 +1301,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                         $db->execute();
                     } catch (RuntimeException $e) {
                         $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
-
+                        $db->disconnect();
                         return false;
                     }
                 }
             }
-
+            $db->disconnect();
             return false;
         }
-
+        $db->disconnect();
         return $return;
     }
 
@@ -1312,7 +1327,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (empty($contacts)) {
             return;
         }
-
+        $contacts = $this->preprocessAmoData('updateUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] == 'contact'
                 && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
@@ -1353,9 +1368,15 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                 && $this->params->get('update_user_email', false)
                 && !empty($custom_field['values'][0]['value'])
             ) {
-                $user_data['email'] = PunycodeHelper::emailToPunycode(
-                    $custom_field['values'][0]['value']
-                );
+                try {
+                    $user_data['email'] = PunycodeHelper::emailToPunycode(
+                        $custom_field['values'][0]['value']
+                    );
+                } catch (Exception $e) {
+                    $error_contact_email_message = 'preprocessUserParams: Error with email for AmoCRM contact id '.$contact['id'].', email: '.$custom_field['values'][0]['value']
+                        .'. code: '.$e->getCode().' message: '. $e->getMessage().' in '.$e->getFile().': '.$e->getLine();
+                    $this->amocrm->saveToLog($error_contact_email_message,'WARNING','amo_contacts_failed_emails_due_import');
+                }
             }
 
             $amo_custom_field_id = $custom_field['id'];
@@ -1443,7 +1464,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             $db->quoteName('item_id') . ' = ' . $db->quote($joomla_user_id),
         ];
 
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
         $query->delete($db->quoteName('#__fields_values'))
             ->where($conditions);
         $db->setQuery($query);
@@ -1471,6 +1492,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
 
         try {
             $db->execute();
+            $db->disconnect();
         } catch (RuntimeException $e) {
             $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
             return;
@@ -1491,7 +1513,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (empty($contacts)) {
             return;
         }
-
+        $contacts = $this->preprocessAmoData('deleteUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] == 'contact'
                 && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
@@ -1578,7 +1600,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
 
         $db = $this->getDatabase();
-        $query = $db->getQuery(true);
+        $query = $db->getQuery()->clear();
         $query->select('*')
             ->from('#__users')
             ->whereIn('email', $emails, ParameterType::STRING);
@@ -1590,7 +1612,36 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         } catch (RuntimeException $e) {
             $this->amocrm->saveToLog(Text::sprintf('COM_USERS_DATABASE_ERROR', $e->getMessage()), 'error');
         }
-
+        $db->disconnect();
         return $users_found;
+    }
+
+
+    /**
+     * Preprocess data on create, update and delete users
+     *
+     * @param   string  $context
+     * @param   array   $data
+     *
+     * @return array
+     *
+     * @since 1.3.0
+     */
+    private function preprocessAmoData(string $context, array $data): array
+    {
+        $dispatcher = new Dispatcher();
+        PluginHelper::importPlugin('amocrm', null, true, $dispatcher);
+        $event = AbstractEvent::create(
+            'preprocessAmocrmWebhookData',
+            [
+                'subject' => $this,
+                'context' => $context,
+                'data'    => $data
+            ]
+        );
+
+        $eventResult = $dispatcher->dispatch($event->getName(), $event);
+
+        return $eventResult->getArgument('result');
     }
 }

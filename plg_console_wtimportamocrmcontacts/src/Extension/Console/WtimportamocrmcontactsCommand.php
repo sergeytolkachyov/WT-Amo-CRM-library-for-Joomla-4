@@ -11,6 +11,7 @@
  
 namespace Joomla\Plugin\Console\Wtimportamocrmcontacts\Extension\Console;
 
+use Joomla\CMS\Date\Date;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\PluginHelper;
@@ -117,7 +118,9 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
             );
             $progressBar = new ProgressBar($output);
             $progressBar->setFormat('contactsProgress');
+            $symfonyStyle->writeln('Start time: '. (new Date($progressBar->getStartTime()))->toSql());
             $progressBar->start();
+
         }
         while (!$completed) {
 
@@ -213,13 +216,6 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
                 break;
             }
 
-            /**
-             * Возможно добавить параметр force_temp_user
-             * чтобы все созданные из амо имели статус временных, не зависимо от
-             * того заполнен емейл или нет.
-             *
-             * ЛИБО ЖЕ формировать временные ссылки для дорегистрации независимо от флага пользователя. 
-             */
             // Save AmoCRM contacts to Joomla users
             $wtamocrmusersync->createUsers($contacts);
 
@@ -232,6 +228,7 @@ class WtimportamocrmcontactsCommand extends AbstractCommand
 
         if(!$test_mode) {
             $progressBar->finish();
+            $symfonyStyle->writeln('End time: '. (new Date())->toSql());
         }
 		$time = number_format(microtime(true) - $scriptStart, 2, '.', '');
 		$symfonyStyle->newLine();

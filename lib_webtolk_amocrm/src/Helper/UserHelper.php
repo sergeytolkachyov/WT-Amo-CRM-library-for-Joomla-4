@@ -41,6 +41,7 @@ class UserHelper
         $db->setQuery($query);
         //Get single result
         $amocrm_user_id = $db->loadResult();
+
         if (!empty($amocrm_user_id)) {
             return (int)$amocrm_user_id;
         }
@@ -67,6 +68,7 @@ class UserHelper
         $db->setQuery($query);
         //Get single result
         $joomla_user_id = $db->loadResult();
+
         if (!empty($joomla_user_id)) {
             return (int)$joomla_user_id;
         }
@@ -101,7 +103,6 @@ class UserHelper
                 ($is_temporary_user ? $db->quote('1') : $db->quote('0'))
             ]));
         $db->setQuery($query);
-
         return $db->execute();
     }
 
@@ -173,7 +174,6 @@ class UserHelper
 
         $query->where($conditions);
         $db->setQuery($query);
-
         return $db->execute();
     }
 }
