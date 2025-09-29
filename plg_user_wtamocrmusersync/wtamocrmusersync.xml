@@ -57,8 +57,7 @@
                        description="PLG_WTAMOCRMUSERSYNC_UPDATE_AMOCRM_CONTACT_DATA_BY_JOOMLA_DESC"
                        layout="joomla.form.field.radio.switcher"
                        filter="bool"
-                       default="0"
-                       showon="create_amocrm_contact:1">
+                       default="0">
                     <option value="0">JNO</option>
                     <option value="1">JYES</option>
                 </field>
