@@ -1,1 +1,0 @@
-ALTER TABLE `#__lib_wt_amocrm_users_sync` ADD `is_temporary_user` int(1) NOT NULL DEFAULT '0' COMMENT 'Flag that this is a temporary joomla user data. Need to complete registration';
