@@ -871,7 +871,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         }
 
         $amocrm = $this->amocrm;
-        $contacts = $this->preprocessData('createUsers', $contacts);
+        $contacts = $this->preprocessAmoData('createUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] !== 'contact') {
                 continue;
@@ -1327,7 +1327,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (empty($contacts)) {
             return;
         }
-        $contacts = $this->preprocessData('updateUsers', $contacts);
+        $contacts = $this->preprocessAmoData('updateUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] == 'contact'
                 && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
@@ -1513,7 +1513,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (empty($contacts)) {
             return;
         }
-        $contacts = $this->preprocessData('deleteUsers', $contacts);
+        $contacts = $this->preprocessAmoData('deleteUsers', $contacts);
         foreach ($contacts as $contact) {
             if ($contact['type'] == 'contact'
                 && ($joomla_user_id = AmocrmUserHelper::checkIsJoomlaUser($contact['id']))
@@ -1627,7 +1627,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      *
      * @since 1.3.0
      */
-    private function preprocessData(string $context, array $data): array
+    private function preprocessAmoData(string $context, array $data): array
     {
         $dispatcher = new Dispatcher();
         PluginHelper::importPlugin('amocrm', null, true, $dispatcher);
