@@ -32,6 +32,11 @@
             <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
         </sql>
     </uninstall>
+    <update>
+        <schemas>
+            <schemapath type="mysql">sql/updates/mysql</schemapath>
+        </schemas>
+    </update>
     <media folder="media" destination="plg_system_wt_amocrm">
         <folder>js</folder>
         <filename>joomla.asset.json</filename>

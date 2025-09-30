@@ -1542,7 +1542,7 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         $formName = $form->getName();
 
         // Проверяем имя формы, чтобы не добавить таб в материалы или ещё куда-нибудь
-        if ($formName !== 'com_users.user') {
+        if (!$this->getApplication()->isClient('administrator') || $formName !== 'com_users.user') {
             return;
         }
 
@@ -1623,22 +1623,19 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      * @param   string  $context
      * @param   array   $data
      *
-     * @return array
+     * @return  array
      *
-     * @since 1.3.0
+     * @since   1.3.0
      */
     private function preprocessAmoData(string $context, array $data): array
     {
         $dispatcher = new Dispatcher();
         PluginHelper::importPlugin('amocrm', null, true, $dispatcher);
-        $event = AbstractEvent::create(
-            'preprocessAmocrmWebhookData',
-            [
-                'subject' => $this,
-                'context' => $context,
-                'data'    => $data
-            ]
-        );
+        $event = AbstractEvent::create('preprocessAmocrmWebhookData', [
+            'subject' => $this,
+            'context' => $context,
+            'data' => $data
+        ]);
 
         $eventResult = $dispatcher->dispatch($event->getName(), $event);
 
