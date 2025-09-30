@@ -32,18 +32,15 @@
 					   class="alert alert-info"/>
 				<field type="spacer"
 					   label="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND"
-					   class="h3"
-					   />
+					   class="h3"/>
 				<field type="note"
 					   label="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_TAGS_SHOW"
 					   description="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_TAGS_SHOW_DESC"
-					   class="border p-3"
-					   />
+					   class="border p-3"/>
 				<field type="note"
 					   label="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_CONTACTS_IMPORT"
 					   description="PLG_WTIMPORTAMOCRMCONTACTS_COMMAND_AMOCRM_CONTACTS_IMPORT_DESC"
-					   class="border p-3"
-					   />
+					   class="border p-3"/>
 			</fieldset>
         </fields>
     </config>
