@@ -254,7 +254,7 @@ class Amocrm
      */
     private function getPluginParams(): Registry
     {
-        if(count($this->plugin_params) == 0) {
+        if (count($this->plugin_params) == 0) {
             if (!PluginHelper::isEnabled('system', 'wt_amocrm')) {
                 $this->saveToLog('Plugin System - WT AmoCRM is disabled', 'WARNING');
 
