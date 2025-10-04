@@ -359,6 +359,12 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
             /**
              * Ручное изменение привязки AmoCRM контакта у Joomla пользователя в панели администратора
              */
+            // если мы НЕ в админ-панели - пытаемся получить amocrm_contact_id не из формы,
+            // а с помощью id пользователя из БД
+            if (!$this->getApplication()->isClient('administrator')) {
+                $amocrm_contact_id = AmocrmUserHelper::checkIsAmoCRMUser($joomla_user_id);
+            }
+
             // проверяем, изменился ли контакт Amo по сравнению с текущим значением из БД
             $contactIdChanged = false;
 
@@ -395,22 +401,26 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
                     if ($amocrm_contact_id) {
                         $amocrm->contacts()->editContact($amocrm_contact_id, $user_data);
 
-                        $amocrm->saveToLog(
-                            Text::sprintf(
-                                'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_HAS_BEEN_UPDATED',
-                                $joomla_user_id
-                            ),
-                            'info'
-                        );
+                        if ($this->getApplication()->isClient('administrator')) {
+                            $amocrm->saveToLog(
+                                Text::sprintf(
+                                    'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_AMOCRM_CONTACT_HAS_BEEN_UPDATED',
+                                    $joomla_user_id
+                                ),
+                                'info'
+                            );
+                        }
                     } else {
                         // We loose AmoCRM user id :((
-                        $amocrm->saveToLog(
-                            Text::sprintf(
-                                'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_NO_AMOCRM_CONTACT_ID_FOR_JOOMLA_USER_ID',
-                                $joomla_user_id
-                            ),
-                            'warning'
-                        );
+                        if ($this->getApplication()->isClient('administrator')) {
+                            $amocrm->saveToLog(
+                                Text::sprintf(
+                                    'PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_NO_AMOCRM_CONTACT_ID_FOR_JOOMLA_USER_ID',
+                                    $joomla_user_id
+                                ),
+                                'warning'
+                            );
+                        }
                     }
                 }
             }
@@ -594,10 +604,6 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
      */
     private function processEditJoomlaAmoCRMUserSync(int $mode, bool $amocrmUpdateUserFromWebhookFlag, int $joomla_user_id, int $amocrm_contact_id): bool
     {
-        if (!$this->getApplication()->isClient('administrator')) {
-            return false;
-        }
-
         // если контекст - обновление Joomla пользователя из входящего вебхука AmoCRM - ничего не делаем
         if ($amocrmUpdateUserFromWebhookFlag) {
             return false;
@@ -606,6 +612,11 @@ class Wtamocrmusersync extends CMSPlugin implements SubscriberInterface
         if (!$joomla_user_id) {
             $this->getApplication()->enqueueMessage(Text::_('PLG_WTAMOCRMUSERSYNC_ONUSERAFTERSAVE_NO_JOOMLA_USER_ID'), 'error');
             return false;
+        }
+
+        // не обрабатываем логику изменения привязки если мы НЕ в админ-панели
+        if (!$this->getApplication()->isClient('administrator')) {
+            return true;
         }
 
         // Если в форме пользователя не выбран вручную контакт AmoCRM
