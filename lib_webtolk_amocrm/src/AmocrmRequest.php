@@ -1,7 +1,8 @@
-<?php
+<?php 
+
 /**
  * @package    WT Amo CRM library package
- * @version    1.3.0
+ * @version    1.3.1
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -645,7 +646,7 @@ class AmocrmRequest
                     property_exists($body, 'validation-errors'))
                 ) {
                     $error_message = $this->errorHandler($body);
-                } else if (empty($body) && strpos((string)$response->getBody(),'Forbidden') !== false) {
+                } elseif (empty($body) && strpos((string)$response->getBody(),'Forbidden') !== false) {
                     $error_message = Text::_('LIB_WTAMOCRM_ERROR_RESPONSEHANDLER_FORBIDDEN_DESC');
                 }
 

@@ -1,7 +1,8 @@
-<?php
+<?php 
+
 /**
  * @package    WT Amo CRM library package
- * @version    1.3.0
+ * @version    1.3.1
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -28,7 +29,7 @@ class CompanycustomfieldslistField extends ListField
 		$result_amo_crm = $amocrm->customfields()->getCompaniesCustomFields();
 		$options = [];
 		if (empty($result_amo_crm)) {
-			return $options[] = HTMLHelper::_('select.option', 0, 'there is no custom_fields in Amo CRM for companies');
+			return HTMLHelper::_('select.option', 0, 'there is no custom_fields in Amo CRM for companies');
 		}
 		if (isset($result_amo_crm->_embedded) && isset($result_amo_crm->_embedded->custom_fields)) {
 			foreach ($result_amo_crm->_embedded->custom_fields as $contact_custom_field) {
@@ -36,7 +37,7 @@ class CompanycustomfieldslistField extends ListField
 			}
 
 			return $options;
-		} else if (isset($result_amo_crm->error_code)) {
+		} elseif (isset($result_amo_crm->error_code)) {
 			Factory::getApplication()->enqueueMessage(
                 $result_amo_crm->error_code . ' ' . $result_amo_crm->error_message,
                 'error'

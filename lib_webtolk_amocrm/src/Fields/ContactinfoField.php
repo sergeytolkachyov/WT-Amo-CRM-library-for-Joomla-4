@@ -1,7 +1,8 @@
-<?php
+<?php 
+
 /**
  * @package    WT Amo CRM library package
- * @version    1.3.0
+ * @version    1.3.1
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -42,7 +43,7 @@ class ContactinfoField extends FormField
         // `joomlauserid` param has a higher priority
         if (!empty($this->element['joomlauserid'])) {
             $joomlauserid = (int) $this->element['joomlauserid'];
-        } else if (!isset($this->element['joomlauserid']) && !empty($joomlauseridsource)) {
+        } elseif (!isset($this->element['joomlauserid']) && !empty($joomlauseridsource)) {
             $joomlauserid = Factory::getApplication()->getInput()->getInt($joomlauseridsource, 0);
         }
 
