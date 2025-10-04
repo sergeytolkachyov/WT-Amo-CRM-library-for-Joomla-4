@@ -4,10 +4,10 @@
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
     <authorUrl>https://web-tolk.ru</authorUrl>
-	<creationDate>29.09.2025</creationDate>
+	<creationDate>04.10.2025</creationDate>
     <copyright>Copyright (c) 2022 - 2025 Sergey Tolkachyov. All rights reserved.</copyright>
     <license>GNU General Public License v3.0</license>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
     <description>PLG_WT_AMOCRM_DESC</description>
     <namespace path="src">Joomla\Plugin\System\Wt_amocrm</namespace>
 	<files>

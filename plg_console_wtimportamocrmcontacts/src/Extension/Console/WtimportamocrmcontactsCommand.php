@@ -2,7 +2,7 @@
 /**
  * @package    WT Amo CRM library package
  * @subpackage  WT Import AmoCRM contacts
- * @version     1.3.0
+ * @version     1.3.1
  * @Author      Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license     GNU/GPL http://www.gnu.org/licenses/gpl-3.0.html
