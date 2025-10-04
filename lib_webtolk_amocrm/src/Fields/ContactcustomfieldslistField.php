@@ -1,7 +1,8 @@
-<?php
+<?php 
+
 /**
  * @package    WT Amo CRM library package
- * @version    1.3.0
+ * @version    1.3.1
  * @Author     Sergey Tolkachyov, https://web-tolk.ru
  * @copyright  (c) 2022 - September 2025 Sergey Tolkachyov. All rights reserved.
  * @license    GNU/GPL3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -61,7 +62,7 @@ class ContactcustomfieldslistField extends ListField
 		$result_amo_crm = $amocrm->customfields()->getContactsCustomFields();
 		$options = [];
 		if (empty($result_amo_crm)) {
-			return $options[] = HTMLHelper::_('select.option', 0, 'there is no custom_fields in Amo CRM for contacts');
+			return HTMLHelper::_('select.option', 0, 'there is no custom_fields in Amo CRM for contacts');
         }
 
         if (!$this->hidenone) {
@@ -75,7 +76,7 @@ class ContactcustomfieldslistField extends ListField
 
 			return $options;
 
-		} else if (isset($result_amo_crm->error_code)) {
+		} elseif (isset($result_amo_crm->error_code)) {
 			Factory::getApplication()->enqueueMessage($result_amo_crm->error_code . ' ' . $result_amo_crm->error_message, 'error');
 
 			return $options;
